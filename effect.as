@@ -1,4 +1,4 @@
-;//////////ƒGƒtƒFƒNƒgƒf[ƒ^‰Šú‰»//////////
+;//////////ã‚¨ãƒ•ã‚§ã‚¯ãƒˆãƒ‡ãƒ¼ã‚¿åˆæœŸåŒ–//////////
 *IniDatEff
 	MaxDatEff=3
 	dim DatEff,3,MaxDatEff
@@ -8,7 +8,7 @@
 	DatEff.0.2=	10	,10	,120
 	return
 
-;//////////ƒGƒtƒFƒNƒg‰Šú‰»//////////
+;//////////ã‚¨ãƒ•ã‚§ã‚¯ãƒˆåˆæœŸåŒ–//////////
 *IniEff
 	MaxEff=70
 	dim EffFlg,MaxEff
@@ -19,7 +19,7 @@
 	dim EffCx,MaxEff
 	return
 
-;//////////ƒGƒtƒFƒNƒg”­¶//////////
+;//////////ã‚¨ãƒ•ã‚§ã‚¯ãƒˆç™ºç”Ÿ//////////
 *AprEff
 	repeat MaxEff
 		eff=cnt
@@ -33,7 +33,7 @@
 	loop
 	return
 
-;//////////ƒGƒtƒFƒNƒgˆÚ“®//////////
+;//////////ã‚¨ãƒ•ã‚§ã‚¯ãƒˆç§»å‹•//////////
 *MovEff
 	repeat MaxEff
 		eff=cnt
@@ -60,7 +60,7 @@
 	loop
 	return
 
-;//////////ƒGƒtƒFƒNƒg•`‰æ//////////
+;//////////ã‚¨ãƒ•ã‚§ã‚¯ãƒˆæç”»//////////
 *DrwEff
 	repeat MaxEff
 		eff=MaxEff-1-cnt

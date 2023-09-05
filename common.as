@@ -1,21 +1,21 @@
-;//////////‰Šúİ’è//////////
+;//////////åˆæœŸè¨­å®š//////////
 *IniCom
-	#define STA_OPENING	0	;ƒI[ƒvƒjƒ“ƒO
-	#define STA_TITLE		1	;ƒ^ƒCƒgƒ‹
-	#define STA_INIT		2	;ƒXƒe[ƒW‰Šú‰»
-	#define STA_PLAY		3	;ƒQ[ƒ€ƒvƒŒ[’†
-	#define STA_ENDING	4	;ƒGƒ“ƒfƒBƒ“ƒO
-	#define STA_PAUSE	5	;ƒ|[ƒY
+	#define STA_OPENING	0	;ã‚ªãƒ¼ãƒ—ãƒ‹ãƒ³ã‚°
+	#define STA_TITLE		1	;ã‚¿ã‚¤ãƒˆãƒ«
+	#define STA_INIT		2	;ã‚¹ãƒ†ãƒ¼ã‚¸åˆæœŸåŒ–
+	#define STA_PLAY		3	;ã‚²ãƒ¼ãƒ ãƒ—ãƒ¬ãƒ¼ä¸­
+	#define STA_ENDING	4	;ã‚¨ãƒ³ãƒ‡ã‚£ãƒ³ã‚°
+	#define STA_PAUSE	5	;ãƒãƒ¼ã‚º
 
 	GameSta=STA_TITLE
 
 	randomize
 	gsel 0,-1
 	gsel 1,2 : color 0,0,0 : boxf 0,0,640,480
-	bgscr 7,300,300,1,170,90	;ƒQ[ƒ€ƒEƒBƒ“ƒhƒE
+	bgscr 7,300,300,1,170,90	;ã‚²ãƒ¼ãƒ ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦
 	picload "title.bmp"
 
-	buffer 2,300,300,1 : palcopy 7	;”wŒi
+	buffer 2,300,300,1 : palcopy 7	;èƒŒæ™¯
 	color 20,20,0
 	boxf 0,0,300,300
 	repeat 300
@@ -24,7 +24,7 @@
 		pset x,y
 	loop
 
-	buffer 3,1000,1000,1			;ƒrƒbƒgƒ}ƒbƒv“Ç‚İ‚İ—pƒEƒBƒ“ƒhƒE
+	buffer 3,1000,1000,1			;ãƒ“ãƒƒãƒˆãƒãƒƒãƒ—èª­ã¿è¾¼ã¿ç”¨ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦
 	picload "player.bmp",1,0,0
 	picload "effect.bmp",1,0,80
 	picload "enesht.bmp",1,0,130
@@ -34,7 +34,7 @@
 
 	return
 
-;//////////”wŒi//////////
+;//////////èƒŒæ™¯//////////
 *BackGround
 	BG2=300-BG1
 	pos 0,0
@@ -45,7 +45,7 @@
 	if BG1=300 : BG1-=300
 	return
 
-;//////////ƒXƒe[ƒ^ƒX•\¦//////////
+;//////////ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹è¡¨ç¤º//////////
 *disp
 	pos 0,0 : gcopy 3,17,186,45,16
 	a=Score : x=0 : y=170

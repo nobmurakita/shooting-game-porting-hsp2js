@@ -1,6 +1,6 @@
 	goto *ProgramStart
 
-;//////////ƒ\[ƒX‚ÌƒCƒ“ƒNƒ‹[ƒh//////////
+;//////////ã‚½ãƒ¼ã‚¹ã®ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰//////////
 	#include "stg.as"
 	#include "common.as"
 	#include "effect.as"
@@ -9,7 +9,7 @@
 	#include "enesht.as"
 	#include "boss.as"
 
-;//////////ƒvƒƒOƒ‰ƒ€ƒXƒ^[ƒg//////////
+;//////////ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã‚¹ã‚¿ãƒ¼ãƒˆ//////////
 *ProgramStart
 	chgdisp 2
 	gosub *stg_set
@@ -19,7 +19,7 @@
 	gosub *IniDatEne
 	gosub *IniDatEneSht
 
-;//////////ƒƒCƒ“ƒ‹[ƒv//////////
+;//////////ãƒ¡ã‚¤ãƒ³ãƒ«ãƒ¼ãƒ—//////////
 *MainLoop
 	stick Key,79
 

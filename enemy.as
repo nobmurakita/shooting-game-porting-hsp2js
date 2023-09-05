@@ -1,4 +1,4 @@
-;//////////“Gƒf[ƒ^‰Šú‰»//////////
+;//////////æ•µãƒ‡ãƒ¼ã‚¿åˆæœŸåŒ–//////////
 *IniDatEne
 	buffer 4,2000,2000,1
 	dim DatEne,8,10
@@ -16,7 +16,7 @@
 	DatEne.0.9=	40	,60	,60	,-25	,-25	,25	,25	,430	: picload "enemy09.bmp",1,0,430
 	return
 
-;//////////“G‰Šú‰»//////////
+;//////////æ•µåˆæœŸåŒ–//////////
 *IniEne
 	if stage=1 : MaxEneTable=150
 	dim EneTable,5,MaxEneTable
@@ -40,7 +40,7 @@
 
 	return
 
-;//////////“G”­¶//////////
+;//////////æ•µç™ºç”Ÿ//////////
 *AprEne
 	if BossAprFrm=Frame : BossFlg=1
 	if TableIndex=MaxEneTable : return
@@ -66,7 +66,7 @@
 	}
 	return
 
-;//////////“GˆÚ“®//////////
+;//////////æ•µç§»å‹•//////////
 *MovEne
 	repeat MaxEne
 		ene=cnt
@@ -297,7 +297,7 @@
 	loop
 	return
 
-;//////////“G•`‰æ//////////
+;//////////æ•µæç”»//////////
 *DrwEne
 	repeat MaxEne
 		if EneFlg.cnt=0 : continue

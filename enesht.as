@@ -1,4 +1,4 @@
-;//////////“GƒVƒ‡ƒbƒg‰Šú‰»//////////
+;//////////æ•µã‚·ãƒ§ãƒƒãƒˆåˆæœŸåŒ–//////////
 *IniDatEneSht
 	MaxDatEneSht=4
 	dim DatEneSht,7,MaxDatEneSht
@@ -8,7 +8,7 @@
 	DatEneSht.0.2=	20	,20	,-5	,-5	,5	,5	,150
 	return
 
-;//////////“GƒVƒ‡ƒbƒg‰Šú‰»//////////
+;//////////æ•µã‚·ãƒ§ãƒƒãƒˆåˆæœŸåŒ–//////////
 *IniEneSht
 	MaxEneSht=100
 	dim EneShtFlg,MaxEneSht
@@ -23,7 +23,7 @@
 	dim EneShtTmp,4,MaxEneSht
 	return
 
-;//////////“GƒVƒ‡ƒbƒg”­¶//////////
+;//////////æ•µã‚·ãƒ§ãƒƒãƒˆç™ºç”Ÿ//////////
 *AprEneSht
 	repeat MaxEneSht
 		sht=cnt
@@ -44,7 +44,7 @@
 	loop
 	return
 
-;//////////“GƒVƒ‡ƒbƒgˆÚ“®//////////
+;//////////æ•µã‚·ãƒ§ãƒƒãƒˆç§»å‹•//////////
 *MovEneSht
 	repeat MaxEneSht
 		sht=cnt
@@ -141,7 +141,7 @@
 	loop
 	return
 
-;//////////“GƒVƒ‡ƒbƒg•`‰æ//////////
+;//////////æ•µã‚·ãƒ§ãƒƒãƒˆæç”»//////////
 *DrwEneSht
 	repeat MaxEneSht
 		sht=cnt
