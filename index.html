@@ -4,15 +4,53 @@
       body {
         margin: 0;
         padding: 0;
+        background-color: #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
       canvas {
         width: 100vmin;
         height: 100vmin;
       }
+      #help-dialog {
+        text-align: center;
+      }
+      #help-dialog .key {
+        padding-right: 8px;
+        text-align: right;
+      }
+      #help-open {
+        position: absolute;
+        top: 0;
+        right: 0;
+        opacity: 0.4;
+      }
     </style>
   </head>
   <body>
     <div id="game"></div>
+
+    <dialog id="help-dialog">
+      <table>
+        <tr><td class="key">カーソルキー</td><td>自機の移動</td></tr>
+        <tr><td class="key">Zキー</td><td>ゲーム開始 or ショット</td></tr>
+        <tr><td class="key">Xキー</td><td>ゲーム開始 or レーザー</td></tr>
+        <tr><td class="key">Shiftキー</td><td>ゲーム開始 or ポーズ/ポーズ解除</td></tr>
+        <tr><td class="key">ESCキー</td><td>タイトル画面に戻る</td></tr>
+      </table>
+      <button id="help-close">閉じる</button>
+    </dialog>
+    <button id="help-open">ヘルプ</button>
+
+    <script type="text/javascript">
+      document.getElementById('help-open').addEventListener('click', () => {
+        document.getElementById('help-dialog').showModal();
+      });
+      document.getElementById('help-close').addEventListener('click', () => {
+        document.getElementById('help-dialog').close();
+      })
+    </script>
 
     <script type="text/javascript" src="js/hsp.js"></script>
     <script type="text/javascript" src="js/stg.js"></script>
