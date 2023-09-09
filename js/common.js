@@ -16,7 +16,7 @@ hsp.IniCom = () => {
   hsp.HiScore = 0;
 
   // ゲーム画面
-  hsp.bgscr(0, 300, 300);   // 表示用
+  hsp.screen(0, 300, 300);  // 表示用
   hsp.buffer(1, 300, 300);  // オフスクリーンバッファ
 
   // 背景

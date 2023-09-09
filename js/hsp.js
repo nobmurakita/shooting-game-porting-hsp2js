@@ -106,8 +106,8 @@ hsp = {};
     }
   };
 
-  // ウィンドウIDを初期化 (枠のないウィンドウ)
-  hsp.bgscr = (id, w, h) => {
+  // ウィンドウIDを初期化
+  hsp.screen = (id, w, h) => {
     hsp.buffer(id, w, h);
     if (g.canvas) {
       document.getElementById('game').appendChild(g.canvas);
