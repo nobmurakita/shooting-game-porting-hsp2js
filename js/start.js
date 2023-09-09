@@ -142,6 +142,8 @@ hsp.MainLoop = () => {
     }
   }
 
+  hsp.HiScore = Math.max(hsp.Score, hsp.HiScore);
+
   const w = Math.max(30 - (new Date().getTime() - t), 0);
   setTimeout(hsp.MainLoop, w);
 };

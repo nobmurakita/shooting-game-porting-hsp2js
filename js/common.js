@@ -78,7 +78,7 @@ hsp.Disp = () => {
   for (let i = 0; i < 8; i++) {
     hsp.pos(-i * 8 + 290, 0);
     hsp.gcopy(3, a % 10 * 8 + x, y, 8, 16);
-    a = a % 10;
+    a = Math.floor(a / 10);
     if (a == 0) {
       x = 64;
       y = 186;
