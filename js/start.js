@@ -110,10 +110,27 @@ hsp.MainLoop = () => {
   }
 
   if (hsp.GameSta == hsp.STA_CLEAR) {
-    hsp.PlyY -= 1792;
-    if (hsp.PlyY < -5120) {
-      hsp.GameSta = hsp.STA_INIT;
+    if (hsp.Key & 128) {
+      hsp.GameSta = hsp.STA_OPENING;
     }
+    if (hsp.PlyY > -5120) {
+      hsp.PlyY -= 1792;
+    }
+    // オフスクリーンバッファに描画
+    hsp.gsel(1);
+    hsp.MovPlySht();
+    hsp.MovEneSht();
+    hsp.MovLsr();
+    hsp.MovEff();
+    hsp.BackGround();
+    hsp.DrwPlySht();
+    hsp.DrwPly();
+    hsp.DrwEff();
+    hsp.DrwEneSht();
+    // 表示用のゲーム画面にオフスクリーンバッファの内容をコピー
+    hsp.gsel(0);
+    hsp.pos(0, 0);
+    hsp.gcopy(1, 0, 0, 300, 300);
   }
 
   if (hsp.GameSta == hsp.STA_PAUSE) {
