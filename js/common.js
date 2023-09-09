@@ -10,14 +10,14 @@ hsp.MaxStage = 1;
 
 ;//////////初期設定//////////
 hsp.IniCom = () => {
-  hsp.GameSta = hsp.STA_TITLE;
+  hsp.GameSta = hsp.STA_OPENING;
   hsp.Stage = 0;
   hsp.Score = 0;
   hsp.HiScore = 0;
 
-  // ゲームウィンドウ
-  hsp.bgscr(7, 300, 300);
-  hsp.picload('img/title.png', 0, 0);
+  // ゲーム画面
+  hsp.bgscr(0, 300, 300);   // 表示用
+  hsp.buffer(1, 300, 300);  // オフスクリーンバッファ
 
   // 背景
   hsp.buffer(2, 300, 300);

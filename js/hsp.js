@@ -72,14 +72,12 @@ hsp = {};
   const g = {
     // ウィンドウリスト (Canvas)
     list: [
-      null,                             // 未使用
-      null,                             // 未使用
+      document.createElement('canvas'), // ゲーム画面 (表示用)
+      document.createElement('canvas'), // ゲーム画面 (オフスクリーンバッファ)
       document.createElement('canvas'), // 背景
       document.createElement('canvas'), // 基本画像
       document.createElement('canvas'), // 敵画像
       document.createElement('canvas'), // ボス画像
-      null,                             // 未使用
-      document.createElement('canvas'), // ゲーム画面  
     ],
 
     // 描画先Canvas

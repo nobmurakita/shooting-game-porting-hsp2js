@@ -34,7 +34,7 @@ hsp.MainLoop = () => {
   hsp.Key = hsp.stick();
 
   if (hsp.GameSta == hsp.STA_OPENING) {
-    hsp.gsel(7);
+    hsp.gsel(0);
     hsp.picload('img/title.png', 0, 0);
     hsp.Stage = 0;
     hsp.Score = 0;
@@ -71,8 +71,8 @@ hsp.MainLoop = () => {
     if (hsp.Key & 128) {
       hsp.GameSta = hsp.STA_OPENING;
     }
-    // redraw 2 ; 再描画OFF
-    hsp.gsel(7);
+    // オフスクリーンバッファに描画
+    hsp.gsel(1);
     hsp.MovPly();
     hsp.MovPlySht();
     if (hsp.BossFlg == 0) {
@@ -97,13 +97,16 @@ hsp.MainLoop = () => {
     hsp.DrwLsr();
     hsp.Disp();
     hsp.Frame++
-    // redraw 1 ; 再描画ON
     if (hsp.Key & 32) {
       hsp.Key = 0;
       hsp.GameSta = hsp.STA_PAUSE;
       hsp.pos(129, 142);
       hsp.gcopy(3, 0, 234, 42, 16);
     }
+    // 表示用のゲーム画面にオフスクリーンバッファの内容をコピー
+    hsp.gsel(0);
+    hsp.pos(0, 0);
+    hsp.gcopy(1, 0, 0, 300, 300);
   }
 
   if (hsp.GameSta == hsp.STA_CLEAR) {
