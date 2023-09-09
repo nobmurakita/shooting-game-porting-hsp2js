@@ -35,12 +35,10 @@ hsp = {};
       case 'ArrowUp': key |= 2; break;
       case 'ArrowRight': key |= 4; break;
       case 'ArrowDown': key |= 8; break;
-      case 'Space': key |= 16; break;
       case 'KeyX': key |= 16; break;
-      case 'Enter': if (!event.repeat) { key |= 32; } break;
-      case 'ControlLeft': key |= 64; break;
-      case 'ControlRight': key |= 64; break;
-      case 'KeyZ': key |= 64; break;
+      case 'KeyZ': key |= 32; break;
+      case 'ShiftLeft': if (!event.repeat) { key |= 64; } break;
+      case 'ShiftRight': if (!event.repeat) { key |= 64; } break;
       case 'Escape': if (!event.repeat) { key |= 128; } break;
     }
   });
@@ -50,12 +48,10 @@ hsp = {};
       case 'ArrowUp': key &= ~2; break;
       case 'ArrowRight': key &= ~4; break;
       case 'ArrowDown': key &= ~8; break;
-      case 'Space': key &= ~16; break;
       case 'KeyX': key &= ~16; break;
-      case 'Enter': key &= ~32; break;
-      case 'ControlLeft': key &= ~64; break;
-      case 'ControlRight': key &= ~64; break;
-      case 'KeyZ': key &= ~64; break;
+      case 'KeyZ': key &= ~32; break;
+      case 'ShiftLeft': key &= ~64; break;
+      case 'ShiftRight': key &= ~64; break;
       case 'Escape': key &= ~128; break;
     }
   });
@@ -63,7 +59,7 @@ hsp = {};
   // キー入力情報取得
   hsp.stick = () => {
     const ret = key;
-    key &= ~32;
+    key &= ~64;
     key &= ~128;
     return ret;
   };

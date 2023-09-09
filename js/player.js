@@ -72,7 +72,7 @@ hsp.MovPly = () => {
   if (hsp.PlyShtCnt != 0) {
     hsp.PlyShtCnt--;
   } else {
-    if (hsp.Key & 64) {
+    if (hsp.Key & 32) {
       hsp.PlyShtCnt = 3;
       for (let i = 0; i < hsp.PlyShtLV * 2; i++) {
         for (let j = 0; j < hsp.MaxPlySht; j++) {
@@ -125,7 +125,7 @@ hsp.MovPly = () => {
         }
       }
     } else {
-      hsp.LsrPow += (hsp.Key & 64 ? 1 : 3);
+      hsp.LsrPow += (hsp.Key & 32 ? 1 : 3);
       if (hsp.LsrPow > 320) {
         hsp.LsrPow = 320;
       }

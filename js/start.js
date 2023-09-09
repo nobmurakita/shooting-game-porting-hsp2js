@@ -42,11 +42,8 @@ hsp.MainLoop = () => {
   }
 
   if (hsp.GameSta == hsp.STA_TITLE) {
-    if (hsp.Key & 16 || hsp.Key & 64) {
+    if (hsp.Key & 16 || hsp.Key & 32 || hsp.Key & 64) {
       hsp.GameSta = hsp.STA_INIT;
-    }
-    if (hsp.Key & 128) {
-      // end
     }
   }
 
@@ -97,7 +94,7 @@ hsp.MainLoop = () => {
     hsp.DrwLsr();
     hsp.Disp();
     hsp.Frame++
-    if (hsp.Key & 32) {
+    if (hsp.Key & 64) {
       hsp.Key = 0;
       hsp.GameSta = hsp.STA_PAUSE;
       hsp.pos(129, 142);
@@ -137,7 +134,7 @@ hsp.MainLoop = () => {
     if (hsp.Key & 128) {
       hsp.GameSta = hsp.STA_OPENING;
     }
-    if (hsp.Key & 32) {
+    if (hsp.Key & 64) {
       hsp.GameSta = hsp.STA_PLAY;
     }
   }
