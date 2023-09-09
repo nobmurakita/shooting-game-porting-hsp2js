@@ -25,12 +25,13 @@ hsp.ProgramStart = async () => {
   hsp.IniDatEne();
   hsp.IniDatEneSht();
 
+  hsp.NextLoopTime = performance.now();
   hsp.MainLoop();
 };
 
 ;//////////メインループ//////////
 hsp.MainLoop = () => {
-  const t = new Date().getTime();
+  hsp.NextLoopTime += 1000 / 30;
   hsp.Key = hsp.stick();
 
   if (hsp.GameSta == hsp.STA_OPENING) {
@@ -141,8 +142,8 @@ hsp.MainLoop = () => {
 
   hsp.HiScore = Math.max(hsp.Score, hsp.HiScore);
 
-  const w = Math.max(30 - (new Date().getTime() - t), 0);
-  setTimeout(hsp.MainLoop, w);
+  const delay = hsp.NextLoopTime - performance.now();
+  setTimeout(hsp.MainLoop, delay);
 };
 
 hsp.ProgramStart();
