@@ -117,6 +117,9 @@ hsp.MainLoop = () => {
   }
 
   if (hsp.GameSta == hsp.STA_PAUSE) {
+    if (hsp.Key & 128) {
+      hsp.GameSta = hsp.STA_OPENING;
+    }
     if (hsp.Key & 32) {
       hsp.GameSta = hsp.STA_PLAY;
     }
