@@ -306,7 +306,6 @@ hsp.MovLsr = () => {
           hsp.Score += 100;
           hsp.EneShield[ene] -= 5;
           hsp.EneLckOn[ene]--;
-          // EneCy.ene=DatEne.2.ki+DatEne.7.ki
           hsp.LsrSta[lsr] = 0;
           for (let j = 0; j < 2; j++) {
             let x = hsp.rnd(2560); x -= 1280;

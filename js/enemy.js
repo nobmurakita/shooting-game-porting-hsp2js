@@ -43,7 +43,6 @@ hsp.IniEne = () => {
   hsp.EneX = hsp.dim(hsp.MaxEne);
   hsp.EneY = hsp.dim(hsp.MaxEne);
   hsp.EneCx = hsp.dim(hsp.MaxEne);
-  hsp.EneCy = hsp.dim(hsp.MaxEne);
   hsp.EneTmp = hsp.dim(hsp.MaxEne, 8);
   hsp.EneLckOn = hsp.dim(hsp.MaxEne);
 }
@@ -300,8 +299,6 @@ hsp.MovEne = () => {
         hsp.EneFlg[ene] = 0;
       }
     }
-
-    hsp.EneCy[ene] = hsp.DatEne[ki][7];
 
     hsp.EneFrm[ene]++;
 
