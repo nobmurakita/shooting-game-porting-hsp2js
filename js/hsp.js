@@ -24,9 +24,9 @@ const hsp = {};
   // 2 : カーソルキー上(↑)
   // 4 : カーソルキー右(→)
   // 8 : カーソルキー下(↓)
-  // 16 : スペースキー
-  // 32 : Enterキー
-  // 64 : Ctrlキー
+  // 16 : Xキー
+  // 32 : Zキー
+  // 64 : Shiftキー
   // 128 : ESCキー
   let key = 0;
   window.addEventListener('keydown', event => {
