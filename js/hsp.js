@@ -150,7 +150,7 @@ const hsp = {};
   
   // 画像ファイルの事前ロード (picloadで使用する画像を事前にロードしておく)
   const pics = {};
-  hsp.preload = async (filename, x, y) => {
+  hsp.preload = async (filename) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
