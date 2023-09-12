@@ -25,6 +25,12 @@ hsp.ProgramStart = async () => {
   hsp.IniDatEne();
   hsp.IniDatEneSht();
 
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState == 'visible') {
+      hsp.NextLoopTime = performance.now();
+    }
+  });
+
   hsp.NextLoopTime = performance.now();
   hsp.MainLoop();
 };
@@ -142,7 +148,7 @@ hsp.MainLoop = () => {
 
   hsp.HiScore = Math.max(hsp.Score, hsp.HiScore);
 
-  const delay = hsp.NextLoopTime - performance.now();
+  let delay = hsp.NextLoopTime - performance.now();
   setTimeout(hsp.MainLoop, delay);
 };
 
