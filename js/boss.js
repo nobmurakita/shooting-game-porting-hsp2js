@@ -164,9 +164,7 @@ hsp.Boss = class {
           s.alive = false;
           this.shield--;
           prt.shield--;
-          let ex = hsp.rnd(10) - 5;
-          let ey = hsp.rnd(10) - 5;
-          hsp.spawnEffect(ctx, 1, s.x + ex, s.y + ey, 0);
+          hsp.spawnHitSpark(ctx, s.x, s.y);
           if (this.shield === 0) {
             this.flg = 2;
             this.frm = 0;
@@ -174,11 +172,7 @@ hsp.Boss = class {
           if (prt.shield === 0) {
             prt.alive = false;
             prt.cx = d.sx;
-            for (let k = 0; k < 5; k++) {
-              let px = hsp.rnd(d.sx) - Math.floor(d.sx / 2);
-              let py = hsp.rnd(d.sy) - Math.floor(d.sy / 2);
-              hsp.spawnEffect(ctx, 0, d.x + this.x + px, d.y + this.y + py, -k * 3);
-            }
+            hsp.spawnExplosion(ctx, d.x + this.x, d.y + this.y, d.sx, d.sy, 5);
             break;
           }
         }

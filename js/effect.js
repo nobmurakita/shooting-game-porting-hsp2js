@@ -81,3 +81,28 @@ hsp.spawnEffect = (ctx, ki, x, y, startFrm) => {
   const EffectClass = hsp.Effect.CLASS_MAP[ki];
   ctx.effects.push(new EffectClass(x, y, startFrm));
 };
+
+;// 火花エフェクト（単発）— ヒット時の小さな火花
+hsp.spawnHitSpark = (ctx, x, y) => {
+  const ex = hsp.rnd(10) - 5;
+  const ey = hsp.rnd(10) - 5;
+  hsp.spawnEffect(ctx, 1, x + ex, y + ey, 0);
+};
+
+;// 火花エフェクト（複数）— 被弾時の火花散り
+hsp.spawnHitSparks = (ctx, x, y, count) => {
+  for (let j = 0; j < count; j++) {
+    const ex = hsp.rnd(10) - 5;
+    const ey = hsp.rnd(10) - 5;
+    hsp.spawnEffect(ctx, 1, x + ex, y + ey, -j * 3);
+  }
+};
+
+;// 爆発エフェクト（複数）— 撃破時の爆発
+hsp.spawnExplosion = (ctx, x, y, sx, sy, count) => {
+  for (let j = 0; j < count; j++) {
+    const ex = hsp.rnd(sx) - Math.floor(sx / 2);
+    const ey = hsp.rnd(sy) - Math.floor(sy / 2);
+    hsp.spawnEffect(ctx, 0, x + ex, y + ey, -j * 3);
+  }
+};

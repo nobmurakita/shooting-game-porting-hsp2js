@@ -45,16 +45,10 @@ hsp.Enemy = class {
         hsp.ctx.score += 10;
         s.alive = false;
         this.shield--;
-        let x = hsp.rnd(10) - 5;
-        let y = hsp.rnd(10) - 5;
-        hsp.spawnEffect(ctx, 1, s.x + x, s.y + y, 0);
+        hsp.spawnHitSpark(ctx, s.x, s.y);
         if (this.shield === 0) {
           this.alive = false;
-          for (let k = 0; k < 5; k++) {
-            let x = hsp.rnd(d.sx) - Math.floor(d.sx / 2);
-            let y = hsp.rnd(d.sy) - Math.floor(d.sy / 2);
-            hsp.spawnEffect(ctx, 0, this.x + x, this.y + y, -k * 3);
-          }
+          hsp.spawnExplosion(ctx, this.x, this.y, d.sx, d.sy, 5);
           break;
         }
       }
@@ -70,28 +64,16 @@ hsp.Enemy = class {
     )) {
       this.alive = false;
       // 敵の爆発エフェクト（小）
-      for (let j = 0; j < 2; j++) {
-        let x = hsp.rnd(10) - 5;
-        let y = hsp.rnd(10) - 5;
-        hsp.spawnEffect(ctx, 1, this.x + x, this.y + y, -j * 3);
-      }
+      hsp.spawnHitSparks(ctx, this.x, this.y, 2);
       // 敵の爆発エフェクト（大）
-      for (let j = 0; j < 3; j++) {
-        let x = hsp.rnd(d.sx) - Math.floor(d.sx / 2);
-        let y = hsp.rnd(d.sy) - Math.floor(d.sy / 2);
-        hsp.spawnEffect(ctx, 0, this.x + x, this.y + y, -j * 3);
-      }
+      hsp.spawnExplosion(ctx, this.x, this.y, d.sx, d.sy, 3);
       // プレイヤーにダメージ
       ply.hitCnt = 50;
       ply.shield--;
       if (ply.shield === 0) {
         ply.alive = false;
         // プレイヤー爆発エフェクト
-        for (let j = 0; j < 5; j++) {
-          let x = hsp.rnd(40) - 20;
-          let y = hsp.rnd(40) - 20;
-          hsp.spawnEffect(ctx, 0, ply.x + x, ply.y + y, -j * 3);
-        }
+        hsp.spawnExplosion(ctx, ply.x, ply.y, 40, 40, 5);
       }
     }
   }

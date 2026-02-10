@@ -112,20 +112,12 @@ hsp.Laser = class {
           this.sta = 0;
 
           // ヒットエフェクト
-          for (let j = 0; j < 2; j++) {
-            const ex = hsp.rnd(10) - 5;
-            const ey = hsp.rnd(10) - 5;
-            hsp.spawnEffect(ctx, 1, this.x[0] + ex, this.y[0] + ey, -j * 3);
-          }
+          hsp.spawnHitSparks(ctx, this.x[0], this.y[0], 2);
 
           // 敵撃破
           if (e.shield <= 0) {
             e.alive = false;
-            for (let j = 0; j < 3; j++) {
-              const ex = hsp.rnd(d.sx) - d.sx / 2;
-              const ey = hsp.rnd(d.sy) - d.sy / 2;
-              hsp.spawnEffect(ctx, 0, e.x + ex, e.y + ey, -j * 3);
-            }
+            hsp.spawnExplosion(ctx, e.x, e.y, d.sx, d.sy, 3);
           }
         }
 
@@ -158,11 +150,7 @@ hsp.Laser = class {
           this.sta = 0;
 
           // ヒットエフェクト
-          for (let j = 0; j < 2; j++) {
-            const ex = hsp.rnd(10) - 5;
-            const ey = hsp.rnd(10) - 5;
-            hsp.spawnEffect(ctx, 1, this.x[0] + ex, this.y[0] + ey, -j * 3);
-          }
+          hsp.spawnHitSparks(ctx, this.x[0], this.y[0], 2);
 
           // ボス撃破判定
           if (boss.shield <= 0) {
@@ -175,15 +163,7 @@ hsp.Laser = class {
           if (p.shield <= 0) {
             p.alive = false;
             p.cx = pd.sx;
-            for (let j = 0; j < 3; j++) {
-              const ex = hsp.rnd(pd.sx) - pd.sx / 2;
-              const ey = hsp.rnd(pd.sy) - pd.sy / 2;
-              hsp.spawnEffect(ctx, 0,
-                pd.x + boss.x + ex,
-                pd.y + boss.y + ey,
-                -j * 3
-              );
-            }
+            hsp.spawnExplosion(ctx, pd.x + boss.x, pd.y + boss.y, pd.sx, pd.sy, 3);
           }
         }
 

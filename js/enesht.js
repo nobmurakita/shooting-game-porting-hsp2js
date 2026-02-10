@@ -39,18 +39,10 @@ hsp.EnemyShot = class {
       this.alive = false;
       ply.shield--;
       ply.hitCnt = 50;
-      for (let j = 0; j < 2; j++) {
-        let x = hsp.rnd(10) - 5;
-        let y = hsp.rnd(10) - 5;
-        hsp.spawnEffect(ctx, 1, this.x + x, this.y + y, -j * 3);
-      }
+      hsp.spawnHitSparks(ctx, this.x, this.y, 2);
       if (ply.shield === 0) {
         ply.alive = false;
-        for (let j = 0; j < 3; j++) {
-          let x = hsp.rnd(40) - 20;
-          let y = hsp.rnd(40) - 20;
-          hsp.spawnEffect(ctx, 0, ply.x + x, ply.y + y, -j * 3);
-        }
+        hsp.spawnExplosion(ctx, ply.x, ply.y, 40, 40, 3);
       }
     }
   }
@@ -131,14 +123,8 @@ hsp.EnemyShot2 = class extends hsp.EnemyShot {
         hsp.ctx.score += 10;
         ps.alive = false;
         this.alive = false;
-        let x = hsp.rnd(10) - 5;
-        let y = hsp.rnd(10) - 5;
-        hsp.spawnEffect(ctx, 1, ps.x + x, ps.y + y, 0);
-        for (let k = 0; k < 2; k++) {
-          let x = hsp.rnd(d.sx) - Math.floor(d.sx / 2);
-          let y = hsp.rnd(d.sy) - Math.floor(d.sy / 2);
-          hsp.spawnEffect(ctx, 0, this.x + x, this.y + y, -k * 3);
-        }
+        hsp.spawnHitSpark(ctx, ps.x, ps.y);
+        hsp.spawnExplosion(ctx, this.x, this.y, d.sx, d.sy, 2);
         break;
       }
     }
