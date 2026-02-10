@@ -94,6 +94,8 @@ const hsp = {};
     g.canvas = g.list[id];
     if (g.canvas) {
       g.ctx = g.canvas.getContext('2d');
+    } else {
+      g.ctx = null;
     }
   };
 
@@ -121,7 +123,8 @@ const hsp = {};
 
   // カレントポジション設定
   hsp.pos = (x, y) => {
-    g.pos = { x, y };
+    g.pos.x = x;
+    g.pos.y = y;
   };
 
   // 矩形を塗りつぶす
@@ -158,7 +161,7 @@ const hsp = {};
         resolve();
       };
       img.onerror = () => {
-        reject();
+        reject(new Error(`画像の読み込みに失敗: ${filename}`));
       };
       img.src = filename;
     });

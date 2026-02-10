@@ -56,16 +56,12 @@ hsp.MovEff = () => {
       if (hsp.EffFrm[i] == 17) {
         hsp.EffFlg[i] = 0;
       }
-    }
-
-    if (ki == 1) {
+    } else if (ki == 1) {
       hsp.EffCx[i] = Math.floor(hsp.EffFrm[i] / 3) % 6 * 10 + 60;
       if (hsp.EffFrm[i] == 17) {
         hsp.EffFlg[i] = 0;
       }
-    }
-
-    if (ki == 2) {
+    } else if (ki == 2) {
       hsp.EffCx[i] = Math.floor(hsp.EffFrm[i] / 3) % 6 * 10;
       if (hsp.EffFrm[i] == 17) {
         hsp.EffFlg[i] = 0;

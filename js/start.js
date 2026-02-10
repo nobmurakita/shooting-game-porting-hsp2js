@@ -1,22 +1,24 @@
 ;//////////プログラムスタート//////////
 hsp.ProgramStart = async () => {
-  await hsp.preload('img/title.png');
-  await hsp.preload('img/player.png');
-  await hsp.preload('img/effect.png');
-  await hsp.preload('img/enesht.png');
-  await hsp.preload('img/etc.png');
-  await hsp.preload('img/enemy00.png');
-  await hsp.preload('img/enemy01.png');
-  await hsp.preload('img/enemy02.png');
-  await hsp.preload('img/enemy03.png');
-  await hsp.preload('img/enemy04.png');
-  await hsp.preload('img/enemy05.png');
-  await hsp.preload('img/enemy06.png');
-  await hsp.preload('img/enemy07.png');
-  await hsp.preload('img/enemy08.png');
-  await hsp.preload('img/enemy09.png');
-  await hsp.preload('img/boss00.png');
-  await hsp.preload('img/boss01.png');
+  await Promise.all([
+    hsp.preload('img/title.png'),
+    hsp.preload('img/player.png'),
+    hsp.preload('img/effect.png'),
+    hsp.preload('img/enesht.png'),
+    hsp.preload('img/etc.png'),
+    hsp.preload('img/enemy00.png'),
+    hsp.preload('img/enemy01.png'),
+    hsp.preload('img/enemy02.png'),
+    hsp.preload('img/enemy03.png'),
+    hsp.preload('img/enemy04.png'),
+    hsp.preload('img/enemy05.png'),
+    hsp.preload('img/enemy06.png'),
+    hsp.preload('img/enemy07.png'),
+    hsp.preload('img/enemy08.png'),
+    hsp.preload('img/enemy09.png'),
+    hsp.preload('img/boss00.png'),
+    hsp.preload('img/boss01.png'),
+  ]);
 
   hsp.stg_set();
   hsp.IniCom();
