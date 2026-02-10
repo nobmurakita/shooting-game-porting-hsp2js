@@ -84,15 +84,15 @@ hsp.Enemy0 = class extends hsp.Enemy {
   static DATA = { shield: 2, sx: 20, sy: 40, hitX1: -5, hitY1: -15, hitX2: 5, hitY2: 15, cy: 0 };
 
   updateAI(ctx) {
-    let r = hsp.toRad(3 * this.frm);
+    let r = hsp.toRad(1.5 * this.frm);
     if (this.mv === 0) {
       this.x = 40 * Math.sin(r) + this.x0;
     }
     if (this.mv === 1) {
       this.x = -40 * Math.sin(r) + this.x0;
     }
-    this.y += 2;
-    this.cx = this.frm % 6 * 20;
+    this.y += 1;
+    this.cx = Math.floor(this.frm / 2) % 6 * 20;
     if (320 < this.y) {
       this.alive = false;
     }
@@ -105,8 +105,8 @@ hsp.Enemy1 = class extends hsp.Enemy {
 
   // tmp[0]: 螺旋移動の角度カウンタ
   updateAI(ctx) {
-    if (Math.floor(this.frm / 2) <= 64) {
-      this.tmp[0] = this.frm >> 1;
+    if (Math.floor(this.frm / 4) <= 64) {
+      this.tmp[0] = this.frm >> 2;
     }
     let r;
     if (this.mv === 0) {
@@ -115,10 +115,10 @@ hsp.Enemy1 = class extends hsp.Enemy {
     if (this.mv === 1) {
       r = hsp.toRad(64 - this.tmp[0]);
     }
-    this.x += Math.cos(r) * 4;
-    this.y += Math.sin(r) * 4;
+    this.x += Math.cos(r) * 2;
+    this.y += Math.sin(r) * 2;
     this.cx = Math.floor(Math.cos(r) * 3) + 120;
-    if (this.frm === 32) {
+    if (this.frm === 64) {
       hsp.spawnEnemyShot(ctx, 0, this.x, this.y + 20, hsp.toRad(64));
     }
     if ((this.x < -20) || (320 < this.x)) {
@@ -135,21 +135,25 @@ hsp.Enemy2 = class extends hsp.Enemy {
   updateAI(ctx) {
     const ply = ctx.player;
     let r = this.tmp[0];
-    if ((this.frm <= 80 && ply.alive) || this.frm === 0) {
-      r = hsp.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
-      this.tmp[0] = r;
+    if (this.frm % 2 === 0) {
+      if ((this.frm <= 160 && ply.alive) || this.frm === 0) {
+        r = hsp.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
+        this.tmp[0] = r;
+      }
+      this.tmp[1] += Math.cos(r) * 0.25;
+      this.tmp[2] += Math.sin(r) * 0.25;
     }
-    this.tmp[1] += Math.cos(r) * 0.5;
-    this.tmp[2] += Math.sin(r) * 0.5;
     this.x += this.tmp[1];
     this.y += this.tmp[2];
-    this.tmp[1] = this.tmp[1] * 19 / 20;
-    this.tmp[2] = this.tmp[2] * 19 / 20;
-    if (this.frm !== 0 && this.frm % 30 === 0) {
+    if (this.frm % 2 === 0) {
+      this.tmp[1] = this.tmp[1] * 19 / 20;
+      this.tmp[2] = this.tmp[2] * 19 / 20;
+    }
+    if (this.frm !== 0 && this.frm % 60 === 0) {
       hsp.spawnEnemyShot(ctx, 0, Math.cos(r) * 20 + this.x, Math.sin(r) * 20 + this.y, r);
     }
     this.cx = Math.floor(((hsp.toAngle256(r) + 4) & 255) * 31 / 255) * 40;
-    if (this.frm > 80) {
+    if (this.frm > 160) {
       if (this.x < -20 || this.x > 320 || this.y < -20 || this.y > 320) {
         this.alive = false;
       }
@@ -163,8 +167,8 @@ hsp.Enemy3 = class extends hsp.Enemy {
 
   updateAI(ctx) {
     const ply = ctx.player;
-    this.y += 4;
-    if (this.frm === 20 || this.frm === 40 || this.frm === 60 || this.frm === 80) {
+    this.y += 2;
+    if (this.frm === 40 || this.frm === 80 || this.frm === 120 || this.frm === 160) {
       const dir = hsp.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
       hsp.spawnEnemyShot(ctx, 1, this.x, 30 + this.y, dir);
     }
@@ -181,13 +185,13 @@ hsp.Enemy4 = class extends hsp.Enemy {
 
   // tmp[0]: 扇状弾の放射角度オフセット（8ずつ拡大）
   updateAI(ctx) {
-    let r = hsp.toRad(this.frm);
-    this.y -= 1;
+    let r = hsp.toRad(this.frm * 0.5);
+    this.y -= 0.5;
     this.x = Math.sin(r) * 8 + this.x0;
-    if (this.frm > 50 && this.frm % 8 === 0) {
+    if (this.frm > 100 && this.frm % 16 === 0) {
       hsp.spawnEnemyShot(ctx, 1, this.x + 10, this.y - 2, hsp.toRad((64 - this.tmp[0]) & 255));
       hsp.spawnEnemyShot(ctx, 1, this.x - 10, this.y - 2, hsp.toRad((64 + this.tmp[0]) & 255));
-      this.tmp[0] += 8;
+      this.tmp[0] += 4;
     }
     this.cx = 0;
     if (this.y < -30) {
@@ -204,19 +208,19 @@ hsp.Enemy5 = class extends hsp.Enemy {
     const ply = ctx.player;
     let r;
     if (this.mv === 0) {
-      r = hsp.toRad(this.frm * 2);
+      r = hsp.toRad(this.frm);
     } else {
-      r = hsp.toRad((-this.frm * 2 + 128) & 255);
+      r = hsp.toRad((-this.frm + 128) & 255);
     }
     this.x = Math.cos(r) * 150 + 150;
     this.y = Math.sin(r) * 150;
     // プレイヤー方向に上書き
     r = hsp.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
-    if (this.frm === 16 || this.frm === 48) {
+    if (this.frm === 32 || this.frm === 96) {
       hsp.spawnEnemyShot(ctx, 0, Math.cos(r) * 20 + this.x, Math.sin(r) * 20 + this.y, r);
     }
     this.cx = Math.floor(((hsp.toAngle256(r) + 4) & 255) * 31 / 255) * 40;
-    if (this.frm === 64) {
+    if (this.frm === 128) {
       this.alive = false;
     }
   }
@@ -228,15 +232,15 @@ hsp.Enemy6 = class extends hsp.Enemy {
 
   updateAI(ctx) {
     const ply = ctx.player;
-    let r = hsp.toRad(this.frm * 2);
-    this.y += Math.cos(r) * 6;
+    let r = hsp.toRad(this.frm);
+    this.y += Math.cos(r) * 3;
     this.cx = (Math.floor(-Math.cos(r) * 4) + 4) * 40;
-    if (this.frm === 25) {
+    if (this.frm === 50) {
       const dir = hsp.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
       hsp.spawnEnemyShot(ctx, 2, this.x + 10, this.y + 25, dir);
       hsp.spawnEnemyShot(ctx, 2, this.x - 10, this.y + 25, dir);
     }
-    if (this.frm >= 128) {
+    if (this.frm >= 256) {
       this.alive = false;
     }
   }
@@ -247,18 +251,18 @@ hsp.Enemy7 = class extends hsp.Enemy {
   static DATA = { shield: 2, sx: 40, sy: 60, hitX1: -15, hitY1: -25, hitX2: 15, hitY2: 25, cy: 330 };
 
   updateAI(ctx) {
-    let r = hsp.toRad((this.frm * 4) & 255);
+    let r = hsp.toRad((this.frm * 2) & 255);
     if (this.mv === 0) {
       this.x = 40 * Math.sin(r) + this.x0;
     }
     if (this.mv === 1) {
       this.x = -40 * Math.sin(r) + this.x0;
     }
-    this.y += 2;
-    if (this.frm % 16 === 0) {
+    this.y += 1;
+    if (this.frm % 32 === 0) {
       hsp.spawnEnemyShot(ctx, 0, this.x, this.y + 30, hsp.toRad(64));
     }
-    this.cx = (Math.floor(this.frm / 2) & 7) * 40;
+    this.cx = (Math.floor(this.frm / 4) & 7) * 40;
     if (this.y > 330) {
       this.alive = false;
     }
@@ -273,11 +277,11 @@ hsp.Enemy8 = class extends hsp.Enemy {
   updateAI(ctx) {
     const ply = ctx.player;
     let r;
-    if (this.frm < 30) {
+    if (this.frm < 60) {
       r = hsp.toRad(192);
     } else {
-      if (this.frm < 46) {
-        this.tmp[0] = (this.frm - 30) * 2;
+      if (this.frm < 92) {
+        this.tmp[0] = (this.frm - 60);
       }
       if (this.mv === 0) {
         r = hsp.toRad(192 + this.tmp[0]);
@@ -286,10 +290,10 @@ hsp.Enemy8 = class extends hsp.Enemy {
         r = hsp.toRad(192 - this.tmp[0]);
       }
     }
-    this.x += Math.cos(r) * 5;
-    this.y += Math.sin(r) * 5;
+    this.x += Math.cos(r) * 2.5;
+    this.y += Math.sin(r) * 2.5;
     this.cx = (Math.floor(Math.cos(r) * 3) + 3) * 40;
-    if (this.frm === 30) {
+    if (this.frm === 60) {
       const dir = hsp.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
       hsp.spawnEnemyShot(ctx, 0, this.x, this.y, dir);
       hsp.spawnEnemyShot(ctx, 0, this.x, this.y, dir + Math.PI / 8);
@@ -311,17 +315,17 @@ hsp.Enemy9 = class extends hsp.Enemy {
   }
 
   updateAI(ctx) {
-    if (this.frm % 50 === 0) {
+    if (this.frm % 100 === 0) {
       this.tmp[0] = -this.tmp[0];
     }
-    this.x += this.tmp[0];
-    this.y += 1;
-    if (this.frm > 50 && this.frm < 296 && this.frm % 4 === 0) {
+    this.x += this.tmp[0] * 0.5;
+    this.y += 0.5;
+    if (this.frm > 100 && this.frm < 592 && this.frm % 8 === 0) {
       hsp.spawnEnemyShot(ctx, 1, this.x, this.y - 10, hsp.toRad(this.tmp[1] & 255));
       hsp.spawnEnemyShot(ctx, 1, this.x, this.y - 10, hsp.toRad((this.tmp[1] + 64) & 255));
       hsp.spawnEnemyShot(ctx, 1, this.x, this.y - 10, hsp.toRad((this.tmp[1] + 128) & 255));
       hsp.spawnEnemyShot(ctx, 1, this.x, this.y - 10, hsp.toRad((this.tmp[1] + 192) & 255));
-      this.tmp[1] += 4;
+      this.tmp[1] += 2;
     }
     this.cx = (Math.floor(this.frm / 2) & 7) * 60;
     if (this.y > 330) {

@@ -91,11 +91,11 @@ hsp.IniCom = () => {
 hsp.BackGround = () => {
   hsp.ctx.bg2 = 300 - hsp.ctx.bg1;
   hsp.pos(0, 0);
-  hsp.gcopy(2, 0, hsp.ctx.bg2, 300, hsp.ctx.bg1);
-  hsp.pos(0, hsp.ctx.bg1);
-  hsp.gcopy(2, 0, 0, 300, hsp.ctx.bg2);
-  hsp.ctx.bg1++;
-  if (hsp.ctx.bg1 === 300) {
+  hsp.gcopy(2, 0, Math.floor(hsp.ctx.bg2), 300, Math.floor(hsp.ctx.bg1));
+  hsp.pos(0, Math.floor(hsp.ctx.bg1));
+  hsp.gcopy(2, 0, 0, 300, Math.floor(hsp.ctx.bg2));
+  hsp.ctx.bg1 += 0.5;
+  if (hsp.ctx.bg1 >= 300) {
     hsp.ctx.bg1 -= 300;
   }
 };

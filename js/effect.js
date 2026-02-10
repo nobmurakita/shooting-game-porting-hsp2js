@@ -37,11 +37,11 @@ hsp.Effect0 = class extends hsp.Effect {
   static DATA = { sx: 40, sy: 40, cy: 80 };
 
   updateAI() {
-    if (this.frm >= 8) {
-      this.y += 7;
+    if (this.frm >= 16) {
+      this.y += 3.5;
     }
-    this.cx = Math.floor(this.frm / 3) % 6 * 40;
-    if (this.frm === 17) {
+    this.cx = Math.floor(this.frm / 6) % 6 * 40;
+    if (this.frm === 34) {
       this.alive = false;
     }
   }
@@ -52,8 +52,8 @@ hsp.Effect1 = class extends hsp.Effect {
   static DATA = { sx: 10, sy: 10, cy: 120 };
 
   updateAI() {
-    this.cx = Math.floor(this.frm / 3) % 6 * 10 + 60;
-    if (this.frm === 17) {
+    this.cx = Math.floor(this.frm / 6) % 6 * 10 + 60;
+    if (this.frm === 34) {
       this.alive = false;
     }
   }
@@ -64,8 +64,8 @@ hsp.Effect2 = class extends hsp.Effect {
   static DATA = { sx: 10, sy: 10, cy: 120 };
 
   updateAI() {
-    this.cx = Math.floor(this.frm / 3) % 6 * 10;
-    if (this.frm === 17) {
+    this.cx = Math.floor(this.frm / 6) % 6 * 10;
+    if (this.frm === 34) {
       this.alive = false;
     }
   }
@@ -94,7 +94,7 @@ hsp.spawnHitSparks = (ctx, x, y, count) => {
   for (let j = 0; j < count; j++) {
     const ex = hsp.rnd(10) - 5;
     const ey = hsp.rnd(10) - 5;
-    hsp.spawnEffect(ctx, 1, x + ex, y + ey, -j * 3);
+    hsp.spawnEffect(ctx, 1, x + ex, y + ey, -j * 6);
   }
 };
 
@@ -103,6 +103,6 @@ hsp.spawnExplosion = (ctx, x, y, sx, sy, count) => {
   for (let j = 0; j < count; j++) {
     const ex = hsp.rnd(sx) - Math.floor(sx / 2);
     const ey = hsp.rnd(sy) - Math.floor(sy / 2);
-    hsp.spawnEffect(ctx, 0, x + ex, y + ey, -j * 3);
+    hsp.spawnEffect(ctx, 0, x + ex, y + ey, -j * 6);
   }
 };

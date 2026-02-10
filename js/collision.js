@@ -68,7 +68,7 @@ hsp.CollisionSystem = class {
         // 敵の爆発エフェクト（大）
         hsp.spawnExplosion(ctx, e.x, e.y, d.sx, d.sy, 3);
         // プレイヤーにダメージ
-        ply.hitCnt = 50;
+        ply.hitCnt = 100;
         ply.shield--;
         if (ply.shield === 0) {
           ply.alive = false;
@@ -136,7 +136,7 @@ hsp.CollisionSystem = class {
       )) {
         es.alive = false;
         ply.shield--;
-        ply.hitCnt = 50;
+        ply.hitCnt = 100;
         hsp.spawnHitSparks(ctx, es.x, es.y, 2);
         if (ply.shield === 0) {
           ply.alive = false;

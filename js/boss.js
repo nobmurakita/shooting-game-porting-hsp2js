@@ -62,7 +62,7 @@ hsp.Boss = class {
       this.x = 150;
       this.y = -100;
       this.frm = 0;
-      this.aprFrm = 2450;
+      this.aprFrm = 4900;
 
       for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
         this.parts[i].init();
@@ -78,16 +78,16 @@ hsp.Boss = class {
         this.parts[i].cx = this.parts[i].constructor.DATA.sx;
       }
       this.frm++;
-      if (this.frm % 3 === 0) {
+      if (this.frm % 6 === 0) {
         let x = hsp.rnd(50) - 25;
         let y = hsp.rnd(50) - 25;
         hsp.spawnEffect(ctx, 0, this.x + x, this.y + y, 0);
       }
       let x = hsp.rnd(4) - 2;
-      let y = hsp.rnd(3) - 1;  // 原作はrnd(1)-0.5で常に-0.5だったバグを修正
-      this.x += x;
-      this.y += y + 1;
-      if (this.frm === 50) {
+      let y = (hsp.rnd(3) - 1) * 0.5;
+      this.x += x * 0.5;
+      this.y += y + 0.5;
+      if (this.frm === 100) {
         for (let i = 0; i < 3; i++) {
           let a = (i + 1) * 25;
           let t = -i * 2;
@@ -97,7 +97,7 @@ hsp.Boss = class {
           }
         }
       }
-      if (this.frm === 60) {
+      if (this.frm === 120) {
         this.flg = 0;
         hsp.ctx.gameSta = hsp.STA_CLEAR;
       }
@@ -109,22 +109,22 @@ hsp.Boss = class {
 
     // ステージ1のボスAI
     if (hsp.ctx.stage === 1) {
-      if (this.frm < 200) {
-        this.y += 1;
+      if (this.frm < 400) {
+        this.y += 0.5;
       } else {
-        let a = Math.floor((this.frm - 200) / 128) % 4;
+        let a = Math.floor((this.frm - 400) / 256) % 4;
 
         if (a === 0 || a === 3) {
-          this.x -= 1;
+          this.x -= 0.5;
         } else {
-          this.x += 1;
+          this.x += 0.5;
         }
 
-        let r = hsp.toRad(this.frm);
-        this.y += Math.sin(r);
+        let r = hsp.toRad(this.frm * 0.5);
+        this.y += Math.sin(r) * 0.5;
 
         // 誘導弾発射（パーツ1,2）
-        if ((this.frm - 200) % 128 < 32 && (this.frm - 200) % 8 === 0) {
+        if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 16 === 0) {
           if (this.parts[1].alive) {
             hsp.spawnEnemyShot(ctx, 2, -40 + this.x, this.y, r);
           }
@@ -133,14 +133,14 @@ hsp.Boss = class {
           }
         }
         // 照準弾発射
-        if ((this.frm - 200) % 128 < 32 && (this.frm - 200) % 4 === 0) {
+        if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 8 === 0) {
           if (this.flg === 1) {
             let dir = hsp.CollisionSystem.calcDir(this.x, this.y, ctx.player.x, ctx.player.y);
             hsp.spawnEnemyShot(ctx, 1, this.x, this.y - 20, dir);
           }
         }
         // 通常弾発射
-        if ((this.frm - 200) % 32 === 31) {
+        if ((this.frm - 400) % 64 === 63) {
           if (this.flg === 1) {
             hsp.spawnEnemyShot(ctx, 0, -5 + this.x, 25 + this.y, hsp.toRad(64));
             hsp.spawnEnemyShot(ctx, 0, 5 + this.x, 25 + this.y, hsp.toRad(64));

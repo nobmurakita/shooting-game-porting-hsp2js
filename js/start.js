@@ -85,7 +85,7 @@ hsp.flipBuffer = () => {
 
 //////////メインループ//////////
 hsp.MainLoop = () => {
-  hsp.ctx.nextLoopTime += 1000 / 30;
+  hsp.ctx.nextLoopTime += 1000 / 60;
   hsp.ctx.key = hsp.stick();
 
   if (hsp.ctx.gameSta === hsp.STA_OPENING) {
@@ -147,7 +147,7 @@ hsp.MainLoop = () => {
       hsp.ctx.gameSta = hsp.STA_OPENING;
     }
     if (hsp.ctx.player.y > -20) {
-      hsp.ctx.player.y -= 7;
+      hsp.ctx.player.y -= 3.5;
     } else {
       hsp.ctx.gameSta = hsp.STA_INIT;
     }

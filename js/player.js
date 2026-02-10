@@ -15,8 +15,8 @@ hsp.PlayerShot = class {
   update() {
     if (!this.alive) return;
 
-    this.x += 16 * Math.cos(this.dir);
-    this.y += 16 * Math.sin(this.dir);
+    this.x += 8 * Math.cos(this.dir);
+    this.y += 8 * Math.sin(this.dir);
 
     // 画面外で消滅
     if (this.y < -20) {
@@ -44,6 +44,7 @@ hsp.Laser = class {
     this.vx = vx;
     this.vy = vy;
     this.dir = hsp.toRad(192);
+    this.frm = 0;
   }
 
   // レーザー移動・追跡・衝突判定（旧MovLsr内ループ1回分 + LsrHit）
@@ -61,13 +62,15 @@ hsp.Laser = class {
     const dir = this.dir;
 
     if (this.sta !== 0) {
-      // 追跡中 or ターゲットなし: 加速・減衰
-      this.vx += Math.cos(dir) * 5;
-      this.vy += Math.sin(dir) * 5;
+      // 追跡中 or ターゲットなし: 加速・減衰は偶数フレームのみ、移動は毎フレーム
+      if (this.frm % 2 === 0) {
+        this.vx += Math.cos(dir) * 2.5;
+        this.vy += Math.sin(dir) * 2.5;
+        this.vx = this.vx * 0.8;
+        this.vy = this.vy * 0.8;
+      }
       this.x[0] += this.vx;
       this.y[0] += this.vy;
-      this.vx = this.vx * 0.8;
-      this.vy = this.vy * 0.8;
     } else {
       // 消滅途中: 全節が同一座標に収束したら消滅
       let moving = false;
@@ -83,8 +86,8 @@ hsp.Laser = class {
     }
 
     // --- ターゲットが消滅、またはターゲットなし状態なら再検索 ---
-    if (this.sta === 1 && !this.trg.alive) {
-      this.trg.lckOn--;
+    if (this.sta === 1 && (this.trg === null || !this.trg.alive)) {
+      if (this.trg !== null) { this.trg.lckOn--; }
       this.sta = 2;
     }
     if (this.sta === 2) {
@@ -126,10 +129,12 @@ hsp.Laser = class {
           }
         }
 
-        // ターゲットへの方向を更新
-        this.dir = hsp.CollisionSystem.calcDir(
-          this.x[0], this.y[0], e.x, e.y
-        );
+        // ターゲットへの方向を更新（2フレームに1回）
+        if (this.frm % 2 === 0) {
+          this.dir = hsp.CollisionSystem.calcDir(
+            this.x[0], this.y[0], e.x, e.y
+          );
+        }
       }
     } else {
       // --- ボスモード ---
@@ -172,12 +177,14 @@ hsp.Laser = class {
           }
         }
 
-        // ターゲットパーツへの方向を更新
-        this.dir = hsp.CollisionSystem.calcDir(
-          this.x[0], this.y[0],
-          pd.x + boss.x,
-          pd.y + boss.y
-        );
+        // ターゲットパーツへの方向を更新（2フレームに1回）
+        if (this.frm % 2 === 0) {
+          this.dir = hsp.CollisionSystem.calcDir(
+            this.x[0], this.y[0],
+            pd.x + boss.x,
+            pd.y + boss.y
+          );
+        }
       }
     }
 
@@ -187,6 +194,8 @@ hsp.Laser = class {
         this.sta = 0;
       }
     }
+
+    this.frm++;
 
     // レーザーが1本でも生存していればlsrFをオフに（充填不可）
     if (this.alive) {
@@ -257,8 +266,8 @@ hsp.Player = class {
 
     if (dx || dy) {
       const r = hsp.CollisionSystem.calcDir(0, 0, dx, dy);
-      this.x += Math.cos(r) * 5.5;
-      this.y += Math.sin(r) * 5.5;
+      this.x += Math.cos(r) * 2.75;
+      this.y += Math.sin(r) * 2.75;
     }
 
     // 傾きアニメーション
@@ -282,7 +291,7 @@ hsp.Player = class {
       this.shtCnt--;
     } else {
       if (hsp.ctx.key & hsp.KEY_SHOT) {
-        this.shtCnt = 3;
+        this.shtCnt = 6;
         for (let i = 0; i < this.shtLV * 2; i++) {
           const posRad = hsp.toRad(hsp.Player.SHT_DIR[i + 6]);
           const x = Math.cos(posRad) * 20 + this.x;
@@ -302,8 +311,8 @@ hsp.Player = class {
             const trg = this.searchTarget(ctx);
             if (trg !== null) { trg.lckOn++; }
             const rad = hsp.toRad(hsp.Player.LSR_DIR[i]);
-            const vx = Math.cos(rad) * 16;
-            const vy = Math.sin(rad) * 16;
+            const vx = Math.cos(rad) * 8;
+            const vy = Math.sin(rad) * 8;
             ctx.lasers.push(new hsp.Laser(this.x, this.y - 20, vx, vy, trg));
           }
         }
@@ -314,7 +323,7 @@ hsp.Player = class {
         }
       }
     } else {
-      this.lsrPow -= 25;
+      this.lsrPow -= 13;
       if (this.lsrPow < 0) {
         this.lsrPow = 0;
       }
@@ -403,7 +412,7 @@ hsp.Player = class {
     if (!this.alive) return;
 
     hsp.pos(Math.floor(this.x) - 20, Math.floor(this.y) - 20);
-    if (Math.floor(this.hitCnt / 3) % 2 === 0) {
+    if (Math.floor(this.hitCnt / 6) % 2 === 0) {
       hsp.gcopy(3, (this.gra >> 1) * 40 + 120, 0, 40, 40);
     } else {
       hsp.gcopy(3, (this.gra >> 1) * 40 + 120, 40, 40, 40);

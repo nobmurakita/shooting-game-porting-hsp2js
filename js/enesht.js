@@ -46,8 +46,8 @@ hsp.EnemyShot0 = class extends hsp.EnemyShot {
   }
 
   updateAI(ctx) {
-    this.x += Math.cos(this.dir) * 7;
-    this.y += Math.sin(this.dir) * 7;
+    this.x += Math.cos(this.dir) * 3.5;
+    this.y += Math.sin(this.dir) * 3.5;
     if (this.x < -10 || this.x > 310 || this.y < -10 || this.y > 310) {
       this.alive = false;
     }
@@ -59,9 +59,9 @@ hsp.EnemyShot1 = class extends hsp.EnemyShot {
   static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 130 };
 
   updateAI(ctx) {
-    this.x += Math.cos(this.dir) * 5;
-    this.y += Math.sin(this.dir) * 5;
-    this.cx = (this.frm % 16) * 20 + 320;
+    this.x += Math.cos(this.dir) * 2.5;
+    this.y += Math.sin(this.dir) * 2.5;
+    this.cx = (Math.floor(this.frm / 2) % 16) * 20 + 320;
     if (this.x < -10 || this.x > 310 || this.y < -10 || this.y > 310) {
       this.alive = false;
     }
@@ -75,23 +75,27 @@ hsp.EnemyShot2 = class extends hsp.EnemyShot {
   updateAI(ctx) {
     const ply = ctx.player;
 
-    if ((this.frm < 80 && ply.alive) || this.frm === 0) {
-      this.dir = hsp.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
+    if (this.frm % 2 === 0) {
+      if ((this.frm < 160 && ply.alive) || this.frm === 0) {
+        this.dir = hsp.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
+      }
+      this.tmp[0] += Math.cos(this.dir) * 1 / 3;
+      this.tmp[1] += Math.sin(this.dir) * 1 / 3;
     }
-    this.tmp[0] += Math.cos(this.dir) * 2 / 3;
-    this.tmp[1] += Math.sin(this.dir) * 2 / 3;
     this.x += this.tmp[0];
     this.y += this.tmp[1];
-    this.tmp[0] = this.tmp[0] * 14 / 15;
-    this.tmp[1] = this.tmp[1] * 14 / 15;
+    if (this.frm % 2 === 0) {
+      this.tmp[0] = this.tmp[0] * 14 / 15;
+      this.tmp[1] = this.tmp[1] * 14 / 15;
+    }
     let a = hsp.toAngle256(this.dir);
     this.cx = Math.floor(((a + 4) & 255) * 31 / 255) * 20;
-    if (this.frm % 3 === 0) {
+    if (this.frm % 6 === 0) {
       let x = hsp.rnd(10) - 5;
       let y = hsp.rnd(10) - 5;
       hsp.spawnEffect(ctx, 2, -Math.cos(this.dir) * 10 + this.x + x, -Math.sin(this.dir) * 10 + this.y + y, 0);
     }
-    if (this.frm > 80) {
+    if (this.frm > 160) {
       if (this.x < -10 || this.x > 310 || this.y < -10 || this.y > 310) {
         this.alive = false;
       }
