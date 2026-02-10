@@ -285,8 +285,8 @@ game.Player = class {
     }
 
     // 移動量＆傾き決定
-    const dx = ((game.ctx.key & game.KEY_RIGHT) >> 2) - (game.ctx.key & game.KEY_LEFT);
-    const dy = ((game.ctx.key & game.KEY_UP) >> 1) - ((game.ctx.key & game.KEY_DOWN) >> 3);
+    const dx = game.keyIsDown(game.KEY_RIGHT) - game.keyIsDown(game.KEY_LEFT);
+    const dy = game.keyIsDown(game.KEY_UP) - game.keyIsDown(game.KEY_DOWN);
 
     if (dx || dy) {
       const r = game.CollisionSystem.calcDir(0, 0, dx, dy);
@@ -314,7 +314,7 @@ game.Player = class {
     if (this.shtCnt !== 0) {
       this.shtCnt--;
     } else {
-      if (game.ctx.key & game.KEY_SHOT) {
+      if (game.keyIsDown(game.KEY_SHOT)) {
         this.shtCnt = game.Player.CONFIG.shotInterval;
         for (let i = 0; i < this.shtLV * 2; i++) {
           const posRad = game.Player.SHT_DIR[i + 6];
@@ -328,7 +328,7 @@ game.Player = class {
 
     // レーザー発射
     if (this.lsrF === game.LSR_CHARGE_ON) {
-      if (game.ctx.key & game.KEY_LASER) {
+      if (game.keyIsDown(game.KEY_LASER)) {
         if (this.lsrPow >= game.Player.CONFIG.laserThreshold) {
           const count = Math.floor(this.lsrPow / game.Player.CONFIG.laserThreshold);
           for (let i = 0; i < count; i++) {
@@ -341,7 +341,7 @@ game.Player = class {
           }
         }
       } else {
-        this.lsrPow += (game.ctx.key & game.KEY_SHOT ? game.Player.CONFIG.laserChargeShot : game.Player.CONFIG.laserChargeIdle);
+        this.lsrPow += (game.keyIsDown(game.KEY_SHOT) ? game.Player.CONFIG.laserChargeShot : game.Player.CONFIG.laserChargeIdle);
         if (this.lsrPow > game.Player.CONFIG.laserMax) {
           this.lsrPow = game.Player.CONFIG.laserMax;
         }

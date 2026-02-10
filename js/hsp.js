@@ -19,51 +19,6 @@ const hsp = {};
     return Math.floor(Math.random() * max);
   };
 
-  // キー入力情報
-  // 1 : カーソルキー左(←)
-  // 2 : カーソルキー上(↑)
-  // 4 : カーソルキー右(→)
-  // 8 : カーソルキー下(↓)
-  // 16 : Xキー
-  // 32 : Zキー
-  // 64 : Shiftキー
-  // 128 : ESCキー
-  let key = 0;
-  window.addEventListener('keydown', event => {
-    switch (event.code) {
-      case 'ArrowLeft': key |= 1; break;
-      case 'ArrowUp': key |= 2; break;
-      case 'ArrowRight': key |= 4; break;
-      case 'ArrowDown': key |= 8; break;
-      case 'KeyX': key |= 16; break;
-      case 'KeyZ': key |= 32; break;
-      case 'ShiftLeft': if (!event.repeat) { key |= 64; } break;
-      case 'ShiftRight': if (!event.repeat) { key |= 64; } break;
-      case 'Escape': if (!event.repeat) { key |= 128; } break;
-    }
-  });
-  window.addEventListener('keyup', event => {
-    switch (event.code) {
-      case 'ArrowLeft': key &= ~1; break;
-      case 'ArrowUp': key &= ~2; break;
-      case 'ArrowRight': key &= ~4; break;
-      case 'ArrowDown': key &= ~8; break;
-      case 'KeyX': key &= ~16; break;
-      case 'KeyZ': key &= ~32; break;
-      case 'ShiftLeft': key &= ~64; break;
-      case 'ShiftRight': key &= ~64; break;
-      case 'Escape': key &= ~128; break;
-    }
-  });
-
-  // キー入力情報取得
-  hsp.stick = () => {
-    const ret = key;
-    key &= ~64;
-    key &= ~128;
-    return ret;
-  };
-
   // 描画情報
   const g = {
     // ウィンドウリスト (Canvas)

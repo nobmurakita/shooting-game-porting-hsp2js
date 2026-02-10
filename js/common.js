@@ -8,15 +8,36 @@ game.STA_PAUSE =   6;  // ポーズ
 
 game.MaxStage = 1;
 
-//////////キー入力ビットフラグ//////////
-game.KEY_LEFT  = 1;    // bit 0: ←
-game.KEY_UP    = 2;    // bit 1: ↑（hsp.stickのbit1=ArrowUp）
-game.KEY_RIGHT = 4;    // bit 2: →
-game.KEY_DOWN  = 8;    // bit 3: ↓（hsp.stickのbit3=ArrowDown）
-game.KEY_LASER = 16;   // bit 4: Ctrl（レーザー）
-game.KEY_SHOT  = 32;   // bit 5: Space（ショット）
-game.KEY_SHIFT = 64;   // bit 6: Shift（ポーズ）
-game.KEY_ESC   = 128;  // bit 7: Escape
+//////////キーコード定数（LittleJS互換）//////////
+game.KEY_LEFT  = 37;   // ArrowLeft
+game.KEY_UP    = 38;   // ArrowUp
+game.KEY_RIGHT = 39;   // ArrowRight
+game.KEY_DOWN  = 40;   // ArrowDown
+game.KEY_LASER = 88;   // Xキー
+game.KEY_SHOT  = 90;   // Zキー
+game.KEY_SHIFT = 16;   // Shift（ポーズ）
+game.KEY_ESC   = 27;   // Escape
+
+//////////入力システム//////////
+// LittleJS移行時にgame.keyIsDown→keyIsDown等に差し替え予定
+(() => {
+  const held = {};
+  const pressed = {};
+
+  window.addEventListener('keydown', (e) => {
+    held[e.keyCode] = true;
+    if (!e.repeat) pressed[e.keyCode] = true;
+  });
+  window.addEventListener('keyup', (e) => {
+    held[e.keyCode] = false;
+  });
+
+  game.keyIsDown = (keyCode) => !!held[keyCode];
+  game.keyWasPressed = (keyCode) => !!pressed[keyCode];
+  game.inputPostUpdate = () => {
+    for (const k in pressed) delete pressed[k];
+  };
+})();
 
 //////////ゲーム共有状態//////////
 game.GameContext = class {
@@ -26,7 +47,6 @@ game.GameContext = class {
     this.score = 0;
     this.hiScore = 0;
     this.frame = 0;
-    this.key = 0;
     this.nextLoopTime = 0;
     this.bg1 = 0;
     this.bg2 = 0;
@@ -53,7 +73,6 @@ game.GameContext = class {
     this.boss.initData();
     this.boss.init();
     this.frame = 0;
-    this.key = 0;
   }
 };
 

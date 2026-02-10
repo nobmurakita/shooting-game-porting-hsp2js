@@ -93,14 +93,12 @@ game.flipBuffer = () => {
 
 //////////ゲーム更新//////////
 game.gameUpdate = () => {
-  game.ctx.key = hsp.stick();
-
   if (game.ctx.gameSta === game.STA_OPENING) {
     game.ctx.stage = 0;
     game.ctx.score = 0;
     game.ctx.gameSta = game.STA_TITLE;
   } else if (game.ctx.gameSta === game.STA_TITLE) {
-    if (game.ctx.key & game.KEY_LASER || game.ctx.key & game.KEY_SHOT || game.ctx.key & game.KEY_SHIFT) {
+    if (game.keyIsDown(game.KEY_LASER) || game.keyIsDown(game.KEY_SHOT) || game.keyWasPressed(game.KEY_SHIFT)) {
       game.ctx.gameSta = game.STA_INIT;
     }
   } else if (game.ctx.gameSta === game.STA_INIT) {
@@ -112,7 +110,7 @@ game.gameUpdate = () => {
       game.ctx.gameSta = game.STA_ENDING;
     }
   } else if (game.ctx.gameSta === game.STA_PLAY) {
-    if (game.ctx.key & game.KEY_ESC) {
+    if (game.keyWasPressed(game.KEY_ESC)) {
       game.ctx.gameSta = game.STA_OPENING;
     } else {
       // プレーヤー更新
@@ -133,13 +131,12 @@ game.gameUpdate = () => {
       for (const l of game.ctx.lasers) { l.update(game.ctx); }
       for (const e of game.ctx.effects) { e.update(); }
       game.ctx.frame++;
-      if (game.ctx.key & game.KEY_SHIFT) {
-        game.ctx.key = 0;
+      if (game.keyWasPressed(game.KEY_SHIFT)) {
         game.ctx.gameSta = game.STA_PAUSE;
       }
     }
   } else if (game.ctx.gameSta === game.STA_CLEAR) {
-    if (game.ctx.key & game.KEY_ESC) {
+    if (game.keyWasPressed(game.KEY_ESC)) {
       game.ctx.gameSta = game.STA_OPENING;
     }
     if (game.ctx.player.y < 170) {
@@ -151,9 +148,9 @@ game.gameUpdate = () => {
   } else if (game.ctx.gameSta === game.STA_ENDING) {
     game.ctx.gameSta = game.STA_OPENING;
   } else if (game.ctx.gameSta === game.STA_PAUSE) {
-    if (game.ctx.key & game.KEY_ESC) {
+    if (game.keyWasPressed(game.KEY_ESC)) {
       game.ctx.gameSta = game.STA_OPENING;
-    } else if (game.ctx.key & game.KEY_SHIFT) {
+    } else if (game.keyWasPressed(game.KEY_SHIFT)) {
       game.ctx.gameSta = game.STA_PLAY;
     }
   }
@@ -190,6 +187,7 @@ game.MainLoop = () => {
   game.gameUpdate();
   game.gameUpdatePost();
   game.gameRender();
+  game.inputPostUpdate();
   let delay = game.ctx.nextLoopTime - performance.now();
   setTimeout(game.MainLoop, delay);
 };
