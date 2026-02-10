@@ -317,13 +317,13 @@ game.Player = class {
           }
         }
       } else {
-        this.lsrPow += (game.ctx.key & game.KEY_SHOT ? 1 : 3);
+        this.lsrPow += (game.ctx.key & game.KEY_SHOT ? 0.5 : 1.5);
         if (this.lsrPow > 320) {
           this.lsrPow = 320;
         }
       }
     } else {
-      this.lsrPow -= 13;
+      this.lsrPow -= 6.5;
       if (this.lsrPow < 0) {
         this.lsrPow = 0;
       }
