@@ -335,7 +335,7 @@ hsp.MovLsr = () => {
         if (hsp.trg != -1) {
           hsp.LsrSta[lsr] = 1;
           hsp.LsrTrg[lsr] = hsp.trg;
-          hsp.EneLckOn[hsp.trg]++;
+          hsp.BossLckOn[hsp.trg]++;
           prt = hsp.trg;
         } else {
           hsp.LsrSta[lsr] = 2;

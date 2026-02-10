@@ -22,7 +22,7 @@ hsp.stg_set = () => {
 
   hsp.cos = [];
   for (let i = 0; i < 256; i++) {
-    let r = i + 64 & 255;
+    let r = (i + 64) & 255;
     hsp.cos[i] = hsp.sin[r];
   }
 
@@ -57,8 +57,8 @@ hsp.stg_dir = () => {
     dx = Math.floor(dx * 20 / du);
     dy = Math.floor(dy * 20 / du);
     hsp.r = hsp.atan[dx][dy];
-    if (mx) { hsp.r = 128 - hsp.r & 255; }
-    if (my) { hsp.r = 256 - hsp.r & 255; }
+    if (mx) { hsp.r = (128 - hsp.r) & 255; }
+    if (my) { hsp.r = (256 - hsp.r) & 255; }
   }
 };
 
