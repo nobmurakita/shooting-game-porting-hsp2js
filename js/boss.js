@@ -1,18 +1,26 @@
 ;//////////ボスパーツクラス//////////
 hsp.BossPart = class {
-  static DATA = [
-    { shield: 500, x: 0, y: -7, sx: 70, sy: 75, hitX1: -25, hitY1: -30, hitX2: 25, hitY2: 6, cy: 0 },
-    { shield: 200, x: -40, y: 0, sx: 20, sy: 112, hitX1: -10, hitY1: -56, hitX2: 10, hitY2: 56, cy: 75 },
-    { shield: 200, x: 40, y: 0, sx: 20, sy: 112, hitX1: -10, hitY1: -56, hitX2: 10, hitY2: 56, cy: 75 },
-  ];
-
-  constructor(data) {
+  constructor() {
     this.alive = false;
     this.shield = 0;
     this.cx = 0;
     this.lckOn = 0;
-    this.data = data;
   }
+};
+
+;// パーツ0: 本体
+hsp.BossPart0 = class extends hsp.BossPart {
+  static DATA = { shield: 500, x: 0, y: -7, sx: 70, sy: 75, hitX1: -25, hitY1: -30, hitX2: 25, hitY2: 6, cy: 0 };
+};
+
+;// パーツ1: 左翼
+hsp.BossPart1 = class extends hsp.BossPart {
+  static DATA = { shield: 200, x: -40, y: 0, sx: 20, sy: 112, hitX1: -10, hitY1: -56, hitX2: 10, hitY2: 56, cy: 75 };
+};
+
+;// パーツ2: 右翼
+hsp.BossPart2 = class extends hsp.BossPart {
+  static DATA = { shield: 200, x: 40, y: 0, sx: 20, sy: 112, hitX1: -10, hitY1: -56, hitX2: 10, hitY2: 56, cy: 75 };
 };
 
 ;//////////ボスクラス//////////
@@ -26,7 +34,7 @@ hsp.Boss = class {
     this.y = 0;
     this.frm = 0;
     this.aprFrm = 0;
-    this.parts = hsp.BossPart.DATA.map(d => new hsp.BossPart(d));
+    this.parts = [new hsp.BossPart0(), new hsp.BossPart1(), new hsp.BossPart2()];
   }
 
   // ボスパーツ画像初期化（旧IniDatBossPrt）
@@ -50,7 +58,7 @@ hsp.Boss = class {
 
       for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
         this.parts[i].alive = true;
-        this.parts[i].shield = hsp.BossPart.DATA[i].shield;
+        this.parts[i].shield = this.parts[i].constructor.DATA.shield;
         this.parts[i].cx = 0;
         this.parts[i].lckOn = 0;
       }
@@ -62,7 +70,7 @@ hsp.Boss = class {
     // 破壊演出（flg==2）
     if (this.flg === 2) {
       for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
-        this.parts[i].cx = this.parts[i].data.sx;
+        this.parts[i].cx = this.parts[i].constructor.DATA.sx;
       }
       this.frm++;
       if (this.frm % 3 === 0) {
@@ -141,7 +149,7 @@ hsp.Boss = class {
     for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
       const prt = this.parts[i];
       if (!prt.alive) continue;
-      const d = prt.data;
+      const d = prt.constructor.DATA;
 
       for (let j = 0; j < hsp.PlayerShot.MAX; j++) {
         const s = ctx.playerShots[j];
@@ -187,7 +195,7 @@ hsp.Boss = class {
     if (hsp.Stage === 1) {
       for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
         const prt = this.parts[i];
-        const d = prt.data;
+        const d = prt.constructor.DATA;
         hsp.pos(
           Math.floor(this.x) + d.x - Math.floor(d.sx / 2),
           Math.floor(this.y) + d.y - Math.floor(d.sy / 2)

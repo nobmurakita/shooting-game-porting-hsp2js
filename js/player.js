@@ -145,7 +145,7 @@ hsp.Laser = class {
       // ターゲット追跡中: 衝突判定と方向更新
       if (this.sta === 1) {
         const p = this.trg;
-        const pd = p.data;
+        const pd = p.constructor.DATA;
 
         // 衝突判定（点 vs 矩形）
         const hit = hsp.CollisionSystem.checkAABB(
@@ -436,11 +436,11 @@ hsp.Player = class {
         // }
 
         // 距離が近いパーツを優先
-        let tx = boss.x + trg.data.x - this.x; tx = tx * tx;
-        let ty = boss.y + trg.data.y - this.y; ty = ty * ty;
+        let tx = boss.x + trg.constructor.DATA.x - this.x; tx = tx * tx;
+        let ty = boss.y + trg.constructor.DATA.y - this.y; ty = ty * ty;
         const rd = tx + ty;
-        let ix = boss.x + p.data.x - this.x; ix = ix * ix;
-        let iy = boss.y + p.data.y - this.y; iy = iy * iy;
+        let ix = boss.x + p.constructor.DATA.x - this.x; ix = ix * ix;
+        let iy = boss.y + p.constructor.DATA.y - this.y; iy = iy * iy;
         if (rd > ix + iy) {
           trg = p;
         }
