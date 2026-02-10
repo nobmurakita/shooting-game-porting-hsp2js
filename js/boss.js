@@ -1,4 +1,4 @@
-;//////////ボスパーツクラス//////////
+//////////ボスパーツクラス//////////
 hsp.BossPart = class {
   constructor() {
     this.alive = false;
@@ -8,22 +8,22 @@ hsp.BossPart = class {
   }
 };
 
-;// パーツ0: 本体
+// パーツ0: 本体
 hsp.BossPart0 = class extends hsp.BossPart {
   static DATA = { shield: 500, x: 0, y: -7, sx: 70, sy: 75, hitX1: -25, hitY1: -30, hitX2: 25, hitY2: 6, cy: 0 };
 };
 
-;// パーツ1: 左翼
+// パーツ1: 左翼
 hsp.BossPart1 = class extends hsp.BossPart {
   static DATA = { shield: 200, x: -40, y: 0, sx: 20, sy: 112, hitX1: -10, hitY1: -56, hitX2: 10, hitY2: 56, cy: 75 };
 };
 
-;// パーツ2: 右翼
+// パーツ2: 右翼
 hsp.BossPart2 = class extends hsp.BossPart {
   static DATA = { shield: 200, x: 40, y: 0, sx: 20, sy: 112, hitX1: -10, hitY1: -56, hitX2: 10, hitY2: 56, cy: 75 };
 };
 
-;//////////ボスクラス//////////
+//////////ボスクラス//////////
 hsp.Boss = class {
   static MAX_PARTS = 3;
 
@@ -79,7 +79,7 @@ hsp.Boss = class {
         hsp.spawnEffect(ctx, 0, this.x + x, this.y + y, 0);
       }
       let x = hsp.rnd(4) - 2;
-      let y = hsp.rnd(1) - 0.5;
+      let y = hsp.rnd(3) - 1;  // 原作はrnd(1)-0.5で常に-0.5だったバグを修正
       this.x += x;
       this.y += y + 1;
       if (this.frm === 50) {

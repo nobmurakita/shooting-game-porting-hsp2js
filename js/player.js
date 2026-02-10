@@ -1,5 +1,8 @@
-;//////////プレーヤーショットクラス//////////
+//////////プレーヤーショットクラス//////////
 hsp.PlayerShot = class {
+  // 当たり判定の半幅・半高（中心からの距離）
+  static HITBOX = { hw: 5, hh: 10 };
+
   constructor(x, y, dir) {
     this.alive = true;
     this.x = x;
@@ -30,7 +33,7 @@ hsp.PlayerShot = class {
   }
 };
 
-;//////////レーザークラス//////////
+//////////レーザークラス//////////
 hsp.Laser = class {
   constructor(px, py, vx, vy, trg) {
     this.alive = true;
@@ -208,25 +211,20 @@ hsp.Laser = class {
   }
 };
 
-;//////////プレーヤークラス//////////
+//////////プレーヤークラス//////////
 hsp.Player = class {
-  // ショット発射方向テーブル（旧DatShtDir）
+  // 当たり判定の半幅・半高（中心からの距離）
+  static HITBOX = { hw: 5, hh: 5 };
+  // 移動制限（画面端からのマージン）
+  static MOVE_MIN = 20;
+  static MOVE_MAX = 280;
+  // ショット発射方向テーブル（256段階角度、旧DatShtDir）
   static SHT_DIR = [192, 192, 191, 193, 190, 194, 184, 200, 174, 210, 166, 218];
-  // レーザー発射方向テーブル（旧DatLsrDir）
+  // レーザー発射方向テーブル（256段階角度、旧DatLsrDir）
   static LSR_DIR = [187, 197, 177, 207, 167, 217, 157, 227];
 
   constructor() {
-    this.alive = true;
-    this.shield = 5;
-    this.x = 150;
-    this.y = 260;
-    this.hitCnt = 0;
-    this.gra = 0;
-    this.frm = 0;
-    this.shtCnt = 0;
-    this.shtLV = 1;
-    this.lsrF = 0;
-    this.lsrPow = 0;
+    this.init();
   }
 
   // プレーヤー初期化（旧IniPly）
@@ -272,10 +270,10 @@ hsp.Player = class {
     }
 
     // はみ出し制限
-    if (this.x < 20) { this.x = 20; }
-    if (this.y < 20) { this.y = 20; }
-    if (this.x > 280) { this.x = 280; }
-    if (this.y > 280) { this.y = 280; }
+    if (this.x < hsp.Player.MOVE_MIN) { this.x = hsp.Player.MOVE_MIN; }
+    if (this.y < hsp.Player.MOVE_MIN) { this.y = hsp.Player.MOVE_MIN; }
+    if (this.x > hsp.Player.MOVE_MAX) { this.x = hsp.Player.MOVE_MAX; }
+    if (this.y > hsp.Player.MOVE_MAX) { this.y = hsp.Player.MOVE_MAX; }
 
     // ショット発射
     if (this.shtCnt !== 0) {

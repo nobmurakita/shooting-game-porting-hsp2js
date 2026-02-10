@@ -1,4 +1,4 @@
-;//////////敵基底クラス//////////
+//////////敵基底クラス//////////
 hsp.Enemy = class {
   static table = null;      // 出現テーブル（旧 hsp.EneTable）
   static tableIndex = 0;    // 出現テーブルインデックス
@@ -77,9 +77,9 @@ hsp.Enemy = class {
   }
 };
 
-;//////////敵サブクラス//////////
+//////////敵サブクラス//////////
 
-;// ki=0: 蛇行しながら下降する雑魚
+// ki=0: 蛇行しながら下降する雑魚
 hsp.Enemy0 = class extends hsp.Enemy {
   static DATA = { shield: 2, sx: 20, sy: 40, hitX1: -5, hitY1: -15, hitX2: 5, hitY2: 15, cy: 0 };
 
@@ -99,7 +99,7 @@ hsp.Enemy0 = class extends hsp.Enemy {
   }
 };
 
-;// ki=1: 螺旋移動する敵
+// ki=1: 螺旋移動する敵
 hsp.Enemy1 = class extends hsp.Enemy {
   static DATA = { shield: 2, sx: 40, sy: 40, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10, cy: 40 };
 
@@ -126,7 +126,7 @@ hsp.Enemy1 = class extends hsp.Enemy {
   }
 };
 
-;// ki=2: プレイヤー追尾型
+// ki=2: プレイヤー追尾型
 hsp.Enemy2 = class extends hsp.Enemy {
   static DATA = { shield: 4, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, cy: 80 };
 
@@ -155,7 +155,7 @@ hsp.Enemy2 = class extends hsp.Enemy {
   }
 };
 
-;// ki=3: 直進しながら弾を撃つ
+// ki=3: 直進しながら弾を撃つ
 hsp.Enemy3 = class extends hsp.Enemy {
   static DATA = { shield: 4, sx: 40, sy: 60, hitX1: -20, hitY1: -20, hitX2: 20, hitY2: 20, cy: 120 };
 
@@ -173,7 +173,7 @@ hsp.Enemy3 = class extends hsp.Enemy {
   }
 };
 
-;// ki=4: 上昇しながら扇状弾を撃つ
+// ki=4: 上昇しながら扇状弾を撃つ
 hsp.Enemy4 = class extends hsp.Enemy {
   static DATA = { shield: 40, sx: 120, sy: 60, hitX1: -50, hitY1: -10, hitX2: 50, hitY2: 15, cy: 180 };
 
@@ -193,7 +193,7 @@ hsp.Enemy4 = class extends hsp.Enemy {
   }
 };
 
-;// ki=5: 円運動する敵
+// ki=5: 円運動する敵
 hsp.Enemy5 = class extends hsp.Enemy {
   static DATA = { shield: 3, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, cy: 240 };
 
@@ -219,7 +219,7 @@ hsp.Enemy5 = class extends hsp.Enemy {
   }
 };
 
-;// ki=6: 上下に揺れながら弾を撃つ
+// ki=6: 上下に揺れながら弾を撃つ
 hsp.Enemy6 = class extends hsp.Enemy {
   static DATA = { shield: 4, sx: 40, sy: 50, hitX1: -15, hitY1: -10, hitX2: 15, hitY2: 10, cy: 280 };
 
@@ -239,7 +239,7 @@ hsp.Enemy6 = class extends hsp.Enemy {
   }
 };
 
-;// ki=7: 蛇行しながら下降、定期的に弾を撃つ
+// ki=7: 蛇行しながら下降、定期的に弾を撃つ
 hsp.Enemy7 = class extends hsp.Enemy {
   static DATA = { shield: 2, sx: 40, sy: 60, hitX1: -15, hitY1: -25, hitX2: 15, hitY2: 25, cy: 330 };
 
@@ -262,7 +262,7 @@ hsp.Enemy7 = class extends hsp.Enemy {
   }
 };
 
-;// ki=8: 直進後に分岐する敵
+// ki=8: 直進後に分岐する敵
 hsp.Enemy8 = class extends hsp.Enemy {
   static DATA = { shield: 4, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, cy: 390 };
 
@@ -297,7 +297,7 @@ hsp.Enemy8 = class extends hsp.Enemy {
   }
 };
 
-;// ki=9: 左右に揺れながら下降、回転弾を撃つ中ボス級
+// ki=9: 左右に揺れながら下降、回転弾を撃つ中ボス級
 hsp.Enemy9 = class extends hsp.Enemy {
   static DATA = { shield: 40, sx: 60, sy: 60, hitX1: -25, hitY1: -25, hitX2: 25, hitY2: 25, cy: 430 };
 
@@ -325,7 +325,7 @@ hsp.Enemy9 = class extends hsp.Enemy {
   }
 };
 
-;// CLASS_MAP 構築
+// CLASS_MAP 構築
 hsp.Enemy.CLASS_MAP = [
   hsp.Enemy0, hsp.Enemy1, hsp.Enemy2, hsp.Enemy3, hsp.Enemy4,
   hsp.Enemy5, hsp.Enemy6, hsp.Enemy7, hsp.Enemy8, hsp.Enemy9,

@@ -1,4 +1,4 @@
-;//////////プログラムスタート//////////
+//////////プログラムスタート//////////
 hsp.ProgramStart = async () => {
   await Promise.all([
     hsp.preload('img/title.png'),
@@ -22,20 +22,14 @@ hsp.ProgramStart = async () => {
 
   // GameContext生成
   hsp.ctx = new hsp.GameContext();
-
-  hsp.ctx.effects = [];
-  hsp.ctx.enemyShots = [];
   hsp.ctx.player = new hsp.Player();
-  hsp.ctx.playerShots = [];
-  hsp.ctx.lasers = [];
-  hsp.ctx.enemies = [];
   hsp.ctx.boss = new hsp.Boss();
 
   hsp.IniCom();
   hsp.Enemy.initData();
 
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState == 'visible') {
+    if (document.visibilityState === 'visible') {
       hsp.ctx.nextLoopTime = performance.now();
     }
   });
@@ -44,7 +38,7 @@ hsp.ProgramStart = async () => {
   hsp.MainLoop();
 };
 
-;//////////残存オブジェクト更新（ショット・レーザー・エフェクト）//////////
+//////////残存オブジェクト更新（ショット・レーザー・エフェクト）//////////
 hsp.updateRemaining = (ctx) => {
   for (const s of ctx.playerShots) { s.update(); }
   for (const s of ctx.enemyShots) { s.update(ctx); }
@@ -54,7 +48,7 @@ hsp.updateRemaining = (ctx) => {
   for (const e of ctx.effects) { e.update(); }
 };
 
-;//////////死亡要素の除去//////////
+//////////死亡要素の除去//////////
 hsp.filterDead = (ctx) => {
   ctx.playerShots = ctx.playerShots.filter(s => s.alive);
   ctx.lasers = ctx.lasers.filter(l => l.alive);
@@ -63,7 +57,7 @@ hsp.filterDead = (ctx) => {
   ctx.effects = ctx.effects.filter(e => e.alive);
 };
 
-;//////////ゲーム要素描画//////////
+//////////ゲーム要素描画//////////
 hsp.renderObjects = (ctx) => {
   hsp.BackGround();
   if (ctx.boss.flg === 0) {
@@ -82,29 +76,29 @@ hsp.renderObjects = (ctx) => {
   hsp.Disp();
 };
 
-;//////////フレームバッファ転送//////////
+//////////フレームバッファ転送//////////
 hsp.flipBuffer = () => {
   hsp.gsel(0);
   hsp.pos(0, 0);
   hsp.gcopy(1, 0, 0, 300, 300);
 };
 
-;//////////メインループ//////////
+//////////メインループ//////////
 hsp.MainLoop = () => {
   hsp.ctx.nextLoopTime += 1000 / 30;
   hsp.ctx.key = hsp.stick();
 
-  if (hsp.ctx.gameSta == hsp.STA_OPENING) {
+  if (hsp.ctx.gameSta === hsp.STA_OPENING) {
     hsp.gsel(0);
     hsp.picload('img/title.png', 0, 0);
     hsp.ctx.stage = 0;
     hsp.ctx.score = 0;
     hsp.ctx.gameSta = hsp.STA_TITLE;
-  } else if (hsp.ctx.gameSta == hsp.STA_TITLE) {
+  } else if (hsp.ctx.gameSta === hsp.STA_TITLE) {
     if (hsp.ctx.key & 16 || hsp.ctx.key & 32 || hsp.ctx.key & 64) {
       hsp.ctx.gameSta = hsp.STA_INIT;
     }
-  } else if (hsp.ctx.gameSta == hsp.STA_INIT) {
+  } else if (hsp.ctx.gameSta === hsp.STA_INIT) {
     hsp.ctx.stage++
     if (hsp.ctx.stage <= hsp.MaxStage) {
       hsp.ctx.initStage(hsp.ctx.stage);
@@ -112,7 +106,7 @@ hsp.MainLoop = () => {
     } else {
       hsp.ctx.gameSta = hsp.STA_ENDING;
     }
-  } else if (hsp.ctx.gameSta == hsp.STA_PLAY) {
+  } else if (hsp.ctx.gameSta === hsp.STA_PLAY) {
     if (hsp.ctx.key & 128) {
       hsp.ctx.gameSta = hsp.STA_OPENING;
     } else {
@@ -148,7 +142,7 @@ hsp.MainLoop = () => {
       }
       hsp.flipBuffer();
     }
-  } else if (hsp.ctx.gameSta == hsp.STA_CLEAR) {
+  } else if (hsp.ctx.gameSta === hsp.STA_CLEAR) {
     if (hsp.ctx.key & 128) {
       hsp.ctx.gameSta = hsp.STA_OPENING;
     }
@@ -163,9 +157,9 @@ hsp.MainLoop = () => {
     hsp.filterDead(hsp.ctx);
     hsp.renderObjects(hsp.ctx);
     hsp.flipBuffer();
-  } else if (hsp.ctx.gameSta == hsp.STA_ENDING) {
+  } else if (hsp.ctx.gameSta === hsp.STA_ENDING) {
     hsp.ctx.gameSta = hsp.STA_OPENING;
-  } else if (hsp.ctx.gameSta == hsp.STA_PAUSE) {
+  } else if (hsp.ctx.gameSta === hsp.STA_PAUSE) {
     if (hsp.ctx.key & 128) {
       hsp.ctx.gameSta = hsp.STA_OPENING;
     } else if (hsp.ctx.key & 64) {

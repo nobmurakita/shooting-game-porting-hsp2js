@@ -8,7 +8,7 @@ hsp.STA_PAUSE =   6;  // ポーズ
 
 hsp.MaxStage = 1;
 
-;//////////ゲーム共有状態//////////
+//////////ゲーム共有状態//////////
 hsp.GameContext = class {
   constructor() {
     this.gameSta = 0;
@@ -47,7 +47,7 @@ hsp.GameContext = class {
   }
 };
 
-;//////////初期設定//////////
+//////////初期設定//////////
 hsp.IniCom = () => {
   hsp.ctx.gameSta = hsp.STA_OPENING;
   hsp.ctx.stage = 0;
@@ -77,7 +77,7 @@ hsp.IniCom = () => {
   hsp.picload('img/etc.png', 0, 170);
 }
 
-;//////////背景//////////
+//////////背景//////////
 hsp.BackGround = () => {
   hsp.ctx.bg2 = 300 - hsp.ctx.bg1;
   hsp.pos(0, 0);
@@ -85,44 +85,39 @@ hsp.BackGround = () => {
   hsp.pos(0, hsp.ctx.bg1);
   hsp.gcopy(2, 0, 0, 300, hsp.ctx.bg2);
   hsp.ctx.bg1++;
-  if (hsp.ctx.bg1 == 300) {
+  if (hsp.ctx.bg1 === 300) {
     hsp.ctx.bg1 -= 300;
   }
 };
 
-;//////////ステータス表示//////////
+//////////数値表示ヘルパー//////////
+// 8桁の数値を右詰めで表示（先頭ゼロは空白）
+hsp.drawNumber = (value, rightX) => {
+  let a = value;
+  let sx = 0;   // 数字画像のX起点（0=数字, 64=空白）
+  let sy = 170;  // 数字画像のY起点（170=数字, 186=空白）
+  for (let i = 0; i < 8; i++) {
+    hsp.pos(-i * 8 + rightX, 0);
+    hsp.gcopy(3, a % 10 * 8 + sx, sy, 8, 16);
+    a = Math.floor(a / 10);
+    if (a === 0) {
+      sx = 64;
+      sy = 186;
+    }
+  }
+};
+
+//////////ステータス表示//////////
 hsp.Disp = () => {
   // スコア
   hsp.pos(0, 0);
   hsp.gcopy(3, 17, 186, 45, 16);
-  let a = hsp.ctx.score;
-  let x = 0;
-  let y = 170;
-  for (let i = 0; i < 8; i++) {
-    hsp.pos(-i * 8 + 100, 0);
-    hsp.gcopy(3, a % 10 * 8 + x, y, 8, 16);
-    a = Math.floor(a / 10);
-    if (a == 0) {
-      x = 64;
-      y = 186;
-    }
-  }
+  hsp.drawNumber(hsp.ctx.score, 100);
 
   // ハイスコア
   hsp.pos(173, 0);
   hsp.gcopy(3, 0, 186, 62, 16);
-  a = hsp.ctx.hiScore;
-  x = 0;
-  y = 170;
-  for (let i = 0; i < 8; i++) {
-    hsp.pos(-i * 8 + 290, 0);
-    hsp.gcopy(3, a % 10 * 8 + x, y, 8, 16);
-    a = Math.floor(a / 10);
-    if (a == 0) {
-      x = 64;
-      y = 186;
-    }
-  }
+  hsp.drawNumber(hsp.ctx.hiScore, 290);
   hsp.pos(0, 284);
   hsp.gcopy(3, 0, 218, 40, 16);
 
@@ -135,7 +130,7 @@ hsp.Disp = () => {
   // シールド
   hsp.pos(200, 284);
   hsp.gcopy(3, 0, 202, 45, 16);
-  if (hsp.ctx.player.shield != 0) {
+  if (hsp.ctx.player.shield !== 0) {
     for (let i = 0; i < hsp.ctx.player.shield; i++) {
       hsp.pos(i * 8 + 245, 284);
       hsp.gcopy(3, 72, 186, 8, 16);

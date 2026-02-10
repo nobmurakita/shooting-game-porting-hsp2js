@@ -1,4 +1,4 @@
-;//////////敵ショット基底クラス//////////
+//////////敵ショット基底クラス//////////
 hsp.EnemyShot = class {
   static CLASS_MAP = [];  // ki → サブクラスのマッピング（ファイル末尾で設定）
 
@@ -34,9 +34,9 @@ hsp.EnemyShot = class {
   }
 };
 
-;//////////敵ショットサブクラス//////////
+//////////敵ショットサブクラス//////////
 
-;// ki=0: 通常弾（直進）
+// ki=0: 通常弾（直進）
 hsp.EnemyShot0 = class extends hsp.EnemyShot {
   static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 130 };
 
@@ -54,7 +54,7 @@ hsp.EnemyShot0 = class extends hsp.EnemyShot {
   }
 };
 
-;// ki=1: 照準弾（直進＋アニメーション）
+// ki=1: 照準弾（直進＋アニメーション）
 hsp.EnemyShot1 = class extends hsp.EnemyShot {
   static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 130 };
 
@@ -68,7 +68,7 @@ hsp.EnemyShot1 = class extends hsp.EnemyShot {
   }
 };
 
-;// ki=2: 誘導弾（追尾＋プレイヤーショット衝突判定）
+// ki=2: 誘導弾（追尾＋プレイヤーショット衝突判定）
 hsp.EnemyShot2 = class extends hsp.EnemyShot {
   static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 150 };
 
@@ -99,12 +99,12 @@ hsp.EnemyShot2 = class extends hsp.EnemyShot {
   }
 };
 
-;// CLASS_MAP 構築
+// CLASS_MAP 構築
 hsp.EnemyShot.CLASS_MAP = [
   hsp.EnemyShot0, hsp.EnemyShot1, hsp.EnemyShot2,
 ];
 
-;// 敵ショット生成ヘルパー
+// 敵ショット生成ヘルパー
 hsp.spawnEnemyShot = (ctx, ki, x, y, dir) => {
   const ShotClass = hsp.EnemyShot.CLASS_MAP[ki];
   ctx.enemyShots.push(new ShotClass(x, y, dir));

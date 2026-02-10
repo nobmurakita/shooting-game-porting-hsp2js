@@ -1,4 +1,4 @@
-;//////////衝突判定システム//////////
+//////////衝突判定システム//////////
 hsp.CollisionSystem = class {
   // AABB衝突判定（旧 stg_clash）
   // (x1,y1)(x2,y2)を対角線とする矩形と(x3,y3)(x4,y4)を対角線とする矩形が重なっていればtrue
@@ -23,6 +23,7 @@ hsp.CollisionSystem = class {
 
   // プレイヤーショット vs 敵
   static checkPlayerShotsVsEnemies(ctx) {
+    const sh = hsp.PlayerShot.HITBOX;
     for (const e of ctx.enemies) {
       if (!e.alive) continue;
       const d = e.constructor.DATA;
@@ -31,7 +32,7 @@ hsp.CollisionSystem = class {
         if (!s.alive) continue;
         if (hsp.CollisionSystem.checkAABB(
           d.hitX1 + e.x, d.hitY1 + e.y, d.hitX2 + e.x, d.hitY2 + e.y,
-          s.x - 5, s.y - 10, s.x + 5, s.y + 10
+          s.x - sh.hw, s.y - sh.hh, s.x + sh.hw, s.y + sh.hh
         )) {
           hsp.ctx.score += 10;
           s.alive = false;
@@ -51,6 +52,7 @@ hsp.CollisionSystem = class {
   static checkPlayerVsEnemies(ctx) {
     const ply = ctx.player;
     if (ply.hitCnt !== 0) return;
+    const ph = hsp.Player.HITBOX;
 
     for (const e of ctx.enemies) {
       if (!e.alive) continue;
@@ -58,7 +60,7 @@ hsp.CollisionSystem = class {
 
       if (hsp.CollisionSystem.checkAABB(
         d.hitX1 + e.x, d.hitY1 + e.y, d.hitX2 + e.x, d.hitY2 + e.y,
-        ply.x - 5, ply.y - 5, ply.x + 5, ply.y + 5
+        ply.x - ph.hw, ply.y - ph.hh, ply.x + ph.hw, ply.y + ph.hh
       )) {
         e.alive = false;
         // 敵の爆発エフェクト（小）
@@ -82,6 +84,7 @@ hsp.CollisionSystem = class {
   static checkPlayerShotsVsBoss(ctx) {
     const boss = ctx.boss;
     if (boss.flg !== 1) return;
+    const sh = hsp.PlayerShot.HITBOX;
 
     for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
       const prt = boss.parts[i];
@@ -94,8 +97,8 @@ hsp.CollisionSystem = class {
         if (hsp.CollisionSystem.checkAABB(
           boss.x + d.x + d.hitX1, boss.y + d.y + d.hitY1,
           boss.x + d.x + d.hitX2, boss.y + d.y + d.hitY2,
-          s.x - 5, s.y - 10,
-          s.x + 5, s.y + 10
+          s.x - sh.hw, s.y - sh.hh,
+          s.x + sh.hw, s.y + sh.hh
         )) {
           hsp.ctx.score += 10;
           s.alive = false;
@@ -121,6 +124,7 @@ hsp.CollisionSystem = class {
   static checkEnemyShotsVsPlayer(ctx) {
     const ply = ctx.player;
     if (ply.hitCnt !== 0) return;
+    const ph = hsp.Player.HITBOX;
 
     for (const es of ctx.enemyShots) {
       if (!es.alive) continue;
@@ -128,7 +132,7 @@ hsp.CollisionSystem = class {
 
       if (hsp.CollisionSystem.checkAABB(
         d.hitX1 + es.x, d.hitY1 + es.y, d.hitX2 + es.x, d.hitY2 + es.y,
-        ply.x - 5, ply.y - 5, ply.x + 5, ply.y + 5
+        ply.x - ph.hw, ply.y - ph.hh, ply.x + ph.hw, ply.y + ph.hh
       )) {
         es.alive = false;
         ply.shield--;
@@ -145,6 +149,7 @@ hsp.CollisionSystem = class {
 
   // プレイヤーショット vs 誘導弾（EnemyShot2）
   static checkPlayerShotsVsEnemyShots(ctx) {
+    const sh = hsp.PlayerShot.HITBOX;
     for (const es of ctx.enemyShots) {
       if (!es.alive) continue;
       if (!(es instanceof hsp.EnemyShot2)) continue;
@@ -154,7 +159,7 @@ hsp.CollisionSystem = class {
         if (!ps.alive) continue;
         if (hsp.CollisionSystem.checkAABB(
           d.hitX1 + es.x, d.hitY1 + es.y, d.hitX2 + es.x, d.hitY2 + es.y,
-          ps.x - 5, ps.y - 10, ps.x + 5, ps.y + 10
+          ps.x - sh.hw, ps.y - sh.hh, ps.x + sh.hw, ps.y + sh.hh
         )) {
           hsp.ctx.score += 10;
           ps.alive = false;
