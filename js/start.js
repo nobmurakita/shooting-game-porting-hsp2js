@@ -20,12 +20,19 @@ hsp.ProgramStart = async () => {
     hsp.preload('img/boss01.png'),
   ]);
 
-  hsp.stg_set();
+  // GameContext生成
+  hsp.ctx = new hsp.GameContext();
+
+  hsp.ctx.effects = [];
+  hsp.ctx.enemyShots = [];
+  hsp.ctx.player = new hsp.Player();
+  hsp.ctx.playerShots = Array.from({length: hsp.PlayerShot.MAX}, () => new hsp.PlayerShot());
+  hsp.ctx.lasers = Array.from({length: hsp.Laser.MAX}, () => new hsp.Laser());
+  hsp.ctx.enemies = [];
+  hsp.ctx.boss = new hsp.Boss();
+
   hsp.IniCom();
-  hsp.IniDatEff();
-  hsp.IniDatPly();
-  hsp.IniDatEne();
-  hsp.IniDatEneSht();
+  hsp.Enemy.initData();
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState == 'visible') {
@@ -55,12 +62,20 @@ hsp.MainLoop = () => {
   } else if (hsp.GameSta == hsp.STA_INIT) {
     hsp.Stage++
     if (hsp.Stage <= hsp.MaxStage) {
-      hsp.IniEff();
-      hsp.IniPly();
-      hsp.IniEne();
-      hsp.IniEneSht();
-      hsp.IniDatBossPrt();
-      hsp.IniBoss();
+      // リセット
+      hsp.ctx.effects = [];
+      hsp.ctx.enemyShots = [];
+      // プレーヤー初期化
+      hsp.ctx.player.init();
+      for (const s of hsp.ctx.playerShots) { s.alive = false; }
+      for (const l of hsp.ctx.lasers) { l.alive = false; }
+      // 敵初期化
+      hsp.Enemy.table = hsp.Stages[hsp.Stage];
+      hsp.Enemy.tableIndex = 0;
+      hsp.ctx.enemies = [];
+      // ボス初期化
+      hsp.ctx.boss.initData();
+      hsp.ctx.boss.init();
       hsp.Frame = 0;
       hsp.Key = 0;
       hsp.GameSta = hsp.STA_PLAY;
@@ -73,28 +88,40 @@ hsp.MainLoop = () => {
     } else {
       // オフスクリーンバッファに描画
       hsp.gsel(1);
-      hsp.MovPly();
-      hsp.MovPlySht();
-      if (hsp.BossFlg == 0) {
-        hsp.AprEne();
-        hsp.MovEne();
+      // プレーヤー更新
+      hsp.ctx.player.update(hsp.ctx);
+      // プレーヤーショット更新
+      for (const s of hsp.ctx.playerShots) { s.update(); }
+      // レーザーのLsrF初期化（全レーザーが非生存ならLsrF=1にする）
+      if (hsp.ctx.player.lsrPow === 0) { hsp.ctx.player.lsrF = 1; }
+      if (hsp.ctx.boss.flg === 0) {
+        hsp.Enemy.appear(hsp.ctx);
+        for (const e of hsp.ctx.enemies) { e.update(hsp.ctx); }
       } else {
-        hsp.MovBoss();
+        hsp.ctx.boss.update(hsp.ctx);
       }
-      hsp.MovEneSht();
-      hsp.MovLsr();
-      hsp.MovEff();
+      for (const s of hsp.ctx.enemyShots) { s.update(hsp.ctx); }
+      // レーザー更新
+      for (const l of hsp.ctx.lasers) { l.update(hsp.ctx); }
+      for (const e of hsp.ctx.effects) { e.update(); }
+      // 死亡要素の除去
+      hsp.ctx.enemies = hsp.ctx.enemies.filter(e => e.alive);
+      hsp.ctx.enemyShots = hsp.ctx.enemyShots.filter(s => s.alive);
+      hsp.ctx.effects = hsp.ctx.effects.filter(e => e.alive);
       hsp.BackGround();
-      if (hsp.BossFlg == 0) {
-        hsp.DrwEne();
+      if (hsp.ctx.boss.flg === 0) {
+        for (const e of hsp.ctx.enemies) { e.draw(); }
       } else {
-        hsp.DrwBoss();
+        hsp.ctx.boss.draw();
       }
-      hsp.DrwPlySht();
-      hsp.DrwPly();
-      hsp.DrwEff();
-      hsp.DrwEneSht();
-      hsp.DrwLsr();
+      // プレーヤーショット描画（逆順）
+      for (let i = hsp.ctx.playerShots.length - 1; i >= 0; i--) { hsp.ctx.playerShots[i].draw(); }
+      // プレーヤー描画
+      hsp.ctx.player.draw();
+      for (let i = hsp.ctx.effects.length - 1; i >= 0; i--) { hsp.ctx.effects[i].draw(); }
+      for (const s of hsp.ctx.enemyShots) { s.draw(); }
+      // レーザー描画
+      for (const l of hsp.ctx.lasers) { l.draw(); }
       hsp.Disp();
       hsp.Frame++
       if (hsp.Key & 64) {
@@ -112,23 +139,28 @@ hsp.MainLoop = () => {
     if (hsp.Key & 128) {
       hsp.GameSta = hsp.STA_OPENING;
     }
-    if (hsp.PlyY > -20) {
-      hsp.PlyY -= 7;
+    if (hsp.ctx.player.y > -20) {
+      hsp.ctx.player.y -= 7;
     } else {
       hsp.GameSta = hsp.STA_INIT;
     }
     // オフスクリーンバッファに描画
     hsp.gsel(1);
-    hsp.MovPlySht();
-    hsp.MovEneSht();
-    hsp.MovLsr();
-    hsp.MovEff();
+    for (const s of hsp.ctx.playerShots) { s.update(); }
+    for (const s of hsp.ctx.enemyShots) { s.update(hsp.ctx); }
+    // レーザーのLsrF初期化
+    if (hsp.ctx.player.lsrPow === 0) { hsp.ctx.player.lsrF = 1; }
+    for (const l of hsp.ctx.lasers) { l.update(hsp.ctx); }
+    for (const e of hsp.ctx.effects) { e.update(); }
+    // 死亡要素の除去
+    hsp.ctx.enemyShots = hsp.ctx.enemyShots.filter(s => s.alive);
+    hsp.ctx.effects = hsp.ctx.effects.filter(e => e.alive);
     hsp.BackGround();
-    hsp.DrwPlySht();
-    hsp.DrwPly();
-    hsp.DrwEff();
-    hsp.DrwEneSht();
-    hsp.DrwLsr();
+    for (let i = hsp.ctx.playerShots.length - 1; i >= 0; i--) { hsp.ctx.playerShots[i].draw(); }
+    hsp.ctx.player.draw();
+    for (let i = hsp.ctx.effects.length - 1; i >= 0; i--) { hsp.ctx.effects[i].draw(); }
+    for (const s of hsp.ctx.enemyShots) { s.draw(); }
+    for (const l of hsp.ctx.lasers) { l.draw(); }
     hsp.Disp();
     // 表示用のゲーム画面にオフスクリーンバッファの内容をコピー
     hsp.gsel(0);

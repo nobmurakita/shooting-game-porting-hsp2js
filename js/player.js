@@ -1,431 +1,228 @@
-hsp.MaxPlySht = 36;
-hsp.MaxLsr = 8;
+;//////////プレーヤーショットクラス//////////
+hsp.PlayerShot = class {
+  static MAX = 36;
 
-;//////////プレーヤーデータ初期化//////////
-hsp.IniDatPly = () => {
-  hsp.DatShtDir = [192, 192, 191, 193, 190, 194, 184, 200, 174, 210, 166, 218];
-  hsp.DatLsrDir = [187, 197, 177, 207, 167, 217, 157, 227];
-};
-
-;//////////プレーヤー初期化//////////
-hsp.IniPly = () => {
-  hsp.PlyFlg = 1;
-  hsp.PlyShield = 5;
-  hsp.PlyFrm = 0;
-  hsp.PlyX = 150;
-  hsp.PlyY = 260;
-  hsp.PlyHitCnt = 0;
-  hsp.PlyGra = 0;
-
-  hsp.PlyShtFlg = hsp.dim(hsp.MaxPlySht);
-  hsp.PlyShtFrm = hsp.dim(hsp.MaxPlySht);
-  hsp.PlyShtX = hsp.dim(hsp.MaxPlySht);
-  hsp.PlyShtY = hsp.dim(hsp.MaxPlySht);
-  hsp.PlyShtDir = hsp.dim(hsp.MaxPlySht);
-  hsp.PlyShtCnt = 0;
-  hsp.PlyShtLV = 1;
-
-  hsp.LsrFlg = hsp.dim(hsp.MaxLsr);
-  hsp.LsrTrg = hsp.dim(hsp.MaxLsr);
-  hsp.LsrSta = hsp.dim(hsp.MaxLsr);
-  hsp.LsrX = hsp.dim(hsp.MaxLsr, 8);
-  hsp.LsrY = hsp.dim(hsp.MaxLsr, 8);
-  hsp.LsrVx = hsp.dim(hsp.MaxLsr);
-  hsp.LsrVy = hsp.dim(hsp.MaxLsr);
-  hsp.LsrDir = hsp.dim(hsp.MaxLsr);
-  hsp.LsrF = 0;
-  hsp.LsrPow = 0;
-};
-
-;//////////プレーヤー移動//////////
-hsp.MovPly = () => {
-  if (hsp.PlyFlg == 0) {
-    hsp.LsrPow = 0;
-    return;
+  constructor() {
+    this.alive = false;
+    this.x = 0;
+    this.y = 0;
+    this.dir = 0;
+    this.frm = 0;
   }
 
-  // 移動量＆傾き決定
-  hsp.prm = [0, 0, ((hsp.Key & 4) >> 2) - (hsp.Key & 1), ((hsp.Key & 8) >> 3) - ((hsp.Key & 2) >> 1)];
-  if (hsp.prm[2] || hsp.prm[3]) {
-    hsp.stg_dir();
-    hsp.PlyX += Math.cos(hsp.r) * 5.5;
-    hsp.PlyY += Math.sin(hsp.r) * 5.5;
-  } else {
-    hsp.r = hsp.toRad(8);
-  }
-  if (hsp.prm[2] == 0) {
-    if (hsp.PlyGra < 0) { hsp.PlyGra++; }
-    if (hsp.PlyGra > 0) { hsp.PlyGra--; }
-  } else {
-    hsp.PlyGra += hsp.prm[2];
-    if (hsp.PlyGra < -6) { hsp.PlyGra = -6; }
-    if (hsp.PlyGra > 6) { hsp.PlyGra = 6; }
-  }
+  // ショット移動（旧MovPlySht内ループ1回分）
+  update() {
+    if (!this.alive) return;
 
-  // はみ出したときの処理
-  if (hsp.PlyX < 20) { hsp.PlyX = 20; }
-  if (hsp.PlyY < 20) { hsp.PlyY = 20; }
-  if (hsp.PlyX > 280) { hsp.PlyX = 280; }
-  if (hsp.PlyY > 280) { hsp.PlyY = 280; }
+    this.x += 16 * Math.cos(this.dir);
+    this.y += 16 * Math.sin(this.dir);
 
-  // ショット発射
-  if (hsp.PlyShtCnt != 0) {
-    hsp.PlyShtCnt--;
-  } else {
-    if (hsp.Key & 32) {
-      hsp.PlyShtCnt = 3;
-      for (let i = 0; i < hsp.PlyShtLV * 2; i++) {
-        for (let j = 0; j < hsp.MaxPlySht; j++) {
-          if (hsp.PlyShtFlg[j] != 0) {
-            continue;
-          }
-          hsp.PlyShtFlg[j] = 1;
-          hsp.PlyShtFrm[j] = 0;
-          let rad = hsp.toRad(hsp.DatShtDir[i + 6]);
-          hsp.PlyShtX[j] = Math.cos(rad) * 20 + hsp.PlyX;
-          hsp.PlyShtY[j] = Math.sin(rad) * 20 + hsp.PlyY;
-          hsp.PlyShtDir[j] = hsp.toRad(hsp.DatShtDir[i]);
-          break;
-        }
-      }
+    // 画面外で消滅
+    if (this.y < -20) {
+      this.alive = false;
     }
   }
 
-  // レーザー発射
-  if (hsp.LsrF == 1) {
-    if (hsp.Key & 16) {
-      if (hsp.LsrPow >= 40) {
-        for (let i = 0; i < Math.floor(hsp.LsrPow / 40); i++) {
-          const lsr = i;
-          if (hsp.LsrFlg[lsr] != 0) {
-            continue;
-          }
-          hsp.LsrFlg[lsr] = 1;
-          hsp.SearchTrget();
-          if (hsp.trg != -1) {
-            hsp.LsrTrg[lsr] = hsp.trg;
-            hsp.LsrSta[lsr] = 1;
-            if (hsp.BossFlg == 0) {
-              hsp.EneLckOn[hsp.trg]++;
-            } else {
-              hsp.BossLckOn[hsp.trg]++;
-            }
-          } else {
-            hsp.LsrSta[lsr] = 1;
-          }
-          for (let j = 0; j < 8; j++) {
-            hsp.LsrX[lsr][j] = hsp.PlyX;
-            hsp.LsrY[lsr][j] = hsp.PlyY - 20;
-          }
-          let rad = hsp.toRad(hsp.DatLsrDir[lsr]);
-          hsp.LsrVx[lsr] = Math.cos(rad) * 16;
-          hsp.LsrVy[lsr] = Math.sin(rad) * 16;
-          hsp.LsrDir[lsr] = hsp.toRad(192);
-        }
-      }
-    } else {
-      hsp.LsrPow += (hsp.Key & 32 ? 1 : 3);
-      if (hsp.LsrPow > 320) {
-        hsp.LsrPow = 320;
-      }
-    }
-  } else {
-    hsp.LsrPow -= 25;
-    if (hsp.LsrPow < 0) {
-      hsp.LsrPow = 0;
-    };
-  }
+  // ショット描画（旧DrwPlySht内ループ1回分）
+  draw() {
+    if (!this.alive) return;
 
-  if (hsp.PlyHitCnt != 0) {
-    hsp.PlyHitCnt--;
-  }
-
-  hsp.PlyFrm++;
-};
-
-;//////////ロックオンする敵をサーチ//////////
-hsp.SearchTrget = () => {
-  hsp.trg = -1;
-  if (hsp.BossFlg != 1) {
-    for (let i = 0; i < hsp.MaxEne; i++) {
-      if (hsp.EneFlg[i] == 0) {
-        continue;
-      }
-      if (hsp.trg == -1) {
-        hsp.trg = i;
-        continue;
-      }
-      if (hsp.EneLckOn[hsp.trg] > hsp.EneLckOn[i]) {
-        hsp.trg = i;
-        continue;
-      }
-      if (hsp.EneLckOn[hsp.trg] < hsp.EneLckOn[i]) {
-        continue;
-      }
-      let x = hsp.EneX[hsp.trg] - hsp.PlyX; x = x * x;
-      let y = hsp.EneY[hsp.trg] - hsp.PlyY; y = y * y;
-      let r = x + y;
-      x = hsp.EneX[i] - hsp.PlyX; x = x * x;
-      y = hsp.EneY[i] - hsp.PlyY; y = y * y;
-      if (r > x + y) {
-        hsp.trg = i;
-      }
-    }
-  } else {
-    for (let i = 0; i < hsp.MaxBossPrt; i++) {
-      if (hsp.BossPrtFlg[i] == 0) {
-        continue;
-      }
-      if (hsp.trg == -1) {
-        hsp.trg = i;
-        continue;
-      }
-      // 以下のコメントを解除するとレーザーがボスの各パーツに分散する
-      // if (hsp.BossLckOn[hsp.trg] > hsp.BossLckOn[i]) {
-      //   hsp.trg = i;
-      //   continue;
-      // }
-      // if (hsp.BossLckOn[hsp.trg] < hsp.BossLckOn[i]) {
-      //   continue;
-      // }
-      let x = hsp.BossX + hsp.DatBossPrt[hsp.trg][1] - hsp.PlyX; x = x * x;
-      let y = hsp.BossY + hsp.DatBossPrt[hsp.trg][2] - hsp.PlyY; y = y * y;
-      hsp.r = x + y;
-      x = hsp.BossX + hsp.DatBossPrt[i][1] - hsp.PlyX; x = x * x;
-      y = hsp.BossY + hsp.DatBossPrt[i][2] - hsp.PlyY; y = y * y;
-      if (hsp.r > x + y) {
-        hsp.trg = i;
-      }
-    }
-  }
-};
-
-;//////////プレーヤー描画//////////
-hsp.DrwPly = () => {
-  if (hsp.PlyFlg == 0) {
-    return;
-  }
-  hsp.pos(Math.floor(hsp.PlyX) - 20, Math.floor(hsp.PlyY) - 20);
-  if (Math.floor(hsp.PlyHitCnt / 3) % 2 == 0) {
-    hsp.gcopy(3, (hsp.PlyGra >> 1) * 40 + 120, 0, 40, 40);
-  } else {
-    hsp.gcopy(3, (hsp.PlyGra >> 1) * 40 + 120, 40, 40, 40);
-  }
-};
-
-;//////////プレーヤーショット移動//////////
-hsp.MovPlySht = () => {
-  for (let i = 0; i < hsp.MaxPlySht; i++) {
-    if (hsp.PlyShtFlg[i] == 0) {
-      continue;
-    }
-    hsp.r = hsp.PlyShtDir[i];
-    hsp.PlyShtX[i] += 16 * Math.cos(hsp.r);
-    hsp.PlyShtY[i] += 16 * Math.sin(hsp.r);
-    if (hsp.PlyShtY[i] < -20) {
-      hsp.PlyShtFlg[i] = 0;
-    }
-  }
-}
-
-;//////////プレーヤーショット描画//////////
-hsp.DrwPlySht = () => {
-  for (let i = 0; i < hsp.MaxPlySht; i++) {
-    const sht = hsp.MaxPlySht - i - 1;
-    if (hsp.PlyShtFlg[sht] == 0) {
-      continue;
-    }
-    hsp.pos(Math.floor(hsp.PlyShtX[sht]) - 5, Math.floor(hsp.PlyShtY[sht]) - 10);
+    hsp.pos(Math.floor(this.x) - 5, Math.floor(this.y) - 10);
     hsp.gcopy(3, 280, 0, 10, 20);
   }
-}
+};
 
-;//////////レーザー移動//////////
-hsp.MovLsr = () => {
-  if (hsp.LsrPow == 0) {
-    hsp.LsrF = 1;
+;//////////レーザークラス//////////
+hsp.Laser = class {
+  static MAX = 8;
+
+  constructor() {
+    this.alive = false;
+    this.trg = null;
+    this.sta = 0;
+    this.x = [0, 0, 0, 0, 0, 0, 0, 0];
+    this.y = [0, 0, 0, 0, 0, 0, 0, 0];
+    this.vx = 0;
+    this.vy = 0;
+    this.dir = 0;
   }
 
-  for (let i = 0; i < hsp.MaxLsr; i++) {
-    const lsr = i;
-    if (hsp.LsrFlg[lsr] == 0) {
-      continue;
-    }
+  // レーザー移動・追跡・衝突判定（旧MovLsr内ループ1回分 + LsrHit）
+  update(ctx) {
+    if (!this.alive) return;
+
+    // 節の位置を後方にシフト
     for (let j = 0; j < 7; j++) {
       const a = 7 - j;
       const b = a - 1;
-      hsp.LsrX[lsr][a] = hsp.LsrX[lsr][b];
-      hsp.LsrY[lsr][a] = hsp.LsrY[lsr][b];
+      this.x[a] = this.x[b];
+      this.y[a] = this.y[b];
     }
 
-    hsp.r = hsp.LsrDir[lsr];
+    const dir = this.dir;
 
-    if (hsp.LsrSta[lsr] != 0) {
-      hsp.LsrVx[lsr] += Math.cos(hsp.r) * 5;
-      hsp.LsrVy[lsr] += Math.sin(hsp.r) * 5;
-      hsp.LsrX[lsr][0] += hsp.LsrVx[lsr];
-      hsp.LsrY[lsr][0] += hsp.LsrVy[lsr];
-      hsp.LsrVx[lsr] = hsp.LsrVx[lsr] * 0.8;
-      hsp.LsrVy[lsr] = hsp.LsrVy[lsr] * 0.8;
+    if (this.sta !== 0) {
+      // 追跡中 or ターゲットなし: 加速・減衰
+      this.vx += Math.cos(dir) * 5;
+      this.vy += Math.sin(dir) * 5;
+      this.x[0] += this.vx;
+      this.y[0] += this.vy;
+      this.vx = this.vx * 0.8;
+      this.vy = this.vy * 0.8;
     } else {
-      hsp.r = 0;
+      // 消滅途中: 全節が同一座標に収束したら消滅
+      let moving = false;
       for (let j = 0; j < 7; j++) {
-        const a = j;
-        const b = a + 1;
-        if (hsp.LsrX[lsr][a] === hsp.LsrX[lsr][b] && hsp.LsrY[lsr][a] == hsp.LsrY[lsr][b]) {
-          continue;
+        if (this.x[j] !== this.x[j + 1] || this.y[j] !== this.y[j + 1]) {
+          moving = true;
+          break;
         }
-        hsp.r = 1;
       }
-      if (hsp.r == 0) {
-        hsp.LsrFlg[lsr] = 0;
+      if (!moving) {
+        this.alive = false;
       }
     }
 
-    if (hsp.BossFlg != 1) {
-      let ene = hsp.LsrTrg[lsr];
-      if ((hsp.LsrSta[lsr] == 1 && hsp.EneFlg[ene] == 0) || hsp.LsrSta[lsr] == 2) {
-        hsp.prm = [hsp.LsrX[lsr][0], hsp.LsrY[lsr][0]];
-        hsp.SearchTrget();
-        if (hsp.trg != -1) {
-          hsp.LsrSta[lsr] = 1;
-          hsp.LsrTrg[lsr] = hsp.trg;
-          hsp.EneLckOn[hsp.trg]++;
-          ene = hsp.trg;
-        } else {
-          hsp.LsrSta[lsr] = 2;
-        }
+    // --- ターゲットが消滅、またはターゲットなし状態なら再検索 ---
+    if ((this.sta === 1 && !this.trg.alive) || this.sta === 2) {
+      const newTrg = ctx.player.searchTarget(ctx);
+      if (newTrg !== null) {
+        this.sta = 1;
+        this.trg = newTrg;
+        newTrg.lckOn++;
+      } else {
+        this.sta = 2;
       }
+    }
 
-      if (hsp.LsrSta[lsr] == 1) {
-        const ki = hsp.EneKi[ene];
-        hsp.prm = [lsr, ki, ene];
-        hsp.LsrHit();
-        if (hsp.r == 1) {
+    // --- 敵モード ---
+    if (ctx.boss.flg !== 1) {
+      // ターゲット追跡中: 衝突判定と方向更新
+      if (this.sta === 1) {
+        const e = this.trg;
+        const d = e.constructor.DATA;
+
+        // 衝突判定（点 vs 矩形）
+        const hit = hsp.CollisionSystem.checkAABB(
+          this.x[0], this.y[0], this.x[0], this.y[0],
+          d.hitX1 + e.x, d.hitY1 + e.y,
+          d.hitX2 + e.x, d.hitY2 + e.y
+        );
+
+        if (hit) {
           hsp.Score += 100;
-          hsp.EneShield[ene] -= 5;
-          hsp.EneLckOn[ene]--;
-          hsp.LsrSta[lsr] = 0;
+          e.shield -= 5;
+          e.lckOn--;
+          this.sta = 0;
+
+          // ヒットエフェクト
           for (let j = 0; j < 2; j++) {
-            let x = hsp.rnd(10) - 5;
-            let y = hsp.rnd(10) - 5;
-            hsp.prm = [1, hsp.LsrX[lsr][0] + x, hsp.LsrY[lsr][0] + y, -j * 3];
-            hsp.AprEff();
+            const ex = hsp.rnd(10) - 5;
+            const ey = hsp.rnd(10) - 5;
+            hsp.spawnEffect(ctx, 1, this.x[0] + ex, this.y[0] + ey, -j * 3);
           }
-          if (hsp.EneShield[ene] <= 0) {
-            hsp.EneFlg[ene] = 0;
+
+          // 敵撃破
+          if (e.shield <= 0) {
+            e.alive = false;
             for (let j = 0; j < 3; j++) {
-              let x = hsp.rnd(hsp.DatEne[ki][1]) - hsp.DatEne[ki][1] / 2;
-              let y = hsp.rnd(hsp.DatEne[ki][2]) - hsp.DatEne[ki][2] / 2;
-              hsp.prm = [0, hsp.EneX[ene] + x, hsp.EneY[ene] + y, -j * 3];
-              hsp.AprEff();
+              const ex = hsp.rnd(d.sx) - d.sx / 2;
+              const ey = hsp.rnd(d.sy) - d.sy / 2;
+              hsp.spawnEffect(ctx, 0, e.x + ex, e.y + ey, -j * 3);
             }
           }
         }
-        hsp.prm = [hsp.LsrX[lsr][0], hsp.LsrY[lsr][0], hsp.EneX[ene], hsp.EneY[ene]];
-        hsp.stg_dir();
-        hsp.LsrDir[lsr] = hsp.r;
+
+        // ターゲットへの方向を更新
+        this.dir = hsp.CollisionSystem.calcDir(
+          this.x[0], this.y[0], e.x, e.y
+        );
       }
     } else {
-      let prt = hsp.LsrTrg[lsr];
-      if ((hsp.LsrSta[lsr] == 1 && hsp.BossPrtFlg[prt] == 0) || hsp.LsrSta[lsr] == 2) {
-        hsp.prm = [hsp.LsrX[lsr][0], hsp.LsrY[lsr][0]];
-        hsp.SearchTrget();
-        if (hsp.trg != -1) {
-          hsp.LsrSta[lsr] = 1;
-          hsp.LsrTrg[lsr] = hsp.trg;
-          hsp.BossLckOn[hsp.trg]++;
-          prt = hsp.trg;
-        } else {
-          hsp.LsrSta[lsr] = 2;
-        }
-      }
+      // --- ボスモード ---
+      const boss = ctx.boss;
 
-      if (hsp.LsrSta[lsr] == 1) {
-        hsp.prm = [lsr, prt];
-        hsp.LsrHit();
-        if (hsp.r == 1) {
+      // ターゲット追跡中: 衝突判定と方向更新
+      if (this.sta === 1) {
+        const p = this.trg;
+        const pd = p.data;
+
+        // 衝突判定（点 vs 矩形）
+        const hit = hsp.CollisionSystem.checkAABB(
+          this.x[0], this.y[0], this.x[0], this.y[0],
+          (pd.x + pd.hitX1) + boss.x, (pd.y + pd.hitY1) + boss.y,
+          (pd.x + pd.hitX2) + boss.x, (pd.y + pd.hitY2) + boss.y
+        );
+
+        if (hit) {
           hsp.Score += 100;
-          hsp.BossShield -= 5;
-          hsp.BossPrtShield[prt] -= 5;
-          hsp.BossLckOn[prt]--;
-          // ;BossPrtCx.prt=DatBossPrt.3.prt
-          hsp.LsrSta[lsr] = 0;
+          boss.shield -= 5;
+          p.shield -= 5;
+          p.lckOn--;
+          this.sta = 0;
+
+          // ヒットエフェクト
           for (let j = 0; j < 2; j++) {
-            let x = hsp.rnd(10) - 5;
-            let y = hsp.rnd(10) - 5;
-            hsp.prm = [1, hsp.LsrX[lsr][0] + x, hsp.LsrY[lsr][0] + y, -j * 3];
-            hsp.AprEff();
+            const ex = hsp.rnd(10) - 5;
+            const ey = hsp.rnd(10) - 5;
+            hsp.spawnEffect(ctx, 1, this.x[0] + ex, this.y[0] + ey, -j * 3);
           }
-          if (hsp.BossShield <= 0) {
-            hsp.BossShield = 0;
-            hsp.BossFlg = 2;
-            hsp.BossFrm = 0;
+
+          // ボス撃破判定
+          if (boss.shield <= 0) {
+            boss.shield = 0;
+            boss.flg = 2;
+            boss.frm = 0;
           }
-          if (hsp.BossPrtShield[prt] <= 0) {
-            hsp.BossPrtFlg[prt] = 0;
-            hsp.BossPrtCx[prt] = hsp.DatBossPrt[prt][3];
+
+          // パーツ破壊
+          if (p.shield <= 0) {
+            p.alive = false;
+            p.cx = pd.sx;
             for (let j = 0; j < 3; j++) {
-              let x = hsp.rnd(hsp.DatBossPrt[prt][3]) - hsp.DatBossPrt[prt][3] / 2;
-              let y = hsp.rnd(hsp.DatBossPrt[prt][4]) - hsp.DatBossPrt[prt][4] / 2;
-              hsp.prm = [0, hsp.DatBossPrt[prt][1] + hsp.BossX + x, hsp.DatBossPrt[prt][2] + hsp.BossY + y, -j * 3];
-              hsp.AprEff();
+              const ex = hsp.rnd(pd.sx) - pd.sx / 2;
+              const ey = hsp.rnd(pd.sy) - pd.sy / 2;
+              hsp.spawnEffect(ctx, 0,
+                pd.x + boss.x + ex,
+                pd.y + boss.y + ey,
+                -j * 3
+              );
             }
           }
         }
-        hsp.prm = [hsp.LsrX[lsr][0], hsp.LsrY[lsr][0], hsp.DatBossPrt[prt][1] + hsp.BossX, hsp.DatBossPrt[prt][2] + hsp.BossY];
-        hsp.stg_dir();
-        hsp.LsrDir[lsr] = hsp.r;
+
+        // ターゲットパーツへの方向を更新
+        this.dir = hsp.CollisionSystem.calcDir(
+          this.x[0], this.y[0],
+          pd.x + boss.x,
+          pd.y + boss.y
+        );
       }
     }
-    if (hsp.LsrSta[lsr] == 2) {
-      if (hsp.LsrX[lsr][0] < 0 || 300 < hsp.LsrX[lsr][0] || hsp.LsrY[lsr][0] < 0 || 300 < hsp.LsrY[lsr][0]) {
-        hsp.LsrSta[lsr] = 0;
+
+    // ターゲットなし状態で画面外に出たら消滅開始
+    if (this.sta === 2) {
+      if (this.x[0] < 0 || 300 < this.x[0] || this.y[0] < 0 || 300 < this.y[0]) {
+        this.sta = 0;
       }
     }
-    if (hsp.LsrFlg[lsr] != 0) {
-      hsp.LsrF = 0;
+
+    // レーザーが1本でも生存していればlsrFをオフに（充填不可）
+    if (this.alive) {
+      ctx.player.lsrF = 0;
     }
   }
-};
 
-hsp.LsrHit = () => {
-  hsp.r = 0;
-  if (hsp.BossFlg == 0) {
-    const lsr = hsp.prm[0];
-    const ki = hsp.prm[1];
-    const ene = hsp.prm[2];
-    if (hsp.LsrX[lsr][0] < (hsp.DatEne[ki][3] + hsp.EneX[ene]) || (hsp.DatEne[ki][5] + hsp.EneX[ene]) < hsp.LsrX[lsr][0]) {
-      return;
-    }
-    if (hsp.LsrY[lsr][0] < (hsp.DatEne[ki][4] + hsp.EneY[ene]) || (hsp.DatEne[ki][6] + hsp.EneY[ene]) < hsp.LsrY[lsr][0]) {
-      return;
-    }
-  } else {
-    const lsr = hsp.prm[0];
-    const prt = hsp.prm[1];
-    if (hsp.LsrX[lsr][0] < ((hsp.DatBossPrt[prt][1] + hsp.DatBossPrt[prt][5]) + hsp.BossX) || ((hsp.DatBossPrt[prt][1] + hsp.DatBossPrt[prt][7]) + hsp.BossX) < hsp.LsrX[lsr][0]) {
-      return;
-    }
-    if (hsp.LsrY[lsr][0] < ((hsp.DatBossPrt[prt][2] + hsp.DatBossPrt[prt][6]) + hsp.BossY) || ((hsp.DatBossPrt[prt][2] + hsp.DatBossPrt[prt][8]) + hsp.BossY) < hsp.LsrY[lsr][0]) {
-      return;
-    }
-  }
-  hsp.r = 1;
-};
+  // レーザー描画（旧DrwLsr内ループ1回分）
+  draw() {
+    if (!this.alive) return;
 
-;//////////レーザー描画//////////
-hsp.DrwLsr = () => {
-  for (let i = 0; i < hsp.MaxLsr; i++) {
-    if (hsp.LsrFlg[i] == 0) {
-      continue;
-    }
     for (let j = 0; j < 7; j++) {
       hsp.color(50, 255 - (j * 20), 160 - (j * 20));
-      let a = j;
-      let b = j + 1;
-      let ax = Math.floor(hsp.LsrX[i][a]), ay = Math.floor(hsp.LsrY[i][a]);
-      let bx = Math.floor(hsp.LsrX[i][b]), by = Math.floor(hsp.LsrY[i][b]);
+      const ax = Math.floor(this.x[j]);
+      const ay = Math.floor(this.y[j]);
+      const bx = Math.floor(this.x[j + 1]);
+      const by = Math.floor(this.y[j + 1]);
       hsp.line(ax, ay, bx, by);
       hsp.line(ax + 1, ay, bx + 1, by);
       hsp.line(ax - 1, ay, bx - 1, by);
@@ -434,3 +231,236 @@ hsp.DrwLsr = () => {
     }
   }
 };
+
+;//////////プレーヤークラス//////////
+hsp.Player = class {
+  // ショット発射方向テーブル（旧DatShtDir）
+  static SHT_DIR = [192, 192, 191, 193, 190, 194, 184, 200, 174, 210, 166, 218];
+  // レーザー発射方向テーブル（旧DatLsrDir）
+  static LSR_DIR = [187, 197, 177, 207, 167, 217, 157, 227];
+
+  constructor() {
+    this.alive = true;
+    this.shield = 5;
+    this.x = 150;
+    this.y = 260;
+    this.hitCnt = 0;
+    this.gra = 0;
+    this.frm = 0;
+    this.shtCnt = 0;
+    this.shtLV = 1;
+    this.lsrF = 0;
+    this.lsrPow = 0;
+  }
+
+  // プレーヤー初期化（旧IniPly）
+  init() {
+    this.alive = true;
+    this.shield = 5;
+    this.x = 150;
+    this.y = 260;
+    this.hitCnt = 0;
+    this.gra = 0;
+    this.frm = 0;
+    this.shtCnt = 0;
+    this.shtLV = 1;
+    this.lsrF = 0;
+    this.lsrPow = 0;
+  }
+
+  // プレーヤー移動（旧MovPly）
+  update(ctx) {
+    if (!this.alive) {
+      this.lsrPow = 0;
+      return;
+    }
+
+    // 移動量＆傾き決定
+    const dx = ((hsp.Key & 4) >> 2) - (hsp.Key & 1);
+    const dy = ((hsp.Key & 8) >> 3) - ((hsp.Key & 2) >> 1);
+
+    if (dx || dy) {
+      const r = hsp.CollisionSystem.calcDir(0, 0, dx, dy);
+      this.x += Math.cos(r) * 5.5;
+      this.y += Math.sin(r) * 5.5;
+    }
+
+    // 傾きアニメーション
+    if (dx === 0) {
+      if (this.gra < 0) { this.gra++; }
+      if (this.gra > 0) { this.gra--; }
+    } else {
+      this.gra += dx;
+      if (this.gra < -6) { this.gra = -6; }
+      if (this.gra > 6) { this.gra = 6; }
+    }
+
+    // はみ出し制限
+    if (this.x < 20) { this.x = 20; }
+    if (this.y < 20) { this.y = 20; }
+    if (this.x > 280) { this.x = 280; }
+    if (this.y > 280) { this.y = 280; }
+
+    // ショット発射
+    if (this.shtCnt !== 0) {
+      this.shtCnt--;
+    } else {
+      if (hsp.Key & 32) {
+        this.shtCnt = 3;
+        for (let i = 0; i < this.shtLV * 2; i++) {
+          // プールから空きスロットを探す
+          for (let j = 0; j < hsp.PlayerShot.MAX; j++) {
+            if (ctx.playerShots[j].alive) continue;
+
+            const s = ctx.playerShots[j];
+            s.alive = true;
+            s.frm = 0;
+            const rad = hsp.toRad(hsp.Player.SHT_DIR[i + 6]);
+            s.x = Math.cos(rad) * 20 + this.x;
+            s.y = Math.sin(rad) * 20 + this.y;
+            s.dir = hsp.toRad(hsp.Player.SHT_DIR[i]);
+            break;
+          }
+        }
+      }
+    }
+
+    // レーザー発射
+    if (this.lsrF === 1) {
+      if (hsp.Key & 16) {
+        if (this.lsrPow >= 40) {
+          for (let i = 0; i < Math.floor(this.lsrPow / 40); i++) {
+            const lsr = i;
+            if (ctx.lasers[lsr].alive) continue;
+
+            const l = ctx.lasers[lsr];
+            l.alive = true;
+
+            // ターゲット検索
+            const trg = this.searchTarget(ctx);
+            if (trg !== null) {
+              l.trg = trg;
+              l.sta = 1;
+              trg.lckOn++;
+            } else {
+              l.sta = 1;
+            }
+
+            // 初期位置設定
+            for (let j = 0; j < 8; j++) {
+              l.x[j] = this.x;
+              l.y[j] = this.y - 20;
+            }
+
+            // 初期速度・方向
+            const rad = hsp.toRad(hsp.Player.LSR_DIR[lsr]);
+            l.vx = Math.cos(rad) * 16;
+            l.vy = Math.sin(rad) * 16;
+            l.dir = hsp.toRad(192);
+          }
+        }
+      } else {
+        this.lsrPow += (hsp.Key & 32 ? 1 : 3);
+        if (this.lsrPow > 320) {
+          this.lsrPow = 320;
+        }
+      }
+    } else {
+      this.lsrPow -= 25;
+      if (this.lsrPow < 0) {
+        this.lsrPow = 0;
+      }
+    }
+
+    // 被弾カウンタ減少
+    if (this.hitCnt !== 0) {
+      this.hitCnt--;
+    }
+
+    this.frm++;
+  }
+
+  // ロックオンする敵をサーチ（旧SearchTrget）
+  // 戻り値: ターゲットオブジェクト参照（null=なし）
+  searchTarget(ctx) {
+    let trg = null;
+
+    if (ctx.boss.flg !== 1) {
+      // 敵モード
+      for (const e of ctx.enemies) {
+        if (!e.alive) continue;
+
+        if (trg === null) {
+          trg = e;
+          continue;
+        }
+
+        // ロックオン数が少ない敵を優先
+        if (trg.lckOn > e.lckOn) {
+          trg = e;
+          continue;
+        }
+        if (trg.lckOn < e.lckOn) {
+          continue;
+        }
+
+        // ロックオン数が同じなら距離が近い方
+        let tx = trg.x - this.x; tx = tx * tx;
+        let ty = trg.y - this.y; ty = ty * ty;
+        const rd = tx + ty;
+        let ix = e.x - this.x; ix = ix * ix;
+        let iy = e.y - this.y; iy = iy * iy;
+        if (rd > ix + iy) {
+          trg = e;
+        }
+      }
+    } else {
+      // ボスモード
+      const boss = ctx.boss;
+      for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
+        const p = boss.parts[i];
+        if (!p.alive) continue;
+
+        if (trg === null) {
+          trg = p;
+          continue;
+        }
+
+        // コメントアウト: 有効にするとレーザーがボスの各パーツに分散する
+        // if (trg.lckOn > p.lckOn) {
+        //   trg = p;
+        //   continue;
+        // }
+        // if (trg.lckOn < p.lckOn) {
+        //   continue;
+        // }
+
+        // 距離が近いパーツを優先
+        let tx = boss.x + trg.data.x - this.x; tx = tx * tx;
+        let ty = boss.y + trg.data.y - this.y; ty = ty * ty;
+        const rd = tx + ty;
+        let ix = boss.x + p.data.x - this.x; ix = ix * ix;
+        let iy = boss.y + p.data.y - this.y; iy = iy * iy;
+        if (rd > ix + iy) {
+          trg = p;
+        }
+      }
+    }
+
+    return trg;
+  }
+
+  // プレーヤー描画（旧DrwPly）
+  draw() {
+    if (!this.alive) return;
+
+    hsp.pos(Math.floor(this.x) - 20, Math.floor(this.y) - 20);
+    if (Math.floor(this.hitCnt / 3) % 2 === 0) {
+      hsp.gcopy(3, (this.gra >> 1) * 40 + 120, 0, 40, 40);
+    } else {
+      hsp.gcopy(3, (this.gra >> 1) * 40 + 120, 40, 40, 40);
+    }
+  }
+
+};
+

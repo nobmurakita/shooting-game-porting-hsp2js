@@ -1,188 +1,167 @@
-hsp.MaxDatEneSht = 3;
-hsp.MaxEneSht = 100;
+;//////////敵ショット基底クラス//////////
+hsp.EnemyShot = class {
+  static CLASS_MAP = [];  // ki → サブクラスのマッピング（ファイル末尾で設定）
 
-;//////////敵ショット初期化//////////
-hsp.IniDatEneSht = () => {
-  hsp.DatEneSht = [
-    // sx, sy, HitX1, HitY1, HitX2, HitY2, cy
-    [20, 20, -5, -5, 5, 5, 130],
-    [20, 20, -5, -5, 5, 5, 130],
-    [20, 20, -5, -5, 5, 5, 150],
-  ];
-};
-
-;//////////敵ショット初期化//////////
-hsp.IniEneSht = () => {
-  hsp.EneShtFlg = hsp.dim(hsp.MaxEneSht);
-  hsp.EneShtKi = hsp.dim(hsp.MaxEneSht);
-  hsp.EneShtX = hsp.dim(hsp.MaxEneSht);
-  hsp.EneShtY = hsp.dim(hsp.MaxEneSht);
-  hsp.EneShtDir = hsp.dim(hsp.MaxEneSht);
-  hsp.EneShtFrm = hsp.dim(hsp.MaxEneSht);
-  hsp.EneShtCx = hsp.dim(hsp.MaxEneSht);
-  hsp.EneShtTmp = hsp.dim(hsp.MaxEneSht, 4);
-};
-
-;//////////敵ショット発生//////////
-hsp.AprEneSht = () => {
-  for (let i = 0; i < hsp.MaxEneSht; i++) {
-    if (hsp.EneShtFlg[i] != 0) {
-      continue;
-    }
-    hsp.EneShtFlg[i] = 1;
-    const shtki = hsp.prm[0];
-    hsp.EneShtKi[i] = shtki
-    hsp.EneShtX[i] = hsp.prm[1];
-    hsp.EneShtY[i] = hsp.prm[2];
-    hsp.r = hsp.prm[3];
-    hsp.EneShtDir[i] = hsp.r;
-    hsp.EneShtFrm[i] = 0;
-    hsp.EneShtTmp[i] = [0, 0, 0, 0];
-    if (shtki == 0) {
-      let a = hsp.toAngle256(hsp.r);
-      hsp.EneShtCx[i] = Math.floor(((a + 4) & 127) * 15 / 127) * 20;
-    }
-    break;
+  constructor(x, y, dir) {
+    this.alive = true;
+    this.ki = this.constructor.KI;
+    this.x = x;
+    this.y = y;
+    this.dir = dir;
+    this.frm = 0;
+    this.cx = 0;
+    this.tmp = [0, 0, 0, 0];
+    this.initAI();
   }
-};
 
-;//////////敵ショット移動//////////
-hsp.MovEneSht = () => {
-  for (let i = 0; i < hsp.MaxEneSht; i++) {
-    if (hsp.EneShtFlg[i] == 0) {
-      continue;
-    }
-    const ki = hsp.EneShtKi[i];
+  // サブクラスでオーバーライド
+  initAI() {}
+  updateAI(ctx) {}
 
-    if (ki == 0) {
-      hsp.r = hsp.EneShtDir[i];
-      hsp.EneShtX[i] += Math.cos(hsp.r) * 7;
-      hsp.EneShtY[i] += Math.sin(hsp.r) * 7;
-      if (hsp.EneShtX[i] < -10 || hsp.EneShtX[i] > 310 || hsp.EneShtY[i] < -10 || hsp.EneShtY[i] > 310) {
-        hsp.EneShtFlg[i] = 0;
-      }
-    }
+  update(ctx) {
+    if (!this.alive) return;
 
-    if (ki == 1) {
-      hsp.r = hsp.EneShtDir[i];
-      hsp.EneShtX[i] += Math.cos(hsp.r) * 5;
-      hsp.EneShtY[i] += Math.sin(hsp.r) * 5;
-      hsp.EneShtCx[i] = (hsp.EneShtFrm[i] % 16) * 20 + 320;
-      if (hsp.EneShtX[i] < -10 || hsp.EneShtX[i] > 310 || hsp.EneShtY[i] < -10 || hsp.EneShtY[i] > 310) {
-        hsp.EneShtFlg[i] = 0;
-      }
-    }
+    const d = this.constructor.DATA;
+    const ply = ctx.player;
 
-    if (ki == 2) {
-      hsp.r = hsp.EneShtDir[i];
-      if ((hsp.EneShtFrm[i] < 80 && hsp.PlyFlg == 1) || hsp.EneShtFrm[i] == 0) {
-        hsp.prm = [hsp.EneShtX[i], hsp.EneShtY[i], hsp.PlyX, hsp.PlyY];
-        hsp.stg_dir();
-        hsp.EneShtDir[i] = hsp.r;
-      }
-      hsp.EneShtTmp[i][0] += Math.cos(hsp.r) * 2 / 3;
-      hsp.EneShtTmp[i][1] += Math.sin(hsp.r) * 2 / 3;
-      hsp.EneShtX[i] += hsp.EneShtTmp[i][0];
-      hsp.EneShtY[i] += hsp.EneShtTmp[i][1];
-      hsp.EneShtTmp[i][0] = hsp.EneShtTmp[i][0] * 14 / 15;
-      hsp.EneShtTmp[i][1] = hsp.EneShtTmp[i][1] * 14 / 15;
-      let a = hsp.toAngle256(hsp.r);
-      hsp.EneShtCx[i] = Math.floor(((a + 4) & 255) * 31 / 255) * 20;
-      if (hsp.EneShtFrm[i] % 3 == 0) {
-        let x = hsp.rnd(10); x -= 5;
-        let y = hsp.rnd(10); y -= 5;
-        hsp.prm = [2, -Math.cos(hsp.r) * 10 + hsp.EneShtX[i] + x, -Math.sin(hsp.r) * 10 + hsp.EneShtY[i] + y, 0];
-        hsp.AprEff();
-      }
-      hsp.prm = [
-      ];
-      for (let j = 0; j < hsp.MaxPlySht; j++) {
-        if (hsp.PlyShtFlg[j] == 0) {
-          continue;
-        }
-        hsp.prm = [
-          hsp.DatEneSht[ki][2] + hsp.EneShtX[i],
-          hsp.DatEneSht[ki][3] + hsp.EneShtY[i],
-          hsp.DatEneSht[ki][4] + hsp.EneShtX[i],
-          hsp.DatEneSht[ki][5] + hsp.EneShtY[i],
-          hsp.PlyShtX[j] - 5,
-          hsp.PlyShtY[j] - 10,
-          hsp.PlyShtX[j] + 5,
-          hsp.PlyShtY[j] + 10,
-        ];
-        hsp.stg_clash();
-        if (hsp.r == 1) {
-          hsp.Score += 10;
-          hsp.PlyShtFlg[j] = 0;
-          hsp.EneShtFlg[i] = 0;
-          let x = hsp.rnd(10); x -= 5;
-          let y = hsp.rnd(10); y -= 5;
-          hsp.prm = [1, hsp.PlyShtX[j] + x, hsp.PlyShtY[j] + y, 0];
-          hsp.AprEff();
-          for (let k = 0; k < 2; k++) {
-            let x = hsp.rnd(hsp.DatEneSht[ki][0]); x -= Math.floor(hsp.DatEneSht[ki][0] / 2);
-            let y = hsp.rnd(hsp.DatEneSht[ki][1]); y -= Math.floor(hsp.DatEneSht[ki][1] / 2);
-            hsp.prm = [0, hsp.EneShtX[i] + x, hsp.EneShtY[i] + y, -k * 3];
-            hsp.AprEff();
-          }
-          break;
-        }
-      }
-      if (hsp.EneShtFrm[i] > 80) {
-        if (hsp.EneShtX[i] < -10 || hsp.EneShtX[i] > 310 || hsp.EneShtY[i] < -10 || hsp.EneShtY[i] > 310) {
-          hsp.EneShtFlg[i] = 0;
-        }
-      }
-    }
+    // --- AI移動処理（サブクラスで委譲） ---
+    this.updateAI(ctx);
 
-    hsp.EneShtFrm[i]++;
+    this.frm++;
 
-    if (hsp.PlyHitCnt != 0) {
-      continue;
-    }
+    // プレイヤーとの衝突判定
+    if (ply.hitCnt !== 0) return;
+    if (!this.alive) return;
 
-    hsp.prm = [
-      hsp.DatEneSht[ki][2] + hsp.EneShtX[i],
-      hsp.DatEneSht[ki][3] + hsp.EneShtY[i],
-      hsp.DatEneSht[ki][4] + hsp.EneShtX[i],
-      hsp.DatEneSht[ki][5] + hsp.EneShtY[i],
-      hsp.PlyX - 5,
-      hsp.PlyY - 5,
-      hsp.PlyX + 5,
-      hsp.PlyY + 5,
-    ];
-    hsp.stg_clash();
-    if (hsp.r == 1) {
-      hsp.EneShtFlg[i] = 0;
-      hsp.PlyShield--;
-      hsp.PlyHitCnt = 50;
+    if (hsp.CollisionSystem.checkAABB(
+      d.hitX1 + this.x, d.hitY1 + this.y, d.hitX2 + this.x, d.hitY2 + this.y,
+      ply.x - 5, ply.y - 5, ply.x + 5, ply.y + 5
+    )) {
+      this.alive = false;
+      ply.shield--;
+      ply.hitCnt = 50;
       for (let j = 0; j < 2; j++) {
-        let x = hsp.rnd(10); x -= 5;
-        let y = hsp.rnd(10); y -= 5;
-        hsp.prm = [1, hsp.EneShtX[i] + x, hsp.EneShtY[i] + y, -j * 3];
-        hsp.AprEff();
+        let x = hsp.rnd(10) - 5;
+        let y = hsp.rnd(10) - 5;
+        hsp.spawnEffect(ctx, 1, this.x + x, this.y + y, -j * 3);
       }
-      if (hsp.PlyShield == 0) {
-        hsp.PlyFlg = 0;
+      if (ply.shield === 0) {
+        ply.alive = false;
         for (let j = 0; j < 3; j++) {
-          let x = hsp.rnd(40); x -= 20;
-          let y = hsp.rnd(40); y -= 20;
-          hsp.prm = [0, hsp.PlyX + x, hsp.PlyY + y, -j * 3];
-          hsp.AprEff();
+          let x = hsp.rnd(40) - 20;
+          let y = hsp.rnd(40) - 20;
+          hsp.spawnEffect(ctx, 0, ply.x + x, ply.y + y, -j * 3);
         }
       }
     }
   }
-}
 
-;//////////敵ショット描画//////////
-hsp.DrwEneSht = () => {
-  for (let i = 0; i < hsp.MaxEneSht; i++) {
-    if (hsp.EneShtFlg[i] == 0) {
-      continue;
-    }
-    const ki = hsp.EneShtKi[i];
-    hsp.pos(Math.floor(hsp.EneShtX[i]) - Math.floor(hsp.DatEneSht[ki][0] / 2), Math.floor(hsp.EneShtY[i]) - Math.floor(hsp.DatEneSht[ki][1] / 2));
-    hsp.gcopy(3, hsp.EneShtCx[i], hsp.DatEneSht[ki][6], hsp.DatEneSht[ki][0], hsp.DatEneSht[ki][1]);
+  draw() {
+    if (!this.alive) return;
+    const d = this.constructor.DATA;
+    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), Math.floor(this.y) - Math.floor(d.sy / 2));
+    hsp.gcopy(3, this.cx, d.cy, d.sx, d.sy);
   }
+};
+
+;//////////敵ショットサブクラス//////////
+
+;// ki=0: 通常弾（直進）
+hsp.EnemyShot0 = class extends hsp.EnemyShot {
+  static KI = 0;
+  static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 130 };
+
+  initAI() {
+    let a = hsp.toAngle256(this.dir);
+    this.cx = Math.floor(((a + 4) & 127) * 15 / 127) * 20;
+  }
+
+  updateAI(ctx) {
+    this.x += Math.cos(this.dir) * 7;
+    this.y += Math.sin(this.dir) * 7;
+    if (this.x < -10 || this.x > 310 || this.y < -10 || this.y > 310) {
+      this.alive = false;
+    }
+  }
+};
+
+;// ki=1: 照準弾（直進＋アニメーション）
+hsp.EnemyShot1 = class extends hsp.EnemyShot {
+  static KI = 1;
+  static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 130 };
+
+  updateAI(ctx) {
+    this.x += Math.cos(this.dir) * 5;
+    this.y += Math.sin(this.dir) * 5;
+    this.cx = (this.frm % 16) * 20 + 320;
+    if (this.x < -10 || this.x > 310 || this.y < -10 || this.y > 310) {
+      this.alive = false;
+    }
+  }
+};
+
+;// ki=2: 誘導弾（追尾＋プレイヤーショット衝突判定）
+hsp.EnemyShot2 = class extends hsp.EnemyShot {
+  static KI = 2;
+  static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 150 };
+
+  updateAI(ctx) {
+    const ply = ctx.player;
+    const d = this.constructor.DATA;
+
+    if ((this.frm < 80 && ply.alive) || this.frm === 0) {
+      this.dir = hsp.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
+    }
+    this.tmp[0] += Math.cos(this.dir) * 2 / 3;
+    this.tmp[1] += Math.sin(this.dir) * 2 / 3;
+    this.x += this.tmp[0];
+    this.y += this.tmp[1];
+    this.tmp[0] = this.tmp[0] * 14 / 15;
+    this.tmp[1] = this.tmp[1] * 14 / 15;
+    let a = hsp.toAngle256(this.dir);
+    this.cx = Math.floor(((a + 4) & 255) * 31 / 255) * 20;
+    if (this.frm % 3 === 0) {
+      let x = hsp.rnd(10) - 5;
+      let y = hsp.rnd(10) - 5;
+      hsp.spawnEffect(ctx, 2, -Math.cos(this.dir) * 10 + this.x + x, -Math.sin(this.dir) * 10 + this.y + y, 0);
+    }
+    // プレイヤーショットとの衝突判定
+    for (let j = 0; j < hsp.PlayerShot.MAX; j++) {
+      const ps = ctx.playerShots[j];
+      if (!ps.alive) continue;
+      if (hsp.CollisionSystem.checkAABB(
+        d.hitX1 + this.x, d.hitY1 + this.y, d.hitX2 + this.x, d.hitY2 + this.y,
+        ps.x - 5, ps.y - 10, ps.x + 5, ps.y + 10
+      )) {
+        hsp.Score += 10;
+        ps.alive = false;
+        this.alive = false;
+        let x = hsp.rnd(10) - 5;
+        let y = hsp.rnd(10) - 5;
+        hsp.spawnEffect(ctx, 1, ps.x + x, ps.y + y, 0);
+        for (let k = 0; k < 2; k++) {
+          let x = hsp.rnd(d.sx) - Math.floor(d.sx / 2);
+          let y = hsp.rnd(d.sy) - Math.floor(d.sy / 2);
+          hsp.spawnEffect(ctx, 0, this.x + x, this.y + y, -k * 3);
+        }
+        break;
+      }
+    }
+    if (this.frm > 80) {
+      if (this.x < -10 || this.x > 310 || this.y < -10 || this.y > 310) {
+        this.alive = false;
+      }
+    }
+  }
+};
+
+;// CLASS_MAP 構築
+hsp.EnemyShot.CLASS_MAP = [
+  hsp.EnemyShot0, hsp.EnemyShot1, hsp.EnemyShot2,
+];
+
+;// 敵ショット生成ヘルパー
+hsp.spawnEnemyShot = (ctx, ki, x, y, dir) => {
+  const ShotClass = hsp.EnemyShot.CLASS_MAP[ki];
+  ctx.enemyShots.push(new ShotClass(x, y, dir));
 };

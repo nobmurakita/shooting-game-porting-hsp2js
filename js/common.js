@@ -8,6 +8,25 @@ hsp.STA_PAUSE =   6;  // ポーズ
 
 hsp.MaxStage = 1;
 
+;//////////ゲーム共有状態//////////
+hsp.GameContext = class {
+  constructor() {
+    this.gameSta = 0;
+    this.stage = 0;
+    this.score = 0;
+    this.hiScore = 0;
+    this.frame = 0;
+    this.key = 0;
+    this.effects = [];
+    this.player = null;
+    this.playerShots = [];
+    this.lasers = [];
+    this.enemies = [];
+    this.enemyShots = [];
+    this.boss = null;
+  }
+};
+
 ;//////////初期設定//////////
 hsp.IniCom = () => {
   hsp.GameSta = hsp.STA_OPENING;
@@ -91,13 +110,13 @@ hsp.Disp = () => {
   hsp.pos(40, 288);
   hsp.gcopy(3, 0, 264, 80, 12);
   hsp.pos(40, 288);
-  hsp.gcopy(3, 0, 254, Math.floor(hsp.LsrPow / 4), 12);
+  hsp.gcopy(3, 0, 254, Math.floor(hsp.ctx.player.lsrPow / 4), 12);
 
   // シールド
   hsp.pos(200, 284);
   hsp.gcopy(3, 0, 202, 45, 16);
-  if (hsp.PlyShield != 0) {
-    for (let i = 0; i < hsp.PlyShield; i++) {
+  if (hsp.ctx.player.shield != 0) {
+    for (let i = 0; i < hsp.ctx.player.shield; i++) {
       hsp.pos(i * 8 + 245, 284);
       hsp.gcopy(3, 72, 186, 8, 16);
     }

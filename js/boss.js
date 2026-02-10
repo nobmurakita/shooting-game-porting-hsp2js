@@ -1,187 +1,200 @@
-hsp.MaxBossPrt = 3;
+;//////////ボスパーツクラス//////////
+hsp.BossPart = class {
+  static DATA = [
+    { shield: 500, x: 0, y: -7, sx: 70, sy: 75, hitX1: -25, hitY1: -30, hitX2: 25, hitY2: 6, cy: 0 },
+    { shield: 200, x: -40, y: 0, sx: 20, sy: 112, hitX1: -10, hitY1: -56, hitX2: 10, hitY2: 56, cy: 75 },
+    { shield: 200, x: 40, y: 0, sx: 20, sy: 112, hitX1: -10, hitY1: -56, hitX2: 10, hitY2: 56, cy: 75 },
+  ];
 
-;//////////ボスパーツ初期化//////////
-hsp.IniDatBossPrt = () => {
-  hsp.buffer(5, 1000, 1000);
-  if (hsp.Stage == 1) {
-    hsp.picload('img/boss00.png', 0, 0);
-    hsp.picload('img/boss01.png', 0, 75);
-
-    hsp.DatBossPrt = [
-      // Shield, x, y, sx, sy, HitX1, HitY1, HitX2, HitY2, Cy
-      [500, 0, -7, 70, 75, -25, -30, 25, 6, 0],
-      [200, -40, 0, 20, 112, -10, -56, 10, 56, 75],
-      [200, 40, 0, 20, 112, -10, -56, 10, 56, 75],
-    ];
+  constructor(data) {
+    this.alive = false;
+    this.shield = 0;
+    this.cx = 0;
+    this.lckOn = 0;
+    this.data = data;
   }
 };
 
-;//////////ボス初期化//////////
-hsp.IniBoss = () => {
-  if (hsp.Stage == 1) {
-    hsp.BossFlg = 0;
-    hsp.BossShield = 500;
-    hsp.BossX = 150;
-    hsp.BossY = -100;
-    hsp.BossFrm = 0;
+;//////////ボスクラス//////////
+hsp.Boss = class {
+  static MAX_PARTS = 3;
 
-    hsp.BossPrtFlg = hsp.dim(hsp.MaxBossPrt);
-    hsp.BossPrtShield = hsp.dim(hsp.MaxBossPrt);
-    hsp.BossPrtCx = hsp.dim(hsp.MaxBossPrt);
-    hsp.BossLckOn = hsp.dim(hsp.MaxBossPrt);
-
-    for (let i = 0; i < hsp.MaxBossPrt; i++) {
-      hsp.BossPrtFlg[i] = 1;
-      hsp.BossPrtShield[i] = hsp.DatBossPrt[i][0];
-    }
-
-    hsp.BossAprFrm = 2450;
+  constructor() {
+    this.flg = 0;
+    this.shield = 0;
+    this.x = 0;
+    this.y = 0;
+    this.frm = 0;
+    this.aprFrm = 0;
+    this.parts = hsp.BossPart.DATA.map(d => new hsp.BossPart(d));
   }
-};
 
-;//////////ボス移動//////////
-hsp.MovBoss = () => {
-  if (hsp.BossFlg == 2) {
-    for (let i = 0; i < hsp.MaxBossPrt; i++) {
-      hsp.BossPrtCx[i] = hsp.DatBossPrt[i][3];
-    }
-    hsp.BossFrm++;
-    if (hsp.BossFrm % 3 == 0) {
-      let x = hsp.rnd(50); x -= 25;
-      let y = hsp.rnd(50); y -= 25;
-      hsp.prm = [0, hsp.BossX + x, hsp.BossY + y, 0];
-      hsp.AprEff();
-    }
-    let x = hsp.rnd(4); x -= 2;
-    let y = hsp.rnd(1); y -= 0.5;
-    hsp.BossX += x;
-    hsp.BossY += y + 1;
-    if (hsp.BossFrm == 50) {
-      for (let i = 0; i < 3; i++) {
-        let a = (i + 1) * 25;
-        let t = -i * 2;
-        for (let j = 0; j < 16; j++) {
-          hsp.r = hsp.toRad((j * 16) & 255);
-          hsp.prm = [0, a * Math.cos(hsp.r) + hsp.BossX, a * Math.sin(hsp.r) + hsp.BossY, t];
-          hsp.AprEff();
-        }
-      }
-    }
-    if (hsp.BossFrm == 60) {
-      hsp.BossFlg = 0;
-      hsp.GameSta = hsp.STA_CLEAR;
+  // ボスパーツ画像初期化（旧IniDatBossPrt）
+  initData() {
+    hsp.buffer(5, 1000, 1000);
+    if (hsp.Stage === 1) {
+      hsp.picload('img/boss00.png', 0, 0);
+      hsp.picload('img/boss01.png', 0, 75);
     }
   }
 
-  if (hsp.BossFlg != 1) {
-    return;
-  }
+  // ボス初期化（旧IniBoss）
+  init() {
+    if (hsp.Stage === 1) {
+      this.flg = 0;
+      this.shield = 500;
+      this.x = 150;
+      this.y = -100;
+      this.frm = 0;
+      this.aprFrm = 2450;
 
-  if (hsp.Stage == 1) {
-    if (hsp.BossFrm < 200) {
-      hsp.BossY += 1;
-    } else {
-      let a = Math.floor((hsp.BossFrm - 200) / 128) % 4;
-
-      if (a == 0 || a == 3) {
-        hsp.BossX -= 1;
-      } else {
-        hsp.BossX += 1;
-      }
-
-      hsp.r = hsp.toRad(hsp.BossFrm);
-      hsp.BossY += Math.sin(hsp.r);
-
-      if ((hsp.BossFrm - 200) % 128 < 32 && (hsp.BossFrm - 200) % 8 == 0) {
-        if (hsp.BossPrtFlg[1] == 1) {
-          hsp.prm = [2, -40 + hsp.BossX, hsp.BossY, hsp.r];
-          hsp.AprEneSht();
-        }
-        if (hsp.BossPrtFlg[2] == 1) {
-          hsp.prm = [2, 40 + hsp.BossX, hsp.BossY, hsp.r];
-          hsp.AprEneSht();
-        }
-      }
-      if ((hsp.BossFrm - 200) % 128 < 32 && (hsp.BossFrm - 200) % 4 == 0) {
-        if (hsp.BossFlg == 1) {
-          hsp.prm = [hsp.BossX, hsp.BossY, hsp.PlyX, hsp.PlyY];
-          hsp.stg_dir();
-          hsp.prm = [1, hsp.BossX, hsp.BossY - 20, hsp.r];
-          hsp.AprEneSht();
-        }
-      }
-      if ((hsp.BossFrm - 200) % 32 == 31) {
-        if (hsp.BossFlg == 1) {
-          hsp.prm = [0, -5 + hsp.BossX, 25 + hsp.BossY, hsp.toRad(64)];
-          hsp.AprEneSht();
-          hsp.prm = [0, 5 + hsp.BossX, 25 + hsp.BossY, hsp.toRad(64)];
-          hsp.AprEneSht();
-        }
+      for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
+        this.parts[i].alive = true;
+        this.parts[i].shield = hsp.BossPart.DATA[i].shield;
+        this.parts[i].cx = 0;
+        this.parts[i].lckOn = 0;
       }
     }
-    hsp.BossFrm++;
   }
 
-  for (let i = 0; i < hsp.MaxBossPrt; i++) {
-    const prt = i;
-    if (hsp.BossPrtFlg[prt] == 0) {
-      continue;
-    }
-    for (let j = 0; j < hsp.MaxPlySht; j++) {
-      const sht = j;
-      if (hsp.PlyShtFlg[sht] == 0) {
-        continue;
+  // ボス移動（旧MovBoss）
+  update(ctx) {
+    // 破壊演出（flg==2）
+    if (this.flg === 2) {
+      for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
+        this.parts[i].cx = this.parts[i].data.sx;
       }
-      hsp.prm = [
-        hsp.BossX + hsp.DatBossPrt[prt][1] + hsp.DatBossPrt[prt][5],
-        hsp.BossY + hsp.DatBossPrt[prt][2] + hsp.DatBossPrt[prt][6],
-        hsp.BossX + hsp.DatBossPrt[prt][1] + hsp.DatBossPrt[prt][7],
-        hsp.BossY + hsp.DatBossPrt[prt][2] + hsp.DatBossPrt[prt][8],
-        hsp.PlyShtX[sht] - 5,
-        hsp.PlyShtY[sht] - 10,
-        hsp.PlyShtX[sht] + 5,
-        hsp.PlyShtY[sht] + 10,
-      ];
-      hsp.stg_clash();
-      if (hsp.r == 1) {
-        hsp.Score += 10;
-        hsp.PlyShtFlg[sht] = 0;
-        hsp.BossShield--;
-        hsp.BossPrtShield[prt]--;
-        let x = hsp.rnd(10); x -= 5;
-        let y = hsp.rnd(10); y -= 5;
-        hsp.prm = [1, hsp.PlyShtX[j] + x, hsp.PlyShtY[j] + y, 0];
-        hsp.AprEff();
-        if (hsp.BossShield == 0) {
-          hsp.BossFlg = 2;
-          hsp.BossFrm = 0;
-        }
-        if (hsp.BossPrtShield[prt] == 0) {
-          hsp.BossPrtFlg[prt] = 0;
-          hsp.BossPrtCx[prt] = hsp.DatBossPrt[prt][3];
-          for (let k = 0; k < 5; k++) {
-            let x = hsp.rnd(hsp.DatBossPrt[prt][3]); x -= Math.floor(hsp.DatBossPrt[prt][3] / 2);
-            let y = hsp.rnd(hsp.DatBossPrt[prt][4]); y -= Math.floor(hsp.DatBossPrt[prt][4] / 2);
-            hsp.prm = [0, hsp.DatBossPrt[prt][1] + hsp.BossX + x, hsp.DatBossPrt[prt][2] + hsp.BossY + y, -k * 3];
-            hsp.AprEff();
+      this.frm++;
+      if (this.frm % 3 === 0) {
+        let x = hsp.rnd(50) - 25;
+        let y = hsp.rnd(50) - 25;
+        hsp.spawnEffect(ctx, 0, this.x + x, this.y + y, 0);
+      }
+      let x = hsp.rnd(4) - 2;
+      let y = hsp.rnd(1) - 0.5;
+      this.x += x;
+      this.y += y + 1;
+      if (this.frm === 50) {
+        for (let i = 0; i < 3; i++) {
+          let a = (i + 1) * 25;
+          let t = -i * 2;
+          for (let j = 0; j < 16; j++) {
+            let r = hsp.toRad((j * 16) & 255);
+            hsp.spawnEffect(ctx, 0, a * Math.cos(r) + this.x, a * Math.sin(r) + this.y, t);
           }
-          break;
+        }
+      }
+      if (this.frm === 60) {
+        this.flg = 0;
+        hsp.GameSta = hsp.STA_CLEAR;
+      }
+    }
+
+    if (this.flg !== 1) {
+      return;
+    }
+
+    // ステージ1のボスAI
+    if (hsp.Stage === 1) {
+      if (this.frm < 200) {
+        this.y += 1;
+      } else {
+        let a = Math.floor((this.frm - 200) / 128) % 4;
+
+        if (a === 0 || a === 3) {
+          this.x -= 1;
+        } else {
+          this.x += 1;
+        }
+
+        let r = hsp.toRad(this.frm);
+        this.y += Math.sin(r);
+
+        // 誘導弾発射（パーツ1,2）
+        if ((this.frm - 200) % 128 < 32 && (this.frm - 200) % 8 === 0) {
+          if (this.parts[1].alive) {
+            hsp.spawnEnemyShot(ctx, 2, -40 + this.x, this.y, r);
+          }
+          if (this.parts[2].alive) {
+            hsp.spawnEnemyShot(ctx, 2, 40 + this.x, this.y, r);
+          }
+        }
+        // 照準弾発射
+        if ((this.frm - 200) % 128 < 32 && (this.frm - 200) % 4 === 0) {
+          if (this.flg === 1) {
+            let dir = hsp.CollisionSystem.calcDir(this.x, this.y, ctx.player.x, ctx.player.y);
+            hsp.spawnEnemyShot(ctx, 1, this.x, this.y - 20, dir);
+          }
+        }
+        // 通常弾発射
+        if ((this.frm - 200) % 32 === 31) {
+          if (this.flg === 1) {
+            hsp.spawnEnemyShot(ctx, 0, -5 + this.x, 25 + this.y, hsp.toRad(64));
+            hsp.spawnEnemyShot(ctx, 0, 5 + this.x, 25 + this.y, hsp.toRad(64));
+          }
+        }
+      }
+      this.frm++;
+    }
+
+    // プレイヤーショットとの衝突判定
+    for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
+      const prt = this.parts[i];
+      if (!prt.alive) continue;
+      const d = prt.data;
+
+      for (let j = 0; j < hsp.PlayerShot.MAX; j++) {
+        const s = ctx.playerShots[j];
+        if (!s.alive) continue;
+
+        if (hsp.CollisionSystem.checkAABB(
+          this.x + d.x + d.hitX1, this.y + d.y + d.hitY1,
+          this.x + d.x + d.hitX2, this.y + d.y + d.hitY2,
+          s.x - 5, s.y - 10,
+          s.x + 5, s.y + 10
+        )) {
+          hsp.Score += 10;
+          s.alive = false;
+          this.shield--;
+          prt.shield--;
+          let ex = hsp.rnd(10) - 5;
+          let ey = hsp.rnd(10) - 5;
+          hsp.spawnEffect(ctx, 1, s.x + ex, s.y + ey, 0);
+          if (this.shield === 0) {
+            this.flg = 2;
+            this.frm = 0;
+          }
+          if (prt.shield === 0) {
+            prt.alive = false;
+            prt.cx = d.sx;
+            for (let k = 0; k < 5; k++) {
+              let px = hsp.rnd(d.sx) - Math.floor(d.sx / 2);
+              let py = hsp.rnd(d.sy) - Math.floor(d.sy / 2);
+              hsp.spawnEffect(ctx, 0, d.x + this.x + px, d.y + this.y + py, -k * 3);
+            }
+            break;
+          }
         }
       }
     }
-  }
-};
 
-;//////////ボス描画//////////
-hsp.DrwBoss = () => {
-  if (hsp.BossFlg == 0) {
-    return;
   }
-  if (hsp.Stage == 1) {
-    for (let i = 0; i < hsp.MaxBossPrt; i++) {
-      const prt = i;
-      hsp.pos(Math.floor(hsp.BossX) + hsp.DatBossPrt[prt][1] - Math.floor(hsp.DatBossPrt[prt][3] / 2), Math.floor(hsp.BossY) + hsp.DatBossPrt[prt][2] - Math.floor(hsp.DatBossPrt[prt][4] / 2));
-      hsp.gcopy(5, hsp.BossPrtCx[prt], hsp.DatBossPrt[prt][9], hsp.DatBossPrt[prt][3], hsp.DatBossPrt[prt][4]);
+
+  // ボス描画（旧DrwBoss）
+  draw() {
+    if (this.flg === 0) return;
+
+    if (hsp.Stage === 1) {
+      for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
+        const prt = this.parts[i];
+        const d = prt.data;
+        hsp.pos(
+          Math.floor(this.x) + d.x - Math.floor(d.sx / 2),
+          Math.floor(this.y) + d.y - Math.floor(d.sy / 2)
+        );
+        hsp.gcopy(5, prt.cx, d.cy, d.sx, d.sy);
+      }
     }
   }
+
 };

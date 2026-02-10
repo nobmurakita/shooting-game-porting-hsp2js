@@ -1,84 +1,87 @@
-hsp.MaxDatEff = 3;
-hsp.MaxEff = 70;
+;//////////エフェクト基底クラス//////////
+hsp.Effect = class {
+  static CLASS_MAP = [];  // ki → サブクラスのマッピング（ファイル末尾で設定）
 
-;//////////エフェクトデータ初期化//////////
-hsp.IniDatEff = () => {
-  hsp.DatEff = [
-    // sx, sy, cy
-    [40, 40, 80],
-    [10, 10, 120],
-    [10, 10, 120],
-  ];
-};
+  constructor(x, y, startFrm) {
+    this.alive = true;
+    this.ki = this.constructor.KI;
+    this.x = x;
+    this.y = y;
+    this.frm = startFrm;
+    this.cx = 0;
+  }
 
-;//////////エフェクト初期化//////////
-hsp.IniEff = () => {
-  hsp.EffFlg = hsp.dim(hsp.MaxEff);
-  hsp.EffKi = hsp.dim(hsp.MaxEff);
-  hsp.EffX = hsp.dim(hsp.MaxEff);
-  hsp.EffY = hsp.dim(hsp.MaxEff);
-  hsp.EffFrm = hsp.dim(hsp.MaxEff);
-  hsp.EffCx = hsp.dim(hsp.MaxEff);
-};
+  // サブクラスでオーバーライド
+  updateAI() {}
 
-;//////////エフェクト発生//////////
-hsp.AprEff = () => {
-  for (let i = 0; i < hsp.MaxEff; i++) {
-    if (hsp.EffFlg[i] != 0) {
-      continue;
-    }
-    hsp.EffFlg[i] = 1;
-    hsp.EffKi[i] = hsp.prm[0];
-    hsp.EffX[i] = hsp.prm[1];
-    hsp.EffY[i] = hsp.prm[2];
-    hsp.EffFrm[i] = hsp.prm[3];
-    break;
+  update() {
+    if (!this.alive) return;
+
+    this.frm++;
+    if (this.frm <= 0) return;
+
+    this.updateAI();
+  }
+
+  draw() {
+    if (!this.alive || this.frm <= 0) return;
+    const d = this.constructor.DATA;
+    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), Math.floor(this.y) - Math.floor(d.sy / 2));
+    hsp.gcopy(3, this.cx, d.cy, d.sx, d.sy);
   }
 };
 
-;//////////エフェクト移動//////////
-hsp.MovEff = () => {
-  for (let i = 0; i < hsp.MaxEff; i++) {
-    if (hsp.EffFlg[i] == 0) {
-      continue;
-    }
-    hsp.EffFrm[i]++;
-    if (hsp.EffFrm[i] <= 0) {
-      continue;
-    }
-    const ki = hsp.EffKi[i];
+;//////////エフェクトサブクラス//////////
 
-    if (ki == 0) {
-      if (hsp.EffFrm[i] >= 8) {
-        hsp.EffY[i] += 7;
-      }
-      hsp.EffCx[i] = Math.floor(hsp.EffFrm[i] / 3) % 6 * 40;
-      if (hsp.EffFrm[i] == 17) {
-        hsp.EffFlg[i] = 0;
-      }
-    } else if (ki == 1) {
-      hsp.EffCx[i] = Math.floor(hsp.EffFrm[i] / 3) % 6 * 10 + 60;
-      if (hsp.EffFrm[i] == 17) {
-        hsp.EffFlg[i] = 0;
-      }
-    } else if (ki == 2) {
-      hsp.EffCx[i] = Math.floor(hsp.EffFrm[i] / 3) % 6 * 10;
-      if (hsp.EffFrm[i] == 17) {
-        hsp.EffFlg[i] = 0;
-      }
+;// ki=0: 爆発（大）
+hsp.Effect0 = class extends hsp.Effect {
+  static KI = 0;
+  static DATA = { sx: 40, sy: 40, cy: 80 };
+
+  updateAI() {
+    if (this.frm >= 8) {
+      this.y += 7;
+    }
+    this.cx = Math.floor(this.frm / 3) % 6 * 40;
+    if (this.frm === 17) {
+      this.alive = false;
     }
   }
 };
 
-;//////////エフェクト描画//////////
-hsp.DrwEff = () => {
-  for (let i = 0; i < hsp.MaxEff; i++) {
-    const eff = hsp.MaxEff - 1 - i;
-    if (hsp.EffFlg[eff] == 0 || hsp.EffFrm[eff] <= 0) {
-      continue;
+;// ki=1: 火花
+hsp.Effect1 = class extends hsp.Effect {
+  static KI = 1;
+  static DATA = { sx: 10, sy: 10, cy: 120 };
+
+  updateAI() {
+    this.cx = Math.floor(this.frm / 3) % 6 * 10 + 60;
+    if (this.frm === 17) {
+      this.alive = false;
     }
-    const ki = hsp.EffKi[eff];
-    hsp.pos(Math.floor(hsp.EffX[eff]) - Math.floor(hsp.DatEff[ki][0] / 2), Math.floor(hsp.EffY[eff]) - Math.floor(hsp.DatEff[ki][1] / 2));
-    hsp.gcopy(3, hsp.EffCx[eff], hsp.DatEff[ki][2], hsp.DatEff[ki][0], hsp.DatEff[ki][1]);
   }
+};
+
+;// ki=2: 煙
+hsp.Effect2 = class extends hsp.Effect {
+  static KI = 2;
+  static DATA = { sx: 10, sy: 10, cy: 120 };
+
+  updateAI() {
+    this.cx = Math.floor(this.frm / 3) % 6 * 10;
+    if (this.frm === 17) {
+      this.alive = false;
+    }
+  }
+};
+
+;// CLASS_MAP 構築
+hsp.Effect.CLASS_MAP = [
+  hsp.Effect0, hsp.Effect1, hsp.Effect2,
+];
+
+;// エフェクト生成ヘルパー
+hsp.spawnEffect = (ctx, ki, x, y, startFrm) => {
+  const EffectClass = hsp.Effect.CLASS_MAP[ki];
+  ctx.effects.push(new EffectClass(x, y, startFrm));
 };
