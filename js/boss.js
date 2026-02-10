@@ -58,10 +58,10 @@ hsp.MovBoss = () => {
     hsp.BossY += y + 256;
     if (hsp.BossFrm == 50) {
       for (let i = 0; i < 3; i++) {
-        let a = i + 1 * 25;
+        let a = (i + 1) * 25;
         let t = -i * 2;
         for (let j = 0; j < 16; j++) {
-          hsp.r = i * 16 & 255;
+          hsp.r = (j * 16) & 255;
           hsp.prm = [0, a * hsp.cos[hsp.r] + hsp.BossX, a * hsp.sin[hsp.r] + hsp.BossY, t];
           hsp.AprEff();
         }
@@ -110,7 +110,7 @@ hsp.MovBoss = () => {
           hsp.AprEneSht();
         }
       }
-      if (hsp.BossFrm - 200 % 32 == 31) {
+      if ((hsp.BossFrm - 200) % 32 == 31) {
         if (hsp.BossFlg == 1) {
           hsp.prm = [0, (-5 << 8) + hsp.BossX, (25 << 8) + hsp.BossY, 64];
           hsp.AprEneSht();

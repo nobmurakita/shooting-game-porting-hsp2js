@@ -349,7 +349,7 @@ hsp.MovLsr = () => {
           hsp.Score += 100;
           hsp.BossShield -= 5;
           hsp.BossPrtShield[prt] -= 5;
-          hsp.BossLckOn.prt--;
+          hsp.BossLckOn[prt]--;
           // ;BossPrtCx.prt=DatBossPrt.3.prt
           hsp.LsrSta[lsr] = 0;
           for (let j = 0; j < 2; j++) {
@@ -405,10 +405,10 @@ hsp.LsrHit = () => {
   } else {
     const lsr = hsp.prm[0];
     const prt = hsp.prm[1];
-    if (hsp.LsrX[lsr][0] < ((hsp.DatBossPrt[prt][1] + hsp.DatBossPrt[prt][5] << 8) + hsp.BossX) || ((hsp.DatBossPrt[prt][1] + hsp.DatBossPrt[prt][7] << 8) + hsp.BossX) < hsp.LsrX[lsr][0]) {
+    if (hsp.LsrX[lsr][0] < (((hsp.DatBossPrt[prt][1] + hsp.DatBossPrt[prt][5]) << 8) + hsp.BossX) || (((hsp.DatBossPrt[prt][1] + hsp.DatBossPrt[prt][7]) << 8) + hsp.BossX) < hsp.LsrX[lsr][0]) {
       return;
     }
-    if (hsp.LsrY[lsr][0] < ((hsp.DatBossPrt[prt][2] + hsp.DatBossPrt[prt][6] << 8) + hsp.BossY) || ((hsp.DatBossPrt[prt][2] + hsp.DatBossPrt[prt][8] << 8) + hsp.BossY) < hsp.LsrY[lsr][0]) {
+    if (hsp.LsrY[lsr][0] < (((hsp.DatBossPrt[prt][2] + hsp.DatBossPrt[prt][6]) << 8) + hsp.BossY) || (((hsp.DatBossPrt[prt][2] + hsp.DatBossPrt[prt][8]) << 8) + hsp.BossY) < hsp.LsrY[lsr][0]) {
       return;
     }
   }

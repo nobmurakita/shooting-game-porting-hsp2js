@@ -28,9 +28,9 @@ hsp.stg_set = () => {
 
   hsp.atan = hsp.dim(21, 21);
   for (let i = 0; i < 64; i++) {
-    dx = hsp.cos[i];
-    dy = hsp.sin[i];
-    du = Math.max(dx, dy);
+    let dx = hsp.cos[i];
+    let dy = hsp.sin[i];
+    let du = Math.max(dx, dy);
     dx = Math.floor(dx * 20 / du);
     dy = Math.floor(dy * 20 / du);
     hsp.atan[dx][dy] = i;

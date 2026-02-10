@@ -246,7 +246,7 @@ hsp.MovEne = () => {
         hsp.r = 192;
       } else {
         if (hsp.EneFrm[ene] < 46) {
-          hsp.EneTmp[ene][0] = hsp.EneFrm[ene] - 30 * 2;
+          hsp.EneTmp[ene][0] = (hsp.EneFrm[ene] - 30) * 2;
         }
         if (hsp.EneMv[ene] == 0) {
           hsp.r = 192 + hsp.EneTmp[ene][0];

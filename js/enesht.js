@@ -1,4 +1,4 @@
-hsp.MaxDatEneSht = 4;
+hsp.MaxDatEneSht = 3;
 hsp.MaxEneSht = 100;
 
 ;//////////敵ショット初期化//////////
