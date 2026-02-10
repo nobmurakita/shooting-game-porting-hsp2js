@@ -26,7 +26,7 @@ game.Effect = class {
   draw() {
     if (!this.alive || this.frm <= 0) return;
     const d = this.constructor.DATA;
-    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), game.screenY(this.y, d.sy));
+    hsp.pos(game.screenX(this.x, d.sx), game.screenY(this.y, d.sy));
     hsp.gcopy(game.Effect.BUF, this.cx, d.cy, d.sx, d.sy);
   }
 };

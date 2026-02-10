@@ -61,8 +61,8 @@ game.Boss = class {
     if (game.ctx.stage === 1) {
       this.flg = game.BOSS_NONE;
       this.shield = 500;
-      this.x = 150;
-      this.y = 400;
+      this.x = 0;
+      this.y = 250;
       this.frm = 0;
       this.aprFrm = 4900;
 
@@ -163,7 +163,7 @@ game.Boss = class {
         const prt = this.parts[i];
         const d = prt.constructor.DATA;
         hsp.pos(
-          Math.floor(this.x) + d.x - Math.floor(d.sx / 2),
+          game.screenX(this.x + d.x, d.sx),
           game.screenY(this.y + d.y, d.sy)
         );
         hsp.gcopy(game.BossPart.BUF, prt.cx, d.cy, d.sx, d.sy);

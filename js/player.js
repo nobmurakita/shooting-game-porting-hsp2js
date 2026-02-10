@@ -2,7 +2,7 @@
 game.PlayerShot = class {
   // 当たり判定の半幅・半高（中心からの距離）
   static HITBOX = { hw: 5, hh: 10 };
-  static CONFIG = { speed: 8, offscreenY: 320 };
+  static CONFIG = { speed: 8, offscreenY: 170 };
   static DATA = { buf: 3, sx: 10, sy: 20, cx: 280, cy: 0 };
 
   constructor(x, y, dir) {
@@ -31,7 +31,7 @@ game.PlayerShot = class {
   draw() {
     if (!this.alive) return;
     const d = game.PlayerShot.DATA;
-    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), game.screenY(this.y, d.sy));
+    hsp.pos(game.screenX(this.x, d.sx), game.screenY(this.y, d.sy));
     hsp.gcopy(d.buf, d.cx, d.cy, d.sx, d.sy);
   }
 };
@@ -200,7 +200,7 @@ game.Laser = class {
 
     // ターゲットなし状態で画面外に出たら消滅開始
     if (this.sta === game.LSR_NO_TARGET) {
-      if (this.x[0] < 0 || game.SCREEN_W < this.x[0] || this.y[0] < 0 || game.SCREEN_H < this.y[0]) {
+      if (this.x[0] < -150 || 150 < this.x[0] || this.y[0] < -150 || 150 < this.y[0]) {
         this.sta = game.LSR_DYING;
       }
     }
@@ -219,10 +219,10 @@ game.Laser = class {
     const d = game.Laser.DRAW;
     for (let j = 0; j < d.segments; j++) {
       hsp.color(d.baseR, d.baseG - (j * d.fadeG), d.baseB - (j * d.fadeB));
-      const ax = Math.floor(this.x[j]);
-      const ay = game.SCREEN_H - Math.floor(this.y[j]);
-      const bx = Math.floor(this.x[j + 1]);
-      const by = game.SCREEN_H - Math.floor(this.y[j + 1]);
+      const ax = Math.floor(game.SCREEN_W / 2 + this.x[j]);
+      const ay = Math.floor(game.SCREEN_H / 2 - this.y[j]);
+      const bx = Math.floor(game.SCREEN_W / 2 + this.x[j + 1]);
+      const by = Math.floor(game.SCREEN_H / 2 - this.y[j + 1]);
       hsp.line(ax, ay, bx, by);
       hsp.line(ax + 1, ay, bx + 1, by);
       hsp.line(ax - 1, ay, bx - 1, by);
@@ -237,8 +237,8 @@ game.Player = class {
   // 当たり判定の半幅・半高（中心からの距離）
   static HITBOX = { hw: 5, hh: 5 };
   // 移動制限（画面端からのマージン）
-  static MOVE_MIN = 20;
-  static MOVE_MAX = 280;
+  static MOVE_MIN = -130;
+  static MOVE_MAX = 130;
   static CONFIG = {
     moveSpeed: 2.75,
     shotInterval: 6,
@@ -248,8 +248,8 @@ game.Player = class {
     laserDecay: 6.5,
     laserThreshold: 40,
     initShield: 5,
-    initX: 150,
-    initY: 40,
+    initX: 0,
+    initY: -110,
     hitInvincible: 100,
   };
   static DATA = { buf: 3, sx: 40, sy: 40, baseX: 120, normalY: 0, hitY: 40 };
@@ -435,7 +435,7 @@ game.Player = class {
   draw() {
     if (!this.alive) return;
     const d = game.Player.DATA;
-    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), game.screenY(this.y, d.sy));
+    hsp.pos(game.screenX(this.x, d.sx), game.screenY(this.y, d.sy));
     const frameX = (this.gra >> 1) * d.sx + d.baseX;
     const frameY = (Math.floor(this.hitCnt / 6) % 2 === 0) ? d.normalY : d.hitY;
     hsp.gcopy(d.buf, frameX, frameY, d.sx, d.sy);

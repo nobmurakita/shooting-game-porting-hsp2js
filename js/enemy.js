@@ -38,7 +38,7 @@ game.Enemy = class {
   draw() {
     if (!this.alive) return;
     const d = this.constructor.DATA;
-    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), game.screenY(this.y, d.sy));
+    hsp.pos(game.screenX(this.x, d.sx), game.screenY(this.y, d.sy));
     hsp.gcopy(game.Enemy.BUF, this.cx, d.cy, d.sx, d.sy);
   }
 
@@ -94,7 +94,7 @@ game.Enemy0 = class extends game.Enemy {
     }
     this.y -= 1;
     this.cx = Math.floor(this.frm / 2) % 6 * 20;
-    if (this.y < -20) {
+    if (this.y < -170) {
       this.alive = false;
     }
   }
@@ -122,7 +122,7 @@ game.Enemy1 = class extends game.Enemy {
     if (this.frm === 64) {
       game.spawnEnemyShot(ctx, 0, this.x, this.y - 20, game.DIR_DOWN);
     }
-    if ((this.x < -20) || (320 < this.x)) {
+    if ((this.x < -170) || (170 < this.x)) {
       this.alive = false;
     }
   }
@@ -155,7 +155,7 @@ game.Enemy2 = class extends game.Enemy {
     }
     this.cx = game.radToSpriteFrame(r, 32, 40);
     if (this.frm > 160) {
-      if (this.x < -20 || this.x > 320 || this.y < -20 || this.y > 320) {
+      if (this.x < -170 || this.x > 170 || this.y < -170 || this.y > 170) {
         this.alive = false;
       }
     }
@@ -174,7 +174,7 @@ game.Enemy3 = class extends game.Enemy {
       game.spawnEnemyShot(ctx, 1, this.x, this.y - 30, dir);
     }
     this.cx = 0;
-    if (this.y < -30) {
+    if (this.y < -180) {
       this.alive = false;
     }
   }
@@ -195,7 +195,7 @@ game.Enemy4 = class extends game.Enemy {
       this.tmp[0] += 4;
     }
     this.cx = 0;
-    if (this.y > 330) {
+    if (this.y > 180) {
       this.alive = false;
     }
   }
@@ -213,8 +213,8 @@ game.Enemy5 = class extends game.Enemy {
     } else {
       r = (-this.frm + 128) * game.A256;
     }
-    this.x = Math.cos(r) * 150 + 150;
-    this.y = -Math.sin(r) * 150 + game.SCREEN_H;
+    this.x = Math.cos(r) * 150;
+    this.y = -Math.sin(r) * 150 + 150;
     // プレイヤー方向に上書き
     r = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
     if (this.frm === 32 || this.frm === 96) {
@@ -264,7 +264,7 @@ game.Enemy7 = class extends game.Enemy {
       game.spawnEnemyShot(ctx, 0, this.x, this.y - 30, game.DIR_DOWN);
     }
     this.cx = (Math.floor(this.frm / 4) & 7) * 40;
-    if (this.y < -30) {
+    if (this.y < -180) {
       this.alive = false;
     }
   }
@@ -300,7 +300,7 @@ game.Enemy8 = class extends game.Enemy {
       game.spawnEnemyShot(ctx, 0, this.x, this.y, dir + Math.PI / 8);
       game.spawnEnemyShot(ctx, 0, this.x, this.y, dir - Math.PI / 8);
     }
-    if (this.x < -20 || 320 < this.x) {
+    if (this.x < -170 || 170 < this.x) {
       this.alive = false;
     }
   }
@@ -330,7 +330,7 @@ game.Enemy9 = class extends game.Enemy {
       this.tmp[1] += 2;
     }
     this.cx = (Math.floor(this.frm / 2) & 7) * 60;
-    if (this.y < -30) {
+    if (this.y < -180) {
       this.alive = false;
     }
   }

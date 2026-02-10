@@ -30,7 +30,7 @@ game.EnemyShot = class {
   draw() {
     if (!this.alive) return;
     const d = this.constructor.DATA;
-    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), game.screenY(this.y, d.sy));
+    hsp.pos(game.screenX(this.x, d.sx), game.screenY(this.y, d.sy));
     hsp.gcopy(game.EnemyShot.BUF, this.cx, d.cy, d.sx, d.sy);
   }
 };
@@ -48,7 +48,7 @@ game.EnemyShot0 = class extends game.EnemyShot {
   updateAI(ctx) {
     this.x += Math.cos(this.dir) * 3.5;
     this.y += Math.sin(this.dir) * 3.5;
-    if (this.x < -10 || this.x > 310 || this.y < -10 || this.y > 310) {
+    if (this.x < -160 || this.x > 160 || this.y < -160 || this.y > 160) {
       this.alive = false;
     }
   }
@@ -62,7 +62,7 @@ game.EnemyShot1 = class extends game.EnemyShot {
     this.x += Math.cos(this.dir) * 2.5;
     this.y += Math.sin(this.dir) * 2.5;
     this.cx = (Math.floor(this.frm / 2) % 16) * 20 + 320;
-    if (this.x < -10 || this.x > 310 || this.y < -10 || this.y > 310) {
+    if (this.x < -160 || this.x > 160 || this.y < -160 || this.y > 160) {
       this.alive = false;
     }
   }
@@ -95,7 +95,7 @@ game.EnemyShot2 = class extends game.EnemyShot {
       game.spawnEffect(ctx, 2, -Math.cos(this.dir) * 10 + this.x + x, -Math.sin(this.dir) * 10 + this.y + y, 0);
     }
     if (this.frm > 160) {
-      if (this.x < -10 || this.x > 310 || this.y < -10 || this.y > 310) {
+      if (this.x < -160 || this.x > 160 || this.y < -160 || this.y > 160) {
         this.alive = false;
       }
     }

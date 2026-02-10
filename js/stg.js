@@ -46,5 +46,7 @@ game.radToSpriteFrameHalf = (rad, divisions, spriteWidth) => {
   return (Math.round(norm * divisions) % divisions) * spriteWidth;
 };
 
+// ゲームX座標 → スクリーンX座標（スプライト左上）
+game.screenX = (x, w) => Math.floor(game.SCREEN_W / 2 + x) - Math.floor(w / 2);
 // ゲームY座標 → スクリーンY座標（スプライト左上）
-game.screenY = (y, h) => game.SCREEN_H - Math.floor(y) - Math.floor(h / 2);
+game.screenY = (y, h) => Math.floor(game.SCREEN_H / 2 - y) - Math.floor(h / 2);
