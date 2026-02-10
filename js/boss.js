@@ -1,5 +1,7 @@
 //////////ボスパーツクラス//////////
 game.BossPart = class {
+  static BUF = 5;  // 描画バッファ番号
+
   constructor() {
     this.alive = false;
     this.shield = 0;
@@ -36,7 +38,7 @@ game.Boss = class {
   static MAX_PARTS = 3;
 
   constructor() {
-    this.flg = 0;
+    this.flg = game.BOSS_NONE;
     this.shield = 0;
     this.x = 0;
     this.y = 0;
@@ -57,7 +59,7 @@ game.Boss = class {
   // ボス初期化（旧IniBoss）
   init() {
     if (game.ctx.stage === 1) {
-      this.flg = 0;
+      this.flg = game.BOSS_NONE;
       this.shield = 500;
       this.x = 150;
       this.y = -100;
@@ -73,7 +75,7 @@ game.Boss = class {
   // ボス移動（旧MovBoss）
   update(ctx) {
     // 破壊演出（flg==2）
-    if (this.flg === 2) {
+    if (this.flg === game.BOSS_DESTROY) {
       for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
         this.parts[i].cx = this.parts[i].constructor.DATA.sx;
       }
@@ -98,12 +100,12 @@ game.Boss = class {
         }
       }
       if (this.frm === 120) {
-        this.flg = 0;
+        this.flg = game.BOSS_NONE;
         game.ctx.gameSta = game.STA_CLEAR;
       }
     }
 
-    if (this.flg !== 1) {
+    if (this.flg !== game.BOSS_BATTLE) {
       return;
     }
 
@@ -134,14 +136,14 @@ game.Boss = class {
         }
         // 照準弾発射
         if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 8 === 0) {
-          if (this.flg === 1) {
+          if (this.flg === game.BOSS_BATTLE) {
             let dir = game.CollisionSystem.calcDir(this.x, this.y, ctx.player.x, ctx.player.y);
             game.spawnEnemyShot(ctx, 1, this.x, this.y - 20, dir);
           }
         }
         // 通常弾発射
         if ((this.frm - 400) % 64 === 63) {
-          if (this.flg === 1) {
+          if (this.flg === game.BOSS_BATTLE) {
             game.spawnEnemyShot(ctx, 0, -5 + this.x, 25 + this.y, game.DIR_DOWN);
             game.spawnEnemyShot(ctx, 0, 5 + this.x, 25 + this.y, game.DIR_DOWN);
           }
@@ -154,7 +156,7 @@ game.Boss = class {
 
   // ボス描画（旧DrwBoss）
   draw() {
-    if (this.flg === 0) return;
+    if (this.flg === game.BOSS_NONE) return;
 
     if (game.ctx.stage === 1) {
       for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
@@ -164,7 +166,7 @@ game.Boss = class {
           Math.floor(this.x) + d.x - Math.floor(d.sx / 2),
           Math.floor(this.y) + d.y - Math.floor(d.sy / 2)
         );
-        hsp.gcopy(5, prt.cx, d.cy, d.sx, d.sy);
+        hsp.gcopy(game.BossPart.BUF, prt.cx, d.cy, d.sx, d.sy);
       }
     }
   }

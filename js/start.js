@@ -43,7 +43,7 @@ game.updateRemaining = (ctx) => {
   for (const s of ctx.playerShots) { s.update(); }
   for (const s of ctx.enemyShots) { s.update(ctx); }
   // レーザーのLsrF初期化（全レーザーが非生存ならLsrF=1にする）
-  if (ctx.player.lsrPow === 0) { ctx.player.lsrF = 1; }
+  if (ctx.player.lsrPow === 0) { ctx.player.lsrF = game.LSR_CHARGE_ON; }
   for (const l of ctx.lasers) { l.update(ctx); }
   for (const e of ctx.effects) { e.update(); }
 };
@@ -60,7 +60,7 @@ game.filterDead = (ctx) => {
 //////////ゲーム要素描画//////////
 game.renderObjects = (ctx) => {
   game.BackGround();
-  if (ctx.boss.flg === 0) {
+  if (ctx.boss.flg === game.BOSS_NONE) {
     for (const e of ctx.enemies) { e.draw(); }
   } else {
     ctx.boss.draw();
@@ -80,7 +80,7 @@ game.renderObjects = (ctx) => {
 game.flipBuffer = () => {
   hsp.gsel(0);
   hsp.pos(0, 0);
-  hsp.gcopy(1, 0, 0, 300, 300);
+  hsp.gcopy(1, 0, 0, game.SCREEN_W, game.SCREEN_H);
 };
 
 //////////メインループ//////////
@@ -117,9 +117,9 @@ game.MainLoop = () => {
       // プレーヤーショット更新
       for (const s of game.ctx.playerShots) { s.update(); }
       // レーザーのLsrF初期化（全レーザーが非生存ならLsrF=1にする）
-      if (game.ctx.player.lsrPow === 0) { game.ctx.player.lsrF = 1; }
+      if (game.ctx.player.lsrPow === 0) { game.ctx.player.lsrF = game.LSR_CHARGE_ON; }
       // 敵/ボス更新
-      if (game.ctx.boss.flg === 0) {
+      if (game.ctx.boss.flg === game.BOSS_NONE) {
         game.Enemy.appear(game.ctx);
         for (const e of game.ctx.enemies) { e.update(game.ctx); }
       } else {
@@ -137,8 +137,9 @@ game.MainLoop = () => {
       if (game.ctx.key & game.KEY_SHIFT) {
         game.ctx.key = 0;
         game.ctx.gameSta = game.STA_PAUSE;
+        const pause = game.UI_SPRITES.pauseLabel;
         hsp.pos(129, 142);
-        hsp.gcopy(3, 0, 234, 42, 16);
+        hsp.gcopy(game.UI_SPRITES.buf, pause.cx, pause.cy, pause.sx, pause.sy);
       }
       game.flipBuffer();
     }

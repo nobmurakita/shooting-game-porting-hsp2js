@@ -1,5 +1,6 @@
 //////////敵基底クラス//////////
 game.Enemy = class {
+  static BUF = 4;           // 描画バッファ番号
   static table = null;      // 出現テーブル
   static tableIndex = 0;    // 出現テーブルインデックス
   static CLASS_MAP = [];    // ki → サブクラスのマッピング（ファイル末尾で設定）
@@ -38,7 +39,7 @@ game.Enemy = class {
     if (!this.alive) return;
     const d = this.constructor.DATA;
     hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), Math.floor(this.y) - Math.floor(d.sy / 2));
-    hsp.gcopy(4, this.cx, d.cy, d.sx, d.sy);
+    hsp.gcopy(game.Enemy.BUF, this.cx, d.cy, d.sx, d.sy);
   }
 
   // 画像データ初期化（旧IniDatEne）
@@ -60,7 +61,7 @@ game.Enemy = class {
   static appear(ctx) {
     while (true) {
       if (ctx.boss.aprFrm === game.ctx.frame) {
-        ctx.boss.flg = 1;
+        ctx.boss.flg = game.BOSS_BATTLE;
       }
       if (game.Enemy.tableIndex === game.Enemy.table.length) {
         return;

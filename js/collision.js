@@ -68,7 +68,7 @@ game.CollisionSystem = class {
         // 敵の爆発エフェクト（大）
         game.spawnExplosion(ctx, e.x, e.y, d.sx, d.sy, 3);
         // プレイヤーにダメージ
-        ply.hitCnt = 100;
+        ply.hitCnt = game.Player.CONFIG.hitInvincible;
         ply.shield--;
         if (ply.shield === 0) {
           ply.alive = false;
@@ -83,7 +83,7 @@ game.CollisionSystem = class {
   // プレイヤーショット vs ボスパーツ
   static checkPlayerShotsVsBoss(ctx) {
     const boss = ctx.boss;
-    if (boss.flg !== 1) return;
+    if (boss.flg !== game.BOSS_BATTLE) return;
     const sh = game.PlayerShot.HITBOX;
 
     for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
@@ -106,7 +106,7 @@ game.CollisionSystem = class {
           prt.shield--;
           game.spawnHitSpark(ctx, s.x, s.y);
           if (boss.shield === 0) {
-            boss.flg = 2;
+            boss.flg = game.BOSS_DESTROY;
             boss.frm = 0;
           }
           if (prt.shield === 0) {
@@ -136,7 +136,7 @@ game.CollisionSystem = class {
       )) {
         es.alive = false;
         ply.shield--;
-        ply.hitCnt = 100;
+        ply.hitCnt = game.Player.CONFIG.hitInvincible;
         game.spawnHitSparks(ctx, es.x, es.y, 2);
         if (ply.shield === 0) {
           ply.alive = false;
@@ -174,7 +174,7 @@ game.CollisionSystem = class {
 
   // 全衝突判定を一括実行
   static checkAllCollisions(ctx) {
-    if (ctx.boss.flg !== 1) {
+    if (ctx.boss.flg !== game.BOSS_BATTLE) {
       game.CollisionSystem.checkPlayerShotsVsEnemies(ctx);
       game.CollisionSystem.checkPlayerVsEnemies(ctx);
     } else {

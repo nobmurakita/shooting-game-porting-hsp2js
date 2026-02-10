@@ -1,5 +1,6 @@
 //////////エフェクト基底クラス//////////
 game.Effect = class {
+  static BUF = 3;           // 描画バッファ番号
   static CLASS_MAP = [];  // ki → サブクラスのマッピング（ファイル末尾で設定）
 
   constructor(x, y, startFrm) {
@@ -26,7 +27,7 @@ game.Effect = class {
     if (!this.alive || this.frm <= 0) return;
     const d = this.constructor.DATA;
     hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), Math.floor(this.y) - Math.floor(d.sy / 2));
-    hsp.gcopy(3, this.cx, d.cy, d.sx, d.sy);
+    hsp.gcopy(game.Effect.BUF, this.cx, d.cy, d.sx, d.sy);
   }
 };
 

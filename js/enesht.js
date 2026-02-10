@@ -1,5 +1,6 @@
 //////////敵ショット基底クラス//////////
 game.EnemyShot = class {
+  static BUF = 3;           // 描画バッファ番号
   static CLASS_MAP = [];  // ki → サブクラスのマッピング（ファイル末尾で設定）
 
   constructor(x, y, dir) {
@@ -30,7 +31,7 @@ game.EnemyShot = class {
     if (!this.alive) return;
     const d = this.constructor.DATA;
     hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), Math.floor(this.y) - Math.floor(d.sy / 2));
-    hsp.gcopy(3, this.cx, d.cy, d.sx, d.sy);
+    hsp.gcopy(game.EnemyShot.BUF, this.cx, d.cy, d.sx, d.sy);
   }
 };
 

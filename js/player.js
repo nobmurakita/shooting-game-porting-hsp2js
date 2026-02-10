@@ -2,6 +2,8 @@
 game.PlayerShot = class {
   // 当たり判定の半幅・半高（中心からの距離）
   static HITBOX = { hw: 5, hh: 10 };
+  static CONFIG = { speed: 8, offscreenY: -20 };
+  static DATA = { buf: 3, sx: 10, sy: 20, cx: 280, cy: 0 };
 
   constructor(x, y, dir) {
     this.alive = true;
@@ -15,11 +17,12 @@ game.PlayerShot = class {
   update() {
     if (!this.alive) return;
 
-    this.x += 8 * Math.cos(this.dir);
-    this.y += 8 * Math.sin(this.dir);
+    const spd = game.PlayerShot.CONFIG.speed;
+    this.x += spd * Math.cos(this.dir);
+    this.y += spd * Math.sin(this.dir);
 
     // 画面外で消滅
-    if (this.y < -20) {
+    if (this.y < game.PlayerShot.CONFIG.offscreenY) {
       this.alive = false;
     }
   }
@@ -27,18 +30,25 @@ game.PlayerShot = class {
   // ショット描画（旧DrwPlySht内ループ1回分）
   draw() {
     if (!this.alive) return;
-
-    hsp.pos(Math.floor(this.x) - 5, Math.floor(this.y) - 10);
-    hsp.gcopy(3, 280, 0, 10, 20);
+    const d = game.PlayerShot.DATA;
+    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), Math.floor(this.y) - Math.floor(d.sy / 2));
+    hsp.gcopy(d.buf, d.cx, d.cy, d.sx, d.sy);
   }
 };
 
 //////////レーザークラス//////////
 game.Laser = class {
+  static CONFIG = { accel: 2.5, damping: 0.8, damage: 5, hitScore: 100 };
+  static DRAW = {
+    segments: 7,
+    baseR: 50, baseG: 255, baseB: 160,
+    fadeG: 20, fadeB: 20,
+  };
+
   constructor(px, py, vx, vy, trg) {
     this.alive = true;
     this.trg = trg;
-    this.sta = 1;
+    this.sta = game.LSR_TRACKING;
     this.x = [px, px, px, px, px, px, px, px];
     this.y = [py, py, py, py, py, py, py, py];
     this.vx = vx;
@@ -61,13 +71,13 @@ game.Laser = class {
 
     const dir = this.dir;
 
-    if (this.sta !== 0) {
+    if (this.sta !== game.LSR_DYING) {
       // 追跡中 or ターゲットなし: 加速・減衰は偶数フレームのみ、移動は毎フレーム
       if (this.frm % 2 === 0) {
-        this.vx += Math.cos(dir) * 2.5;
-        this.vy += Math.sin(dir) * 2.5;
-        this.vx = this.vx * 0.8;
-        this.vy = this.vy * 0.8;
+        this.vx += Math.cos(dir) * game.Laser.CONFIG.accel;
+        this.vy += Math.sin(dir) * game.Laser.CONFIG.accel;
+        this.vx = this.vx * game.Laser.CONFIG.damping;
+        this.vy = this.vy * game.Laser.CONFIG.damping;
       }
       this.x[0] += this.vx;
       this.y[0] += this.vy;
@@ -86,23 +96,23 @@ game.Laser = class {
     }
 
     // --- ターゲットが消滅、またはターゲットなし状態なら再検索 ---
-    if (this.sta === 1 && (this.trg === null || !this.trg.alive)) {
+    if (this.sta === game.LSR_TRACKING && (this.trg === null || !this.trg.alive)) {
       if (this.trg !== null) { this.trg.lckOn--; }
-      this.sta = 2;
+      this.sta = game.LSR_NO_TARGET;
     }
-    if (this.sta === 2) {
+    if (this.sta === game.LSR_NO_TARGET) {
       const newTrg = ctx.player.searchTarget(ctx);
       if (newTrg !== null) {
-        this.sta = 1;
+        this.sta = game.LSR_TRACKING;
         this.trg = newTrg;
         newTrg.lckOn++;
       }
     }
 
     // --- 敵モード ---
-    if (ctx.boss.flg !== 1) {
+    if (ctx.boss.flg !== game.BOSS_BATTLE) {
       // ターゲット追跡中: 衝突判定と方向更新
-      if (this.sta === 1) {
+      if (this.sta === game.LSR_TRACKING) {
         const e = this.trg;
         const d = e.constructor.DATA;
 
@@ -114,10 +124,10 @@ game.Laser = class {
         );
 
         if (hit) {
-          ctx.score += 100;
-          e.shield -= 5;
+          ctx.score += game.Laser.CONFIG.hitScore;
+          e.shield -= game.Laser.CONFIG.damage;
           e.lckOn--;
-          this.sta = 0;
+          this.sta = game.LSR_DYING;
 
           // ヒットエフェクト
           game.spawnHitSparks(ctx, this.x[0], this.y[0], 2);
@@ -141,7 +151,7 @@ game.Laser = class {
       const boss = ctx.boss;
 
       // ターゲット追跡中: 衝突判定と方向更新
-      if (this.sta === 1) {
+      if (this.sta === game.LSR_TRACKING) {
         const p = this.trg;
         const pd = p.constructor.DATA;
 
@@ -153,11 +163,11 @@ game.Laser = class {
         );
 
         if (hit) {
-          ctx.score += 100;
-          boss.shield -= 5;
-          p.shield -= 5;
+          ctx.score += game.Laser.CONFIG.hitScore;
+          boss.shield -= game.Laser.CONFIG.damage;
+          p.shield -= game.Laser.CONFIG.damage;
           p.lckOn--;
-          this.sta = 0;
+          this.sta = game.LSR_DYING;
 
           // ヒットエフェクト
           game.spawnHitSparks(ctx, this.x[0], this.y[0], 2);
@@ -165,7 +175,7 @@ game.Laser = class {
           // ボス撃破判定
           if (boss.shield <= 0) {
             boss.shield = 0;
-            boss.flg = 2;
+            boss.flg = game.BOSS_DESTROY;
             boss.frm = 0;
           }
 
@@ -189,9 +199,9 @@ game.Laser = class {
     }
 
     // ターゲットなし状態で画面外に出たら消滅開始
-    if (this.sta === 2) {
-      if (this.x[0] < 0 || 300 < this.x[0] || this.y[0] < 0 || 300 < this.y[0]) {
-        this.sta = 0;
+    if (this.sta === game.LSR_NO_TARGET) {
+      if (this.x[0] < 0 || game.SCREEN_W < this.x[0] || this.y[0] < 0 || game.SCREEN_H < this.y[0]) {
+        this.sta = game.LSR_DYING;
       }
     }
 
@@ -199,16 +209,16 @@ game.Laser = class {
 
     // レーザーが1本でも生存していればlsrFをオフに（充填不可）
     if (this.alive) {
-      ctx.player.lsrF = 0;
+      ctx.player.lsrF = game.LSR_CHARGE_OFF;
     }
   }
 
   // レーザー描画（旧DrwLsr内ループ1回分）
   draw() {
     if (!this.alive) return;
-
-    for (let j = 0; j < 7; j++) {
-      hsp.color(50, 255 - (j * 20), 160 - (j * 20));
+    const d = game.Laser.DRAW;
+    for (let j = 0; j < d.segments; j++) {
+      hsp.color(d.baseR, d.baseG - (j * d.fadeG), d.baseB - (j * d.fadeB));
       const ax = Math.floor(this.x[j]);
       const ay = Math.floor(this.y[j]);
       const bx = Math.floor(this.x[j + 1]);
@@ -229,6 +239,20 @@ game.Player = class {
   // 移動制限（画面端からのマージン）
   static MOVE_MIN = 20;
   static MOVE_MAX = 280;
+  static CONFIG = {
+    moveSpeed: 2.75,
+    shotInterval: 6,
+    laserChargeShot: 0.5,
+    laserChargeIdle: 1.5,
+    laserMax: 320,
+    laserDecay: 6.5,
+    laserThreshold: 40,
+    initShield: 5,
+    initX: 150,
+    initY: 260,
+    hitInvincible: 100,
+  };
+  static DATA = { buf: 3, sx: 40, sy: 40, baseX: 120, normalY: 0, hitY: 40 };
   // ショット発射方向テーブル（ラジアン、旧DatShtDir）
   static SHT_DIR = [192, 192, 191, 193, 190, 194, 184, 200, 174, 210, 166, 218].map(a => a * Math.PI / 128);
   // レーザー発射方向テーブル（ラジアン、旧DatLsrDir）
@@ -241,15 +265,15 @@ game.Player = class {
   // プレーヤー初期化（旧IniPly）
   init() {
     this.alive = true;
-    this.shield = 5;
-    this.x = 150;
-    this.y = 260;
+    this.shield = game.Player.CONFIG.initShield;
+    this.x = game.Player.CONFIG.initX;
+    this.y = game.Player.CONFIG.initY;
     this.hitCnt = 0;
     this.gra = 0;
     this.frm = 0;
     this.shtCnt = 0;
     this.shtLV = 1;
-    this.lsrF = 0;
+    this.lsrF = game.LSR_CHARGE_OFF;
     this.lsrPow = 0;
   }
 
@@ -266,8 +290,8 @@ game.Player = class {
 
     if (dx || dy) {
       const r = game.CollisionSystem.calcDir(0, 0, dx, dy);
-      this.x += Math.cos(r) * 2.75;
-      this.y += Math.sin(r) * 2.75;
+      this.x += Math.cos(r) * game.Player.CONFIG.moveSpeed;
+      this.y += Math.sin(r) * game.Player.CONFIG.moveSpeed;
     }
 
     // 傾きアニメーション
@@ -291,7 +315,7 @@ game.Player = class {
       this.shtCnt--;
     } else {
       if (game.ctx.key & game.KEY_SHOT) {
-        this.shtCnt = 6;
+        this.shtCnt = game.Player.CONFIG.shotInterval;
         for (let i = 0; i < this.shtLV * 2; i++) {
           const posRad = game.Player.SHT_DIR[i + 6];
           const x = Math.cos(posRad) * 20 + this.x;
@@ -303,10 +327,10 @@ game.Player = class {
     }
 
     // レーザー発射
-    if (this.lsrF === 1) {
+    if (this.lsrF === game.LSR_CHARGE_ON) {
       if (game.ctx.key & game.KEY_LASER) {
-        if (this.lsrPow >= 40) {
-          const count = Math.floor(this.lsrPow / 40);
+        if (this.lsrPow >= game.Player.CONFIG.laserThreshold) {
+          const count = Math.floor(this.lsrPow / game.Player.CONFIG.laserThreshold);
           for (let i = 0; i < count; i++) {
             const trg = this.searchTarget(ctx);
             if (trg !== null) { trg.lckOn++; }
@@ -317,13 +341,13 @@ game.Player = class {
           }
         }
       } else {
-        this.lsrPow += (game.ctx.key & game.KEY_SHOT ? 0.5 : 1.5);
-        if (this.lsrPow > 320) {
-          this.lsrPow = 320;
+        this.lsrPow += (game.ctx.key & game.KEY_SHOT ? game.Player.CONFIG.laserChargeShot : game.Player.CONFIG.laserChargeIdle);
+        if (this.lsrPow > game.Player.CONFIG.laserMax) {
+          this.lsrPow = game.Player.CONFIG.laserMax;
         }
       }
     } else {
-      this.lsrPow -= 6.5;
+      this.lsrPow -= game.Player.CONFIG.laserDecay;
       if (this.lsrPow < 0) {
         this.lsrPow = 0;
       }
@@ -342,7 +366,7 @@ game.Player = class {
   searchTarget(ctx) {
     let trg = null;
 
-    if (ctx.boss.flg !== 1) {
+    if (ctx.boss.flg !== game.BOSS_BATTLE) {
       // 敵モード
       for (const e of ctx.enemies) {
         if (!e.alive) continue;
@@ -410,13 +434,11 @@ game.Player = class {
   // プレーヤー描画（旧DrwPly）
   draw() {
     if (!this.alive) return;
-
-    hsp.pos(Math.floor(this.x) - 20, Math.floor(this.y) - 20);
-    if (Math.floor(this.hitCnt / 6) % 2 === 0) {
-      hsp.gcopy(3, (this.gra >> 1) * 40 + 120, 0, 40, 40);
-    } else {
-      hsp.gcopy(3, (this.gra >> 1) * 40 + 120, 40, 40, 40);
-    }
+    const d = game.Player.DATA;
+    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), Math.floor(this.y) - Math.floor(d.sy / 2));
+    const frameX = (this.gra >> 1) * d.sx + d.baseX;
+    const frameY = (Math.floor(this.hitCnt / 6) % 2 === 0) ? d.normalY : d.hitY;
+    hsp.gcopy(d.buf, frameX, frameY, d.sx, d.sy);
   }
 
 };
