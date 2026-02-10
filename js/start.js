@@ -46,15 +46,11 @@ hsp.MainLoop = () => {
     hsp.Stage = 0;
     hsp.Score = 0;
     hsp.GameSta = hsp.STA_TITLE;
-  }
-
-  if (hsp.GameSta == hsp.STA_TITLE) {
+  } else if (hsp.GameSta == hsp.STA_TITLE) {
     if (hsp.Key & 16 || hsp.Key & 32 || hsp.Key & 64) {
       hsp.GameSta = hsp.STA_INIT;
     }
-  }
-
-  if (hsp.GameSta == hsp.STA_INIT) {
+  } else if (hsp.GameSta == hsp.STA_INIT) {
     hsp.Stage++
     if (hsp.Stage <= hsp.MaxStage) {
       hsp.IniEff();
@@ -69,79 +65,79 @@ hsp.MainLoop = () => {
     } else {
       hsp.GameSta = hsp.STA_ENDING;
     }
-  }
-
-  if (hsp.GameSta == hsp.STA_PLAY) {
+  } else if (hsp.GameSta == hsp.STA_PLAY) {
+    if (hsp.Key & 128) {
+      hsp.GameSta = hsp.STA_OPENING;
+    } else {
+      // オフスクリーンバッファに描画
+      hsp.gsel(1);
+      hsp.MovPly();
+      hsp.MovPlySht();
+      if (hsp.BossFlg == 0) {
+        hsp.AprEne();
+        hsp.MovEne();
+      } else {
+        hsp.MovBoss();
+      }
+      hsp.MovEneSht();
+      hsp.MovLsr();
+      hsp.MovEff();
+      hsp.BackGround();
+      if (hsp.BossFlg == 0) {
+        hsp.DrwEne();
+      } else {
+        hsp.DrwBoss();
+      }
+      hsp.DrwPlySht();
+      hsp.DrwPly();
+      hsp.DrwEff();
+      hsp.DrwEneSht();
+      hsp.DrwLsr();
+      hsp.Disp();
+      hsp.Frame++
+      if (hsp.Key & 64) {
+        hsp.Key = 0;
+        hsp.GameSta = hsp.STA_PAUSE;
+        hsp.pos(129, 142);
+        hsp.gcopy(3, 0, 234, 42, 16);
+      }
+      // 表示用のゲーム画面にオフスクリーンバッファの内容をコピー
+      hsp.gsel(0);
+      hsp.pos(0, 0);
+      hsp.gcopy(1, 0, 0, 300, 300);
+    }
+  } else if (hsp.GameSta == hsp.STA_CLEAR) {
     if (hsp.Key & 128) {
       hsp.GameSta = hsp.STA_OPENING;
     }
+    if (hsp.PlyY > -5120) {
+      hsp.PlyY -= 1792;
+    } else {
+      hsp.GameSta = hsp.STA_INIT;
+    }
     // オフスクリーンバッファに描画
     hsp.gsel(1);
-    hsp.MovPly();
     hsp.MovPlySht();
-    if (hsp.BossFlg == 0) {
-      hsp.AprEne();
-      hsp.MovEne();
-    } else {
-      hsp.MovBoss();
-    }
     hsp.MovEneSht();
     hsp.MovLsr();
     hsp.MovEff();
     hsp.BackGround();
-    if (hsp.BossFlg == 0) {
-      hsp.DrwEne();
-    } else {
-      hsp.DrwBoss();
-    }
     hsp.DrwPlySht();
     hsp.DrwPly();
     hsp.DrwEff();
     hsp.DrwEneSht();
     hsp.DrwLsr();
     hsp.Disp();
-    hsp.Frame++
-    if (hsp.Key & 64) {
-      hsp.Key = 0;
-      hsp.GameSta = hsp.STA_PAUSE;
-      hsp.pos(129, 142);
-      hsp.gcopy(3, 0, 234, 42, 16);
-    }
     // 表示用のゲーム画面にオフスクリーンバッファの内容をコピー
     hsp.gsel(0);
     hsp.pos(0, 0);
     hsp.gcopy(1, 0, 0, 300, 300);
-  }
-
-  if (hsp.GameSta == hsp.STA_CLEAR) {
+  } else if (hsp.GameSta == hsp.STA_ENDING) {
+    hsp.GameSta = hsp.STA_OPENING;
+  } else if (hsp.GameSta == hsp.STA_PAUSE) {
     if (hsp.Key & 128) {
       hsp.GameSta = hsp.STA_OPENING;
-    }
-    if (hsp.PlyY > -5120) {
-      hsp.PlyY -= 1792;
-    }
-    // オフスクリーンバッファに描画
-    hsp.gsel(1);
-    hsp.MovPlySht();
-    hsp.MovEneSht();
-    hsp.MovLsr();
-    hsp.MovEff();
-    hsp.BackGround();
-    hsp.DrwPlySht();
-    hsp.DrwPly();
-    hsp.DrwEff();
-    hsp.DrwEneSht();
-    // 表示用のゲーム画面にオフスクリーンバッファの内容をコピー
-    hsp.gsel(0);
-    hsp.pos(0, 0);
-    hsp.gcopy(1, 0, 0, 300, 300);
-  }
-
-  if (hsp.GameSta == hsp.STA_PAUSE) {
-    if (hsp.Key & 128) {
-      hsp.GameSta = hsp.STA_OPENING;
-    }
-    if (hsp.Key & 64) {
+    } else if (hsp.Key & 64) {
       hsp.GameSta = hsp.STA_PLAY;
     }
   }
