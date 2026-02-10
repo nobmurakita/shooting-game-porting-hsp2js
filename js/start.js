@@ -57,6 +57,14 @@ game.filterDead = (ctx) => {
   ctx.effects = ctx.effects.filter(e => e.alive);
 };
 
+//////////ゲーム更新後処理（衝突判定・死亡除去）//////////
+game.gameUpdatePost = () => {
+  if (game.ctx.gameSta === game.STA_PLAY) {
+    game.CollisionSystem.checkAllCollisions(game.ctx);
+  }
+  game.filterDead(game.ctx);
+};
+
 //////////ゲーム要素描画//////////
 game.renderObjects = (ctx) => {
   game.BackGround();
@@ -124,9 +132,6 @@ game.gameUpdate = () => {
       for (const s of game.ctx.enemyShots) { s.update(game.ctx); }
       for (const l of game.ctx.lasers) { l.update(game.ctx); }
       for (const e of game.ctx.effects) { e.update(); }
-      // 衝突判定
-      game.CollisionSystem.checkAllCollisions(game.ctx);
-      game.filterDead(game.ctx);
       game.ctx.frame++;
       if (game.ctx.key & game.KEY_SHIFT) {
         game.ctx.key = 0;
@@ -143,7 +148,6 @@ game.gameUpdate = () => {
       game.ctx.gameSta = game.STA_INIT;
     }
     game.updateRemaining(game.ctx);
-    game.filterDead(game.ctx);
   } else if (game.ctx.gameSta === game.STA_ENDING) {
     game.ctx.gameSta = game.STA_OPENING;
   } else if (game.ctx.gameSta === game.STA_PAUSE) {
@@ -184,6 +188,7 @@ game.gameRender = () => {
 game.MainLoop = () => {
   game.ctx.nextLoopTime += 1000 / 60;
   game.gameUpdate();
+  game.gameUpdatePost();
   game.gameRender();
   let delay = game.ctx.nextLoopTime - performance.now();
   setTimeout(game.MainLoop, delay);
