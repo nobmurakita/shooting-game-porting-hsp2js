@@ -26,7 +26,7 @@ game.Effect = class {
   draw() {
     if (!this.alive || this.frm <= 0) return;
     const d = this.constructor.DATA;
-    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), Math.floor(this.y) - Math.floor(d.sy / 2));
+    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), game.screenY(this.y, d.sy));
     hsp.gcopy(game.Effect.BUF, this.cx, d.cy, d.sx, d.sy);
   }
 };
@@ -39,7 +39,7 @@ game.Effect0 = class extends game.Effect {
 
   updateAI() {
     if (this.frm >= 16) {
-      this.y += 3.5;
+      this.y -= 3.5;
     }
     this.cx = Math.floor(this.frm / 6) % 6 * 40;
     if (this.frm === 34) {

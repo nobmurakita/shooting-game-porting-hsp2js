@@ -137,8 +137,8 @@ game.gameUpdate = () => {
     if (game.ctx.key & game.KEY_ESC) {
       game.ctx.gameSta = game.STA_OPENING;
     }
-    if (game.ctx.player.y > -20) {
-      game.ctx.player.y -= 3.5;
+    if (game.ctx.player.y < 320) {
+      game.ctx.player.y += 3.5;
     } else {
       game.ctx.gameSta = game.STA_INIT;
     }

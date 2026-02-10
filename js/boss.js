@@ -20,7 +20,7 @@ game.BossPart = class {
 
 // パーツ0: 本体
 game.BossPart0 = class extends game.BossPart {
-  static DATA = { shield: 500, x: 0, y: -7, sx: 70, sy: 75, hitX1: -25, hitY1: -30, hitX2: 25, hitY2: 6, cy: 0 };
+  static DATA = { shield: 500, x: 0, y: 7, sx: 70, sy: 75, hitX1: -25, hitY1: -6, hitX2: 25, hitY2: 30, cy: 0 };
 };
 
 // パーツ1: 左翼
@@ -62,7 +62,7 @@ game.Boss = class {
       this.flg = game.BOSS_NONE;
       this.shield = 500;
       this.x = 150;
-      this.y = -100;
+      this.y = 400;
       this.frm = 0;
       this.aprFrm = 4900;
 
@@ -88,7 +88,7 @@ game.Boss = class {
       let x = hsp.rnd(4) - 2;
       let y = (hsp.rnd(3) - 1) * 0.5;
       this.x += x * 0.5;
-      this.y += y + 0.5;
+      this.y -= (y + 0.5);
       if (this.frm === 100) {
         for (let i = 0; i < 3; i++) {
           let a = (i + 1) * 25;
@@ -112,7 +112,7 @@ game.Boss = class {
     // ステージ1のボスAI
     if (game.ctx.stage === 1) {
       if (this.frm < 400) {
-        this.y += 0.5;
+        this.y -= 0.5;
       } else {
         let a = Math.floor((this.frm - 400) / 256) % 4;
 
@@ -123,7 +123,7 @@ game.Boss = class {
         }
 
         let r = this.frm * 0.5 * game.A256;
-        this.y += Math.sin(r) * 0.5;
+        this.y -= Math.sin(r) * 0.5;
 
         // 誘導弾発射（パーツ1,2）
         if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 16 === 0) {
@@ -138,14 +138,14 @@ game.Boss = class {
         if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 8 === 0) {
           if (this.flg === game.BOSS_BATTLE) {
             let dir = game.CollisionSystem.calcDir(this.x, this.y, ctx.player.x, ctx.player.y);
-            game.spawnEnemyShot(ctx, 1, this.x, this.y - 20, dir);
+            game.spawnEnemyShot(ctx, 1, this.x, this.y + 20, dir);
           }
         }
         // 通常弾発射
         if ((this.frm - 400) % 64 === 63) {
           if (this.flg === game.BOSS_BATTLE) {
-            game.spawnEnemyShot(ctx, 0, -5 + this.x, 25 + this.y, game.DIR_DOWN);
-            game.spawnEnemyShot(ctx, 0, 5 + this.x, 25 + this.y, game.DIR_DOWN);
+            game.spawnEnemyShot(ctx, 0, -5 + this.x, this.y - 25, game.DIR_DOWN);
+            game.spawnEnemyShot(ctx, 0, 5 + this.x, this.y - 25, game.DIR_DOWN);
           }
         }
       }
@@ -164,7 +164,7 @@ game.Boss = class {
         const d = prt.constructor.DATA;
         hsp.pos(
           Math.floor(this.x) + d.x - Math.floor(d.sx / 2),
-          Math.floor(this.y) + d.y - Math.floor(d.sy / 2)
+          game.screenY(this.y + d.y, d.sy)
         );
         hsp.gcopy(game.BossPart.BUF, prt.cx, d.cy, d.sx, d.sy);
       }

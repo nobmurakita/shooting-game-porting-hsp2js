@@ -2,7 +2,7 @@
 game.PlayerShot = class {
   // 当たり判定の半幅・半高（中心からの距離）
   static HITBOX = { hw: 5, hh: 10 };
-  static CONFIG = { speed: 8, offscreenY: -20 };
+  static CONFIG = { speed: 8, offscreenY: 320 };
   static DATA = { buf: 3, sx: 10, sy: 20, cx: 280, cy: 0 };
 
   constructor(x, y, dir) {
@@ -22,7 +22,7 @@ game.PlayerShot = class {
     this.y += spd * Math.sin(this.dir);
 
     // 画面外で消滅
-    if (this.y < game.PlayerShot.CONFIG.offscreenY) {
+    if (this.y > game.PlayerShot.CONFIG.offscreenY) {
       this.alive = false;
     }
   }
@@ -31,7 +31,7 @@ game.PlayerShot = class {
   draw() {
     if (!this.alive) return;
     const d = game.PlayerShot.DATA;
-    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), Math.floor(this.y) - Math.floor(d.sy / 2));
+    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), game.screenY(this.y, d.sy));
     hsp.gcopy(d.buf, d.cx, d.cy, d.sx, d.sy);
   }
 };
@@ -220,9 +220,9 @@ game.Laser = class {
     for (let j = 0; j < d.segments; j++) {
       hsp.color(d.baseR, d.baseG - (j * d.fadeG), d.baseB - (j * d.fadeB));
       const ax = Math.floor(this.x[j]);
-      const ay = Math.floor(this.y[j]);
+      const ay = game.SCREEN_H - Math.floor(this.y[j]);
       const bx = Math.floor(this.x[j + 1]);
-      const by = Math.floor(this.y[j + 1]);
+      const by = game.SCREEN_H - Math.floor(this.y[j + 1]);
       hsp.line(ax, ay, bx, by);
       hsp.line(ax + 1, ay, bx + 1, by);
       hsp.line(ax - 1, ay, bx - 1, by);
@@ -249,14 +249,14 @@ game.Player = class {
     laserThreshold: 40,
     initShield: 5,
     initX: 150,
-    initY: 260,
+    initY: 40,
     hitInvincible: 100,
   };
   static DATA = { buf: 3, sx: 40, sy: 40, baseX: 120, normalY: 0, hitY: 40 };
   // ショット発射方向テーブル（ラジアン、旧DatShtDir）
-  static SHT_DIR = [192, 192, 191, 193, 190, 194, 184, 200, 174, 210, 166, 218].map(a => a * Math.PI / 128);
+  static SHT_DIR = [192, 192, 191, 193, 190, 194, 184, 200, 174, 210, 166, 218].map(a => -a * Math.PI / 128);
   // レーザー発射方向テーブル（ラジアン、旧DatLsrDir）
-  static LSR_DIR = [187, 197, 177, 207, 167, 217, 157, 227].map(a => a * Math.PI / 128);
+  static LSR_DIR = [187, 197, 177, 207, 167, 217, 157, 227].map(a => -a * Math.PI / 128);
 
   constructor() {
     this.init();
@@ -286,7 +286,7 @@ game.Player = class {
 
     // 移動量＆傾き決定
     const dx = ((game.ctx.key & game.KEY_RIGHT) >> 2) - (game.ctx.key & game.KEY_LEFT);
-    const dy = ((game.ctx.key & game.KEY_UP) >> 3) - ((game.ctx.key & game.KEY_DOWN) >> 1);
+    const dy = ((game.ctx.key & game.KEY_UP) >> 1) - ((game.ctx.key & game.KEY_DOWN) >> 3);
 
     if (dx || dy) {
       const r = game.CollisionSystem.calcDir(0, 0, dx, dy);
@@ -337,7 +337,7 @@ game.Player = class {
             const rad = game.Player.LSR_DIR[i];
             const vx = Math.cos(rad) * 8;
             const vy = Math.sin(rad) * 8;
-            ctx.lasers.push(new game.Laser(this.x, this.y - 20, vx, vy, trg));
+            ctx.lasers.push(new game.Laser(this.x, this.y + 20, vx, vy, trg));
           }
         }
       } else {
@@ -435,7 +435,7 @@ game.Player = class {
   draw() {
     if (!this.alive) return;
     const d = game.Player.DATA;
-    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), Math.floor(this.y) - Math.floor(d.sy / 2));
+    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), game.screenY(this.y, d.sy));
     const frameX = (this.gra >> 1) * d.sx + d.baseX;
     const frameY = (Math.floor(this.hitCnt / 6) % 2 === 0) ? d.normalY : d.hitY;
     hsp.gcopy(d.buf, frameX, frameY, d.sx, d.sy);

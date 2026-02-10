@@ -1,9 +1,9 @@
 const game = {};
 
-// 方向定数（ラジアン）
-game.DIR_DOWN  = Math.PI / 2;        // 旧256段階: 64
+// 方向定数（ラジアン、Y↑座標系）
+game.DIR_UP    = Math.PI / 2;        // 旧256段階: 64（Y↑で上方向）
 game.DIR_LEFT  = Math.PI;            // 旧256段階: 128
-game.DIR_UP    = 3 * Math.PI / 2;    // 旧256段階: 192
+game.DIR_DOWN  = 3 * Math.PI / 2;    // 旧256段階: 192（Y↑で下方向）
 
 // 256段階角度1刻みのラジアン値（周期運動のフレームカウンタ用）
 game.A256 = Math.PI / 128;
@@ -31,15 +31,20 @@ game.BG_STAR_COUNT   = 300;
 game.BG_SCROLL_SPEED = 0.5;
 
 // ラジアンからスプライトフレーム番号を計算（全周: 0〜2π）
+// スプライトシートはY↓前提なので角度を反転
 game.radToSpriteFrame = (rad, divisions, spriteWidth) => {
-  let norm = rad / (2 * Math.PI);
+  let norm = -rad / (2 * Math.PI);
   norm = ((norm % 1) + 1) % 1;
   return (Math.round(norm * divisions) % divisions) * spriteWidth;
 };
 
 // ラジアンからスプライトフレーム番号を計算（半周期: 0〜π で折り返し）
+// スプライトシートはY↓前提なので角度を反転
 game.radToSpriteFrameHalf = (rad, divisions, spriteWidth) => {
-  let norm = rad / Math.PI;
+  let norm = -rad / Math.PI;
   norm = ((norm % 1) + 1) % 1;
   return (Math.round(norm * divisions) % divisions) * spriteWidth;
 };
+
+// ゲームY座標 → スクリーンY座標（スプライト左上）
+game.screenY = (y, h) => game.SCREEN_H - Math.floor(y) - Math.floor(h / 2);

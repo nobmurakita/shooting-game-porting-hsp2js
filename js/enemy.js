@@ -38,7 +38,7 @@ game.Enemy = class {
   draw() {
     if (!this.alive) return;
     const d = this.constructor.DATA;
-    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), Math.floor(this.y) - Math.floor(d.sy / 2));
+    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), game.screenY(this.y, d.sy));
     hsp.gcopy(game.Enemy.BUF, this.cx, d.cy, d.sx, d.sy);
   }
 
@@ -92,9 +92,9 @@ game.Enemy0 = class extends game.Enemy {
     if (this.mv === 1) {
       this.x = -40 * Math.sin(r) + this.x0;
     }
-    this.y += 1;
+    this.y -= 1;
     this.cx = Math.floor(this.frm / 2) % 6 * 20;
-    if (320 < this.y) {
+    if (this.y < -20) {
       this.alive = false;
     }
   }
@@ -111,16 +111,16 @@ game.Enemy1 = class extends game.Enemy {
     }
     let r;
     if (this.mv === 0) {
-      r = game.DIR_DOWN + this.tmp[0] * game.A256;
+      r = game.DIR_DOWN - this.tmp[0] * game.A256;
     }
     if (this.mv === 1) {
-      r = game.DIR_DOWN - this.tmp[0] * game.A256;
+      r = game.DIR_DOWN + this.tmp[0] * game.A256;
     }
     this.x += Math.cos(r) * 2;
     this.y += Math.sin(r) * 2;
     this.cx = Math.floor(Math.cos(r) * 3) + 120;
     if (this.frm === 64) {
-      game.spawnEnemyShot(ctx, 0, this.x, this.y + 20, game.DIR_DOWN);
+      game.spawnEnemyShot(ctx, 0, this.x, this.y - 20, game.DIR_DOWN);
     }
     if ((this.x < -20) || (320 < this.x)) {
       this.alive = false;
@@ -168,13 +168,13 @@ game.Enemy3 = class extends game.Enemy {
 
   updateAI(ctx) {
     const ply = ctx.player;
-    this.y += 2;
+    this.y -= 2;
     if (this.frm === 40 || this.frm === 80 || this.frm === 120 || this.frm === 160) {
       const dir = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
-      game.spawnEnemyShot(ctx, 1, this.x, 30 + this.y, dir);
+      game.spawnEnemyShot(ctx, 1, this.x, this.y - 30, dir);
     }
     this.cx = 0;
-    if (this.y > 330) {
+    if (this.y < -30) {
       this.alive = false;
     }
   }
@@ -182,20 +182,20 @@ game.Enemy3 = class extends game.Enemy {
 
 // ki=4: 上昇しながら扇状弾を撃つ
 game.Enemy4 = class extends game.Enemy {
-  static DATA = { shield: 40, sx: 120, sy: 60, hitX1: -50, hitY1: -10, hitX2: 50, hitY2: 15, cy: 180 };
+  static DATA = { shield: 40, sx: 120, sy: 60, hitX1: -50, hitY1: -15, hitX2: 50, hitY2: 10, cy: 180 };
 
   // tmp[0]: 扇状弾の放射角度オフセット（8ずつ拡大）
   updateAI(ctx) {
     let r = this.frm * 0.5 * game.A256;
-    this.y -= 0.5;
+    this.y += 0.5;
     this.x = Math.sin(r) * 8 + this.x0;
     if (this.frm > 100 && this.frm % 16 === 0) {
-      game.spawnEnemyShot(ctx, 1, this.x + 10, this.y - 2, game.DIR_DOWN - this.tmp[0] * game.A256);
-      game.spawnEnemyShot(ctx, 1, this.x - 10, this.y - 2, game.DIR_DOWN + this.tmp[0] * game.A256);
+      game.spawnEnemyShot(ctx, 1, this.x + 10, this.y + 2, game.DIR_DOWN + this.tmp[0] * game.A256);
+      game.spawnEnemyShot(ctx, 1, this.x - 10, this.y + 2, game.DIR_DOWN - this.tmp[0] * game.A256);
       this.tmp[0] += 4;
     }
     this.cx = 0;
-    if (this.y < -30) {
+    if (this.y > 330) {
       this.alive = false;
     }
   }
@@ -214,7 +214,7 @@ game.Enemy5 = class extends game.Enemy {
       r = (-this.frm + 128) * game.A256;
     }
     this.x = Math.cos(r) * 150 + 150;
-    this.y = Math.sin(r) * 150;
+    this.y = -Math.sin(r) * 150 + game.SCREEN_H;
     // プレイヤー方向に上書き
     r = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
     if (this.frm === 32 || this.frm === 96) {
@@ -234,12 +234,12 @@ game.Enemy6 = class extends game.Enemy {
   updateAI(ctx) {
     const ply = ctx.player;
     let r = this.frm * game.A256;
-    this.y += Math.cos(r) * 3;
+    this.y -= Math.cos(r) * 3;
     this.cx = (Math.floor(-Math.cos(r) * 4) + 4) * 40;
     if (this.frm === 50) {
       const dir = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
-      game.spawnEnemyShot(ctx, 2, this.x + 10, this.y + 25, dir);
-      game.spawnEnemyShot(ctx, 2, this.x - 10, this.y + 25, dir);
+      game.spawnEnemyShot(ctx, 2, this.x + 10, this.y - 25, dir);
+      game.spawnEnemyShot(ctx, 2, this.x - 10, this.y - 25, dir);
     }
     if (this.frm >= 256) {
       this.alive = false;
@@ -259,12 +259,12 @@ game.Enemy7 = class extends game.Enemy {
     if (this.mv === 1) {
       this.x = -40 * Math.sin(r) + this.x0;
     }
-    this.y += 1;
+    this.y -= 1;
     if (this.frm % 32 === 0) {
-      game.spawnEnemyShot(ctx, 0, this.x, this.y + 30, game.DIR_DOWN);
+      game.spawnEnemyShot(ctx, 0, this.x, this.y - 30, game.DIR_DOWN);
     }
     this.cx = (Math.floor(this.frm / 4) & 7) * 40;
-    if (this.y > 330) {
+    if (this.y < -30) {
       this.alive = false;
     }
   }
@@ -285,10 +285,10 @@ game.Enemy8 = class extends game.Enemy {
         this.tmp[0] = (this.frm - 60);
       }
       if (this.mv === 0) {
-        r = game.DIR_UP + this.tmp[0] * game.A256;
+        r = game.DIR_UP - this.tmp[0] * game.A256;
       }
       if (this.mv === 1) {
-        r = game.DIR_UP - this.tmp[0] * game.A256;
+        r = game.DIR_UP + this.tmp[0] * game.A256;
       }
     }
     this.x += Math.cos(r) * 2.5;
@@ -320,17 +320,17 @@ game.Enemy9 = class extends game.Enemy {
       this.tmp[0] = -this.tmp[0];
     }
     this.x += this.tmp[0] * 0.5;
-    this.y += 0.5;
+    this.y -= 0.5;
     if (this.frm > 100 && this.frm < 592 && this.frm % 8 === 0) {
       const baseAngle = this.tmp[1] * game.A256;
-      game.spawnEnemyShot(ctx, 1, this.x, this.y - 10, baseAngle);
-      game.spawnEnemyShot(ctx, 1, this.x, this.y - 10, baseAngle + game.DIR_DOWN);
-      game.spawnEnemyShot(ctx, 1, this.x, this.y - 10, baseAngle + Math.PI);
-      game.spawnEnemyShot(ctx, 1, this.x, this.y - 10, baseAngle + game.DIR_UP);
+      game.spawnEnemyShot(ctx, 1, this.x, this.y + 10, baseAngle);
+      game.spawnEnemyShot(ctx, 1, this.x, this.y + 10, baseAngle + game.DIR_DOWN);
+      game.spawnEnemyShot(ctx, 1, this.x, this.y + 10, baseAngle + Math.PI);
+      game.spawnEnemyShot(ctx, 1, this.x, this.y + 10, baseAngle + game.DIR_UP);
       this.tmp[1] += 2;
     }
     this.cx = (Math.floor(this.frm / 2) & 7) * 60;
-    if (this.y > 330) {
+    if (this.y < -30) {
       this.alive = false;
     }
   }

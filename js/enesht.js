@@ -30,7 +30,7 @@ game.EnemyShot = class {
   draw() {
     if (!this.alive) return;
     const d = this.constructor.DATA;
-    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), Math.floor(this.y) - Math.floor(d.sy / 2));
+    hsp.pos(Math.floor(this.x) - Math.floor(d.sx / 2), game.screenY(this.y, d.sy));
     hsp.gcopy(game.EnemyShot.BUF, this.cx, d.cy, d.sx, d.sy);
   }
 };

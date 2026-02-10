@@ -10,9 +10,9 @@ game.MaxStage = 1;
 
 //////////キー入力ビットフラグ//////////
 game.KEY_LEFT  = 1;    // bit 0: ←
-game.KEY_DOWN  = 2;    // bit 1: ↓
+game.KEY_UP    = 2;    // bit 1: ↑（hsp.stickのbit1=ArrowUp）
 game.KEY_RIGHT = 4;    // bit 2: →
-game.KEY_UP    = 8;    // bit 3: ↑
+game.KEY_DOWN  = 8;    // bit 3: ↓（hsp.stickのbit3=ArrowDown）
 game.KEY_LASER = 16;   // bit 4: Ctrl（レーザー）
 game.KEY_SHOT  = 32;   // bit 5: Space（ショット）
 game.KEY_SHIFT = 64;   // bit 6: Shift（ポーズ）
