@@ -105,9 +105,7 @@ hsp.MovEne = () => {
       if (81920 < hsp.EneY[ene]) {
         hsp.EneFlg[ene] = 0;
       }
-    }
-
-    if (ki == 1) {
+    } else if (ki == 1) {
       if (Math.floor(hsp.EneFrm[ene] / 2) <= 64) {
         hsp.EneTmp[ene][0] = hsp.EneFrm[ene] >> 1;
       }
@@ -127,9 +125,7 @@ hsp.MovEne = () => {
       if ((hsp.EneX[ene] < -5120) || (81920 < hsp.EneX[ene])) {
         hsp.EneFlg[ene] = 0;
       }
-    }
-
-    if (ki == 2) {
+    } else if (ki == 2) {
       hsp.r = hsp.EneTmp[ene][0];
       if ((hsp.EneFrm[ene] <= 80 && hsp.PlyFlg == 1) || hsp.EneFrm[ene] == 0) {
         hsp.prm = [hsp.EneX[ene], hsp.EneY[ene], hsp.PlyX, hsp.PlyY];
@@ -152,9 +148,7 @@ hsp.MovEne = () => {
           hsp.EneFlg[ene] = 0;
         }
       }
-    }
-
-    if (ki == 3) {
+    } else if (ki == 3) {
       hsp.EneY[ene] += 1024;
       if (hsp.EneFrm[ene] == 20 || hsp.EneFrm[ene] == 40 || hsp.EneFrm[ene] == 60 || hsp.EneFrm[ene] == 80) {
         hsp.prm = [hsp.EneX[ene], hsp.EneY[ene], hsp.PlyX, hsp.PlyY];
@@ -166,9 +160,7 @@ hsp.MovEne = () => {
       if (hsp.EneY[ene] > 84480) {
         hsp.EneFlg[ene] = 0;
       }
-    }
-
-    if (ki == 4) {
+    } else if (ki == 4) {
       hsp.r = hsp.EneFrm[ene] & 255;
       hsp.EneY[ene] -= 256;
       hsp.EneX[ene] = (hsp.sin[hsp.r] << 3) + hsp.EneX0[ene]
@@ -183,9 +175,7 @@ hsp.MovEne = () => {
       if (hsp.EneY[ene] < -7680) {
         hsp.EneFlg[ene] = 0;
       }
-    }
-
-    if (ki == 5) {
+    } else if (ki == 5) {
       if (mv == 0) {
         hsp.r = hsp.EneFrm[ene] << 1;
       } else {
@@ -203,9 +193,7 @@ hsp.MovEne = () => {
       if (hsp.EneFrm[ene] == 64) {
         hsp.EneFlg[ene] = 0;
       }
-    }
-
-    if (ki == 6) {
+    } else if (ki == 6) {
       hsp.r = hsp.EneFrm[ene] * 2;
       hsp.EneY[ene] += hsp.cos[hsp.r] * 6;
       hsp.EneCx[ene] = ((-hsp.cos[hsp.r] >> 6) + 4) * 40;
@@ -220,9 +208,7 @@ hsp.MovEne = () => {
       if (hsp.EneY[ene] == hsp.EneY0[ene]) {
         hsp.EneFlg[ene] = 0;
       }
-    }
-
-    if (ki == 7) {
+    } else if (ki == 7) {
       hsp.r = (hsp.EneFrm[ene] << 2) & 255;
       if (mv == 0) {
         hsp.EneX[ene] = 40 * hsp.sin[hsp.r] + hsp.EneX0[ene];
@@ -239,9 +225,7 @@ hsp.MovEne = () => {
       if (hsp.EneY[ene] > 84480) {
         hsp.EneFlg[ene] = 0;
       }
-    }
-
-    if (ki == 8) {
+    } else if (ki == 8) {
       if (hsp.EneFrm[ene] < 30) {
         hsp.r = 192;
       } else {
@@ -272,9 +256,7 @@ hsp.MovEne = () => {
       if (hsp.EneX[ene] < -5120 || 81920 < hsp.EneX[ene]) {
         hsp.EneFlg[ene] = 0;
       }
-    }
-
-    if (ki == 9) {
+    } else if (ki == 9) {
       if (hsp.EneFrm[ene] == 0) {
         hsp.EneTmp[ene][0] = 256;
       }
