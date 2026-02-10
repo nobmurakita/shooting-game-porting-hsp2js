@@ -130,6 +130,7 @@ game.gameUpdate = () => {
       for (const s of game.ctx.enemyShots) { s.update(game.ctx); }
       for (const l of game.ctx.lasers) { l.update(game.ctx); }
       for (const e of game.ctx.effects) { e.update(); }
+      game.updateBackground(game.ctx);
       game.ctx.frame++;
       if (game.keyWasPressed(game.KEY_SHIFT)) {
         game.ctx.gameSta = game.STA_PAUSE;
@@ -144,6 +145,7 @@ game.gameUpdate = () => {
     } else {
       game.ctx.gameSta = game.STA_INIT;
     }
+    game.updateBackground(game.ctx);
     game.updateRemaining(game.ctx);
   } else if (game.ctx.gameSta === game.STA_ENDING) {
     game.ctx.gameSta = game.STA_OPENING;

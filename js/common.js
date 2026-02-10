@@ -107,16 +107,19 @@ game.IniCom = () => {
 }
 
 //////////背景//////////
+game.updateBackground = (ctx) => {
+  ctx.bg1 += game.BG_SCROLL_SPEED;
+  if (ctx.bg1 >= game.SCREEN_H) {
+    ctx.bg1 -= game.SCREEN_H;
+  }
+};
+
 game.BackGround = () => {
   game.ctx.bg2 = game.SCREEN_H - game.ctx.bg1;
   hsp.pos(0, 0);
   hsp.gcopy(2, 0, Math.floor(game.ctx.bg2), game.SCREEN_W, Math.floor(game.ctx.bg1));
   hsp.pos(0, Math.floor(game.ctx.bg1));
   hsp.gcopy(2, 0, 0, game.SCREEN_W, Math.floor(game.ctx.bg2));
-  game.ctx.bg1 += game.BG_SCROLL_SPEED;
-  if (game.ctx.bg1 >= game.SCREEN_H) {
-    game.ctx.bg1 -= game.SCREEN_H;
-  }
 };
 
 //////////UIスプライト座標//////////
