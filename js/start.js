@@ -83,14 +83,11 @@ game.flipBuffer = () => {
   hsp.gcopy(1, 0, 0, game.SCREEN_W, game.SCREEN_H);
 };
 
-//////////メインループ//////////
-game.MainLoop = () => {
-  game.ctx.nextLoopTime += 1000 / 60;
+//////////ゲーム更新//////////
+game.gameUpdate = () => {
   game.ctx.key = hsp.stick();
 
   if (game.ctx.gameSta === game.STA_OPENING) {
-    hsp.gsel(0);
-    hsp.picload('img/title.png', 0, 0);
     game.ctx.stage = 0;
     game.ctx.score = 0;
     game.ctx.gameSta = game.STA_TITLE;
@@ -99,7 +96,7 @@ game.MainLoop = () => {
       game.ctx.gameSta = game.STA_INIT;
     }
   } else if (game.ctx.gameSta === game.STA_INIT) {
-    game.ctx.stage++
+    game.ctx.stage++;
     if (game.ctx.stage <= game.MaxStage) {
       game.ctx.initStage(game.ctx.stage);
       game.ctx.gameSta = game.STA_PLAY;
@@ -110,8 +107,6 @@ game.MainLoop = () => {
     if (game.ctx.key & game.KEY_ESC) {
       game.ctx.gameSta = game.STA_OPENING;
     } else {
-      // オフスクリーンバッファに描画
-      hsp.gsel(1);
       // プレーヤー更新
       game.ctx.player.update(game.ctx);
       // プレーヤーショット更新
@@ -132,16 +127,11 @@ game.MainLoop = () => {
       // 衝突判定
       game.CollisionSystem.checkAllCollisions(game.ctx);
       game.filterDead(game.ctx);
-      game.renderObjects(game.ctx);
-      game.ctx.frame++
+      game.ctx.frame++;
       if (game.ctx.key & game.KEY_SHIFT) {
         game.ctx.key = 0;
         game.ctx.gameSta = game.STA_PAUSE;
-        const pause = game.UI_SPRITES.pauseLabel;
-        hsp.pos(129, 142);
-        hsp.gcopy(game.UI_SPRITES.buf, pause.cx, pause.cy, pause.sx, pause.sy);
       }
-      game.flipBuffer();
     }
   } else if (game.ctx.gameSta === game.STA_CLEAR) {
     if (game.ctx.key & game.KEY_ESC) {
@@ -152,12 +142,8 @@ game.MainLoop = () => {
     } else {
       game.ctx.gameSta = game.STA_INIT;
     }
-    // オフスクリーンバッファに描画
-    hsp.gsel(1);
     game.updateRemaining(game.ctx);
     game.filterDead(game.ctx);
-    game.renderObjects(game.ctx);
-    game.flipBuffer();
   } else if (game.ctx.gameSta === game.STA_ENDING) {
     game.ctx.gameSta = game.STA_OPENING;
   } else if (game.ctx.gameSta === game.STA_PAUSE) {
@@ -169,7 +155,36 @@ game.MainLoop = () => {
   }
 
   game.ctx.hiScore = Math.max(game.ctx.score, game.ctx.hiScore);
+};
 
+//////////ゲーム描画//////////
+game.gameRender = () => {
+  if (game.ctx.gameSta === game.STA_TITLE) {
+    hsp.gsel(0);
+    hsp.picload('img/title.png', 0, 0);
+  } else if (game.ctx.gameSta === game.STA_PLAY) {
+    hsp.gsel(1);
+    game.renderObjects(game.ctx);
+    game.flipBuffer();
+  } else if (game.ctx.gameSta === game.STA_CLEAR) {
+    hsp.gsel(1);
+    game.renderObjects(game.ctx);
+    game.flipBuffer();
+  } else if (game.ctx.gameSta === game.STA_PAUSE) {
+    hsp.gsel(1);
+    game.renderObjects(game.ctx);
+    const pause = game.UI_SPRITES.pauseLabel;
+    hsp.pos(129, 142);
+    hsp.gcopy(game.UI_SPRITES.buf, pause.cx, pause.cy, pause.sx, pause.sy);
+    game.flipBuffer();
+  }
+};
+
+//////////メインループ//////////
+game.MainLoop = () => {
+  game.ctx.nextLoopTime += 1000 / 60;
+  game.gameUpdate();
+  game.gameRender();
   let delay = game.ctx.nextLoopTime - performance.now();
   setTimeout(game.MainLoop, delay);
 };
