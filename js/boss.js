@@ -21,8 +21,8 @@ hsp.IniBoss = () => {
   if (hsp.Stage == 1) {
     hsp.BossFlg = 0;
     hsp.BossShield = 500;
-    hsp.BossX = 150 << 8;
-    hsp.BossY = -100 << 8;
+    hsp.BossX = 150;
+    hsp.BossY = -100;
     hsp.BossFrm = 0;
 
     hsp.BossPrtFlg = hsp.dim(hsp.MaxBossPrt);
@@ -47,22 +47,22 @@ hsp.MovBoss = () => {
     }
     hsp.BossFrm++;
     if (hsp.BossFrm % 3 == 0) {
-      let x = hsp.rnd(50) << 8; x -= 50 << 7;
-      let y = hsp.rnd(50) << 8; y -= 50 << 7;
+      let x = hsp.rnd(50); x -= 25;
+      let y = hsp.rnd(50); y -= 25;
       hsp.prm = [0, hsp.BossX + x, hsp.BossY + y, 0];
       hsp.AprEff();
     }
-    let x = hsp.rnd(1024); x -= 512;
-    let y = hsp.rnd(256); y -= 128;
+    let x = hsp.rnd(4); x -= 2;
+    let y = hsp.rnd(1); y -= 0.5;
     hsp.BossX += x;
-    hsp.BossY += y + 256;
+    hsp.BossY += y + 1;
     if (hsp.BossFrm == 50) {
       for (let i = 0; i < 3; i++) {
         let a = (i + 1) * 25;
         let t = -i * 2;
         for (let j = 0; j < 16; j++) {
-          hsp.r = (j * 16) & 255;
-          hsp.prm = [0, a * hsp.cos[hsp.r] + hsp.BossX, a * hsp.sin[hsp.r] + hsp.BossY, t];
+          hsp.r = hsp.toRad((j * 16) & 255);
+          hsp.prm = [0, a * Math.cos(hsp.r) + hsp.BossX, a * Math.sin(hsp.r) + hsp.BossY, t];
           hsp.AprEff();
         }
       }
@@ -79,26 +79,26 @@ hsp.MovBoss = () => {
 
   if (hsp.Stage == 1) {
     if (hsp.BossFrm < 200) {
-      hsp.BossY += 256;
+      hsp.BossY += 1;
     } else {
       let a = Math.floor((hsp.BossFrm - 200) / 128) % 4;
 
       if (a == 0 || a == 3) {
-        hsp.BossX -= 256;
+        hsp.BossX -= 1;
       } else {
-        hsp.BossX += 256;
+        hsp.BossX += 1;
       }
 
-      hsp.r = hsp.BossFrm & 255;
-      hsp.BossY += hsp.sin[hsp.r];
+      hsp.r = hsp.toRad(hsp.BossFrm);
+      hsp.BossY += Math.sin(hsp.r);
 
       if ((hsp.BossFrm - 200) % 128 < 32 && (hsp.BossFrm - 200) % 8 == 0) {
         if (hsp.BossPrtFlg[1] == 1) {
-          hsp.prm = [2, (-40 << 8) + hsp.BossX, hsp.BossY, hsp.r];
+          hsp.prm = [2, -40 + hsp.BossX, hsp.BossY, hsp.r];
           hsp.AprEneSht();
         }
         if (hsp.BossPrtFlg[2] == 1) {
-          hsp.prm = [2, (40 << 8) + hsp.BossX, hsp.BossY, hsp.r];
+          hsp.prm = [2, 40 + hsp.BossX, hsp.BossY, hsp.r];
           hsp.AprEneSht();
         }
       }
@@ -106,15 +106,15 @@ hsp.MovBoss = () => {
         if (hsp.BossFlg == 1) {
           hsp.prm = [hsp.BossX, hsp.BossY, hsp.PlyX, hsp.PlyY];
           hsp.stg_dir();
-          hsp.prm = [1, hsp.BossX, hsp.BossY - 5120, hsp.r];
+          hsp.prm = [1, hsp.BossX, hsp.BossY - 20, hsp.r];
           hsp.AprEneSht();
         }
       }
       if ((hsp.BossFrm - 200) % 32 == 31) {
         if (hsp.BossFlg == 1) {
-          hsp.prm = [0, (-5 << 8) + hsp.BossX, (25 << 8) + hsp.BossY, 64];
+          hsp.prm = [0, -5 + hsp.BossX, 25 + hsp.BossY, hsp.toRad(64)];
           hsp.AprEneSht();
-          hsp.prm = [0, (5 << 8) + hsp.BossX, (25 << 8) + hsp.BossY, 64];
+          hsp.prm = [0, 5 + hsp.BossX, 25 + hsp.BossY, hsp.toRad(64)];
           hsp.AprEneSht();
         }
       }
@@ -133,14 +133,14 @@ hsp.MovBoss = () => {
         continue;
       }
       hsp.prm = [
-        hsp.BossX + (hsp.DatBossPrt[prt][1] << 8) + (hsp.DatBossPrt[prt][5] << 8),
-        hsp.BossY + (hsp.DatBossPrt[prt][2] << 8) + (hsp.DatBossPrt[prt][6] << 8),
-        hsp.BossX + (hsp.DatBossPrt[prt][1] << 8) + (hsp.DatBossPrt[prt][7] << 8),
-        hsp.BossY + (hsp.DatBossPrt[prt][2] << 8) + (hsp.DatBossPrt[prt][8] << 8),
-        hsp.PlyShtX[sht] - 1280,
-        hsp.PlyShtY[sht] - 2560,
-        hsp.PlyShtX[sht] + 1280,
-        hsp.PlyShtY[sht] + 2560,
+        hsp.BossX + hsp.DatBossPrt[prt][1] + hsp.DatBossPrt[prt][5],
+        hsp.BossY + hsp.DatBossPrt[prt][2] + hsp.DatBossPrt[prt][6],
+        hsp.BossX + hsp.DatBossPrt[prt][1] + hsp.DatBossPrt[prt][7],
+        hsp.BossY + hsp.DatBossPrt[prt][2] + hsp.DatBossPrt[prt][8],
+        hsp.PlyShtX[sht] - 5,
+        hsp.PlyShtY[sht] - 10,
+        hsp.PlyShtX[sht] + 5,
+        hsp.PlyShtY[sht] + 10,
       ];
       hsp.stg_clash();
       if (hsp.r == 1) {
@@ -148,8 +148,8 @@ hsp.MovBoss = () => {
         hsp.PlyShtFlg[sht] = 0;
         hsp.BossShield--;
         hsp.BossPrtShield[prt]--;
-        let x = hsp.rnd(2560); x -= 1280;
-        let y = hsp.rnd(2560); y -= 1280;
+        let x = hsp.rnd(10); x -= 5;
+        let y = hsp.rnd(10); y -= 5;
         hsp.prm = [1, hsp.PlyShtX[j] + x, hsp.PlyShtY[j] + y, 0];
         hsp.AprEff();
         if (hsp.BossShield == 0) {
@@ -160,9 +160,9 @@ hsp.MovBoss = () => {
           hsp.BossPrtFlg[prt] = 0;
           hsp.BossPrtCx[prt] = hsp.DatBossPrt[prt][3];
           for (let k = 0; k < 5; k++) {
-            let x = hsp.rnd(hsp.DatBossPrt[prt][3]) << 8; x -= hsp.DatBossPrt[prt][3] << 7;
-            let y = hsp.rnd(hsp.DatBossPrt[prt][4]) << 8; y -= hsp.DatBossPrt[prt][4] << 7;
-            hsp.prm = [0, (hsp.DatBossPrt[prt][1] << 8) + hsp.BossX + x, (hsp.DatBossPrt[prt][2] << 8) + hsp.BossY + y, -k * 3];
+            let x = hsp.rnd(hsp.DatBossPrt[prt][3]); x -= Math.floor(hsp.DatBossPrt[prt][3] / 2);
+            let y = hsp.rnd(hsp.DatBossPrt[prt][4]); y -= Math.floor(hsp.DatBossPrt[prt][4] / 2);
+            hsp.prm = [0, hsp.DatBossPrt[prt][1] + hsp.BossX + x, hsp.DatBossPrt[prt][2] + hsp.BossY + y, -k * 3];
             hsp.AprEff();
           }
           break;
@@ -180,7 +180,7 @@ hsp.DrwBoss = () => {
   if (hsp.Stage == 1) {
     for (let i = 0; i < hsp.MaxBossPrt; i++) {
       const prt = i;
-      hsp.pos((hsp.BossX >> 8) + hsp.DatBossPrt[prt][1] - Math.floor(hsp.DatBossPrt[prt][3] / 2), (hsp.BossY >> 8) + hsp.DatBossPrt[prt][2] - Math.floor(hsp.DatBossPrt[prt][4] / 2));
+      hsp.pos(Math.floor(hsp.BossX) + hsp.DatBossPrt[prt][1] - Math.floor(hsp.DatBossPrt[prt][3] / 2), Math.floor(hsp.BossY) + hsp.DatBossPrt[prt][2] - Math.floor(hsp.DatBossPrt[prt][4] / 2));
       hsp.gcopy(5, hsp.BossPrtCx[prt], hsp.DatBossPrt[prt][9], hsp.DatBossPrt[prt][3], hsp.DatBossPrt[prt][4]);
     }
   }

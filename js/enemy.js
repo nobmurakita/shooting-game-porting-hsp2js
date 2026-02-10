@@ -15,7 +15,7 @@ hsp.IniDatEne = () => {
   hsp.picload('img/enemy09.png', 0, 430);
 
   hsp.DatEne = [
-    // Shield, sx, sy, HitX1, HitY1, HitX2, HitY2, Cy	
+    // Shield, sx, sy, HitX1, HitY1, HitX2, HitY2, Cy
     [2, 20, 40, -5, -15, 5, 15, 0],
     [2, 40, 40, -10, -10, 10, 10, 40],
     [4, 40, 40, -15, -15, 15, 15, 80],
@@ -65,8 +65,8 @@ hsp.AprEne = () => {
         hsp.EneFrm[i] = 0;
         hsp.EneKi[i] = hsp.EneTable[hsp.TableIndex][1];
         hsp.EneMv[i] = hsp.EneTable[hsp.TableIndex][2];
-        hsp.EneX0[i] = hsp.EneTable[hsp.TableIndex][3] << 8;
-        hsp.EneY0[i] = hsp.EneTable[hsp.TableIndex][4] << 8;
+        hsp.EneX0[i] = hsp.EneTable[hsp.TableIndex][3];
+        hsp.EneY0[i] = hsp.EneTable[hsp.TableIndex][4];
         hsp.EneX[i] = hsp.EneX0[i];
         hsp.EneY[i] = hsp.EneY0[i];
         hsp.EneLckOn[i] = 0;
@@ -93,16 +93,16 @@ hsp.MovEne = () => {
     const mv = hsp.EneMv[ene];
 
     if (ki == 0) {
-      hsp.r = 3 * hsp.EneFrm[ene] & 255;
+      hsp.r = hsp.toRad(3 * hsp.EneFrm[ene]);
       if (mv == 0) {
-        hsp.EneX[ene] = 40 * hsp.sin[hsp.r] + hsp.EneX0[ene];
+        hsp.EneX[ene] = 40 * Math.sin(hsp.r) + hsp.EneX0[ene];
       }
       if (mv == 1) {
-        hsp.EneX[ene] = -40 * hsp.sin[hsp.r] + hsp.EneX0[ene];
+        hsp.EneX[ene] = -40 * Math.sin(hsp.r) + hsp.EneX0[ene];
       }
-      hsp.EneY[ene] += 512;
+      hsp.EneY[ene] += 2;
       hsp.EneCx[ene] = hsp.EneFrm[ene] % 6 * 20;
-      if (81920 < hsp.EneY[ene]) {
+      if (320 < hsp.EneY[ene]) {
         hsp.EneFlg[ene] = 0;
       }
     } else if (ki == 1) {
@@ -110,19 +110,19 @@ hsp.MovEne = () => {
         hsp.EneTmp[ene][0] = hsp.EneFrm[ene] >> 1;
       }
       if (hsp.EneMv[ene] == 0) {
-        hsp.r = 64 + hsp.EneTmp[ene][0];
+        hsp.r = hsp.toRad(64 + hsp.EneTmp[ene][0]);
       }
       if (hsp.EneMv[ene] == 1) {
-        hsp.r = 64 - hsp.EneTmp[ene][0];
+        hsp.r = hsp.toRad(64 - hsp.EneTmp[ene][0]);
       }
-      hsp.EneX[ene] += hsp.cos[hsp.r] * 4;
-      hsp.EneY[ene] += hsp.sin[hsp.r] * 4;
-      hsp.EneCx[ene] = (hsp.cos[hsp.r] * 3 >> 8) + 120;
+      hsp.EneX[ene] += Math.cos(hsp.r) * 4;
+      hsp.EneY[ene] += Math.sin(hsp.r) * 4;
+      hsp.EneCx[ene] = Math.floor(Math.cos(hsp.r) * 3) + 120;
       if (hsp.EneFrm[ene] == 32) {
-        hsp.prm = [0, hsp.EneX[ene], hsp.EneY[ene] + 5120, 64];
+        hsp.prm = [0, hsp.EneX[ene], hsp.EneY[ene] + 20, hsp.toRad(64)];
         hsp.AprEneSht();
       }
-      if ((hsp.EneX[ene] < -5120) || (81920 < hsp.EneX[ene])) {
+      if ((hsp.EneX[ene] < -20) || (320 < hsp.EneX[ene])) {
         hsp.EneFlg[ene] = 0;
       }
     } else if (ki == 2) {
@@ -132,152 +132,152 @@ hsp.MovEne = () => {
         hsp.stg_dir();
         hsp.EneTmp[ene][0] = hsp.r;
       }
-      hsp.EneTmp[ene][1] += hsp.cos[hsp.r] >> 1;
-      hsp.EneTmp[ene][2] += hsp.sin[hsp.r] >> 1;
+      hsp.EneTmp[ene][1] += Math.cos(hsp.r) * 0.5;
+      hsp.EneTmp[ene][2] += Math.sin(hsp.r) * 0.5;
       hsp.EneX[ene] += hsp.EneTmp[ene][1];
       hsp.EneY[ene] += hsp.EneTmp[ene][2];
-      hsp.EneTmp[ene][1] = Math.floor(hsp.EneTmp[ene][1] * 19 / 20);
-      hsp.EneTmp[ene][2] = Math.floor(hsp.EneTmp[ene][2] * 19 / 20);
+      hsp.EneTmp[ene][1] = hsp.EneTmp[ene][1] * 19 / 20;
+      hsp.EneTmp[ene][2] = hsp.EneTmp[ene][2] * 19 / 20;
       if (hsp.EneFrm[ene] != 0 && hsp.EneFrm[ene] % 30 == 0) {
-        hsp.prm = [0, hsp.cos[hsp.r] * 20 + hsp.EneX[ene], hsp.sin[hsp.r] * 20 + hsp.EneY[ene], hsp.r];
+        hsp.prm = [0, Math.cos(hsp.r) * 20 + hsp.EneX[ene], Math.sin(hsp.r) * 20 + hsp.EneY[ene], hsp.r];
         hsp.AprEneSht();
       }
-      hsp.EneCx[ene] = Math.floor((hsp.r + 4 & 255) * 31 / 255) * 40;
+      hsp.EneCx[ene] = Math.floor(((hsp.toAngle256(hsp.r) + 4) & 255) * 31 / 255) * 40;
       if (hsp.EneFrm[ene] > 80) {
-        if (hsp.EneX[ene] < -5120 || hsp.EneX[ene] > 81920 || hsp.EneY[ene] < -5120 || hsp.EneY[ene] > 81920) {
+        if (hsp.EneX[ene] < -20 || hsp.EneX[ene] > 320 || hsp.EneY[ene] < -20 || hsp.EneY[ene] > 320) {
           hsp.EneFlg[ene] = 0;
         }
       }
     } else if (ki == 3) {
-      hsp.EneY[ene] += 1024;
+      hsp.EneY[ene] += 4;
       if (hsp.EneFrm[ene] == 20 || hsp.EneFrm[ene] == 40 || hsp.EneFrm[ene] == 60 || hsp.EneFrm[ene] == 80) {
         hsp.prm = [hsp.EneX[ene], hsp.EneY[ene], hsp.PlyX, hsp.PlyY];
         hsp.stg_dir();
-        hsp.prm = [1, hsp.EneX[ene], 7680 + hsp.EneY[ene], hsp.r];
+        hsp.prm = [1, hsp.EneX[ene], 30 + hsp.EneY[ene], hsp.r];
         hsp.AprEneSht();
       }
       hsp.EneCx[ene] = 0;
-      if (hsp.EneY[ene] > 84480) {
+      if (hsp.EneY[ene] > 330) {
         hsp.EneFlg[ene] = 0;
       }
     } else if (ki == 4) {
-      hsp.r = hsp.EneFrm[ene] & 255;
-      hsp.EneY[ene] -= 256;
-      hsp.EneX[ene] = (hsp.sin[hsp.r] << 3) + hsp.EneX0[ene]
-      if (hsp.EneFrm[ene] > 50 && hsp.r % 8 == 0) {
-        hsp.prm = [1, hsp.EneX[ene] + 2560, hsp.EneY[ene] - 512, 64 - hsp.EneTmp[ene][0] & 255];
+      hsp.r = hsp.toRad(hsp.EneFrm[ene]);
+      hsp.EneY[ene] -= 1;
+      hsp.EneX[ene] = Math.sin(hsp.r) * 8 + hsp.EneX0[ene];
+      if (hsp.EneFrm[ene] > 50 && hsp.EneFrm[ene] % 8 == 0) {
+        hsp.prm = [1, hsp.EneX[ene] + 10, hsp.EneY[ene] - 2, hsp.toRad((64 - hsp.EneTmp[ene][0]) & 255)];
         hsp.AprEneSht();
-        hsp.prm = [1, hsp.EneX[ene] - 2560, hsp.EneY[ene] - 512, 64 + hsp.EneTmp[ene][0] & 255];
+        hsp.prm = [1, hsp.EneX[ene] - 10, hsp.EneY[ene] - 2, hsp.toRad((64 + hsp.EneTmp[ene][0]) & 255)];
         hsp.EneTmp[ene][0] += 8;
         hsp.AprEneSht();
       }
       hsp.EneCx[ene] = 0;
-      if (hsp.EneY[ene] < -7680) {
+      if (hsp.EneY[ene] < -30) {
         hsp.EneFlg[ene] = 0;
       }
     } else if (ki == 5) {
       if (mv == 0) {
-        hsp.r = hsp.EneFrm[ene] << 1;
+        hsp.r = hsp.toRad(hsp.EneFrm[ene] * 2);
       } else {
-        hsp.r = (-hsp.EneFrm[ene] << 1) + 128;
+        hsp.r = hsp.toRad((-hsp.EneFrm[ene] * 2 + 128) & 255);
       }
-      hsp.EneX[ene] = hsp.cos[hsp.r] * 150 + 38400;
-      hsp.EneY[ene] = hsp.sin[hsp.r] * 150;
+      hsp.EneX[ene] = Math.cos(hsp.r) * 150 + 150;
+      hsp.EneY[ene] = Math.sin(hsp.r) * 150;
       hsp.prm = [hsp.EneX[ene], hsp.EneY[ene], hsp.PlyX, hsp.PlyY];
       hsp.stg_dir();
       if (hsp.EneFrm[ene] == 16 || hsp.EneFrm[ene] == 48) {
-        hsp.prm = [0, hsp.cos[hsp.r] * 20 + hsp.EneX[ene], hsp.sin[hsp.r] * 20 + hsp.EneY[ene], hsp.r];
+        hsp.prm = [0, Math.cos(hsp.r) * 20 + hsp.EneX[ene], Math.sin(hsp.r) * 20 + hsp.EneY[ene], hsp.r];
         hsp.AprEneSht();
       }
-      hsp.EneCx[ene] = Math.floor((hsp.r + 4 & 255) * 31 / 255) * 40;
+      hsp.EneCx[ene] = Math.floor(((hsp.toAngle256(hsp.r) + 4) & 255) * 31 / 255) * 40;
       if (hsp.EneFrm[ene] == 64) {
         hsp.EneFlg[ene] = 0;
       }
     } else if (ki == 6) {
-      hsp.r = hsp.EneFrm[ene] * 2;
-      hsp.EneY[ene] += hsp.cos[hsp.r] * 6;
-      hsp.EneCx[ene] = ((-hsp.cos[hsp.r] >> 6) + 4) * 40;
+      hsp.r = hsp.toRad(hsp.EneFrm[ene] * 2);
+      hsp.EneY[ene] += Math.cos(hsp.r) * 6;
+      hsp.EneCx[ene] = (Math.floor(-Math.cos(hsp.r) * 4) + 4) * 40;
       if (hsp.EneFrm[ene] == 25) {
         hsp.prm = [hsp.EneX[ene], hsp.EneY[ene], hsp.PlyX, hsp.PlyY];
         hsp.stg_dir();
-        hsp.prm = [2, hsp.EneX[ene] + 2560, hsp.EneY[ene] + 6400, hsp.r];
+        hsp.prm = [2, hsp.EneX[ene] + 10, hsp.EneY[ene] + 25, hsp.r];
         hsp.AprEneSht();
-        hsp.prm = [2, hsp.EneX[ene] - 2560, hsp.EneY[ene] + 6400, hsp.r];
+        hsp.prm = [2, hsp.EneX[ene] - 10, hsp.EneY[ene] + 25, hsp.r];
         hsp.AprEneSht();
       }
-      if (hsp.EneY[ene] == hsp.EneY0[ene]) {
+      if (hsp.EneFrm[ene] >= 128) {
         hsp.EneFlg[ene] = 0;
       }
     } else if (ki == 7) {
-      hsp.r = (hsp.EneFrm[ene] << 2) & 255;
+      hsp.r = hsp.toRad((hsp.EneFrm[ene] * 4) & 255);
       if (mv == 0) {
-        hsp.EneX[ene] = 40 * hsp.sin[hsp.r] + hsp.EneX0[ene];
+        hsp.EneX[ene] = 40 * Math.sin(hsp.r) + hsp.EneX0[ene];
       }
       if (mv == 1) {
-        hsp.EneX[ene] = -40 * hsp.sin[hsp.r] + hsp.EneX0[ene];
+        hsp.EneX[ene] = -40 * Math.sin(hsp.r) + hsp.EneX0[ene];
       }
-      hsp.EneY[ene] += 512;
-      if (hsp.r % 64 == 0) {
-        hsp.prm = [0, hsp.EneX[ene], hsp.EneY[ene] + 7680, 64];
+      hsp.EneY[ene] += 2;
+      if (hsp.EneFrm[ene] % 16 == 0) {
+        hsp.prm = [0, hsp.EneX[ene], hsp.EneY[ene] + 30, hsp.toRad(64)];
         hsp.AprEneSht();
       }
       hsp.EneCx[ene] = (Math.floor(hsp.EneFrm[ene] / 2) & 7) * 40;
-      if (hsp.EneY[ene] > 84480) {
+      if (hsp.EneY[ene] > 330) {
         hsp.EneFlg[ene] = 0;
       }
     } else if (ki == 8) {
       if (hsp.EneFrm[ene] < 30) {
-        hsp.r = 192;
+        hsp.r = hsp.toRad(192);
       } else {
         if (hsp.EneFrm[ene] < 46) {
           hsp.EneTmp[ene][0] = (hsp.EneFrm[ene] - 30) * 2;
         }
         if (hsp.EneMv[ene] == 0) {
-          hsp.r = 192 + hsp.EneTmp[ene][0];
+          hsp.r = hsp.toRad(192 + hsp.EneTmp[ene][0]);
         }
         if (hsp.EneMv[ene] == 1) {
-          hsp.r = 192 - hsp.EneTmp[ene][0];
+          hsp.r = hsp.toRad(192 - hsp.EneTmp[ene][0]);
         }
       }
-      hsp.EneX[ene] += hsp.cos[hsp.r] * 5;
-      hsp.EneY[ene] += hsp.sin[hsp.r] * 5;
-      hsp.EneCx[ene] = (((hsp.cos[hsp.r] * 3) >> 8) + 3) * 40;
+      hsp.EneX[ene] += Math.cos(hsp.r) * 5;
+      hsp.EneY[ene] += Math.sin(hsp.r) * 5;
+      hsp.EneCx[ene] = (Math.floor(Math.cos(hsp.r) * 3) + 3) * 40;
       if (hsp.EneFrm[ene] == 30) {
         hsp.prm = [hsp.EneX[ene], hsp.EneY[ene], hsp.PlyX, hsp.PlyY];
         hsp.stg_dir();
-        let t = hsp.r
+        let t = hsp.r;
         hsp.prm = [0, hsp.EneX[ene], hsp.EneY[ene], t];
         hsp.AprEneSht();
-        hsp.prm = [0, hsp.EneX[ene], hsp.EneY[ene], t + 16 & 255];
+        hsp.prm = [0, hsp.EneX[ene], hsp.EneY[ene], t + Math.PI / 8];
         hsp.AprEneSht();
-        hsp.prm = [0, hsp.EneX[ene], hsp.EneY[ene], t + 240 & 255];
+        hsp.prm = [0, hsp.EneX[ene], hsp.EneY[ene], t - Math.PI / 8];
         hsp.AprEneSht();
       }
-      if (hsp.EneX[ene] < -5120 || 81920 < hsp.EneX[ene]) {
+      if (hsp.EneX[ene] < -20 || 320 < hsp.EneX[ene]) {
         hsp.EneFlg[ene] = 0;
       }
     } else if (ki == 9) {
       if (hsp.EneFrm[ene] == 0) {
-        hsp.EneTmp[ene][0] = 256;
+        hsp.EneTmp[ene][0] = 1;
       }
       if (hsp.EneFrm[ene] % 50 == 0) {
         hsp.EneTmp[ene][0] = -hsp.EneTmp[ene][0];
       }
       hsp.EneX[ene] += hsp.EneTmp[ene][0];
-      hsp.EneY[ene] += 256;
+      hsp.EneY[ene] += 1;
       if (hsp.EneFrm[ene] > 50 && hsp.EneFrm[ene] < 296 && hsp.EneFrm[ene] % 4 == 0) {
-        hsp.prm = [1, hsp.EneX[ene], hsp.EneY[ene] - 2560, hsp.EneTmp[ene][1] & 255];
+        hsp.prm = [1, hsp.EneX[ene], hsp.EneY[ene] - 10, hsp.toRad(hsp.EneTmp[ene][1] & 255)];
         hsp.AprEneSht();
-        hsp.prm = [1, hsp.EneX[ene], hsp.EneY[ene] - 2560, hsp.EneTmp[ene][1] + 64 & 255];
+        hsp.prm = [1, hsp.EneX[ene], hsp.EneY[ene] - 10, hsp.toRad((hsp.EneTmp[ene][1] + 64) & 255)];
         hsp.AprEneSht();
-        hsp.prm = [1, hsp.EneX[ene], hsp.EneY[ene] - 2560, hsp.EneTmp[ene][1] + 128 & 255];
+        hsp.prm = [1, hsp.EneX[ene], hsp.EneY[ene] - 10, hsp.toRad((hsp.EneTmp[ene][1] + 128) & 255)];
         hsp.AprEneSht();
-        hsp.prm = [1, hsp.EneX[ene], hsp.EneY[ene] - 2560, hsp.EneTmp[ene][1] + 192 & 255];
+        hsp.prm = [1, hsp.EneX[ene], hsp.EneY[ene] - 10, hsp.toRad((hsp.EneTmp[ene][1] + 192) & 255)];
         hsp.AprEneSht();
         hsp.EneTmp[ene][1] += 4;
       }
       hsp.EneCx[ene] = (Math.floor(hsp.EneFrm[ene] / 2) & 7) * 60;
-      if (hsp.EneY[ene] > 84480) {
+      if (hsp.EneY[ene] > 330) {
         hsp.EneFlg[ene] = 0;
       }
     }
@@ -289,29 +289,29 @@ hsp.MovEne = () => {
         continue;
       }
       hsp.prm = [
-        (hsp.DatEne[ki][3] << 8) + hsp.EneX[ene],
-        (hsp.DatEne[ki][4] << 8) + hsp.EneY[ene],
-        (hsp.DatEne[ki][5] << 8) + hsp.EneX[ene],
-        (hsp.DatEne[ki][6] << 8) + hsp.EneY[ene],
-        hsp.PlyShtX[j] - 1280,
-        hsp.PlyShtY[j] - 2560,
-        hsp.PlyShtX[j] + 1280,
-        hsp.PlyShtY[j] + 2560,
+        hsp.DatEne[ki][3] + hsp.EneX[ene],
+        hsp.DatEne[ki][4] + hsp.EneY[ene],
+        hsp.DatEne[ki][5] + hsp.EneX[ene],
+        hsp.DatEne[ki][6] + hsp.EneY[ene],
+        hsp.PlyShtX[j] - 5,
+        hsp.PlyShtY[j] - 10,
+        hsp.PlyShtX[j] + 5,
+        hsp.PlyShtY[j] + 10,
       ];
       hsp.stg_clash();
       if (hsp.r == 1) {
         hsp.Score += 10;
         hsp.PlyShtFlg[j] = 0;
         hsp.EneShield[ene]--;
-        let x = hsp.rnd(2560); x -= 1280;
-        let y = hsp.rnd(2560); y -= 1280;
+        let x = hsp.rnd(10); x -= 5;
+        let y = hsp.rnd(10); y -= 5;
         hsp.prm = [1, hsp.PlyShtX[j] + x, hsp.PlyShtY[j] + y, 0];
         hsp.AprEff();
         if (hsp.EneShield[ene] == 0) {
           hsp.EneFlg[ene] = 0;
           for (let k = 0; k < 5; k++) {
-            let x = hsp.rnd(hsp.DatEne[ki][1] << 8); x -= hsp.DatEne[ki][1] << 7;
-            let y = hsp.rnd(hsp.DatEne[ki][2] << 8); y -= hsp.DatEne[ki][2] << 7;
+            let x = hsp.rnd(hsp.DatEne[ki][1]); x -= Math.floor(hsp.DatEne[ki][1] / 2);
+            let y = hsp.rnd(hsp.DatEne[ki][2]); y -= Math.floor(hsp.DatEne[ki][2] / 2);
             hsp.prm = [0, hsp.EneX[ene] + x, hsp.EneY[ene] + y, -k * 3];
             hsp.AprEff();
           }
@@ -325,27 +325,27 @@ hsp.MovEne = () => {
     }
 
     hsp.prm = [
-      (hsp.DatEne[ki][3] << 8) + hsp.EneX[ene],
-      (hsp.DatEne[ki][4] << 8) + hsp.EneY[ene],
-      (hsp.DatEne[ki][5] << 8) + hsp.EneX[ene],
-      (hsp.DatEne[ki][6] << 8) + hsp.EneY[ene],
-      hsp.PlyX - 1280,
-      hsp.PlyY - 1280,
-      hsp.PlyX + 1280,
-      hsp.PlyY + 1280,
+      hsp.DatEne[ki][3] + hsp.EneX[ene],
+      hsp.DatEne[ki][4] + hsp.EneY[ene],
+      hsp.DatEne[ki][5] + hsp.EneX[ene],
+      hsp.DatEne[ki][6] + hsp.EneY[ene],
+      hsp.PlyX - 5,
+      hsp.PlyY - 5,
+      hsp.PlyX + 5,
+      hsp.PlyY + 5,
     ];
     hsp.stg_clash();
     if (hsp.r == 1) {
       hsp.EneFlg[ene] = 0;
       for (let j = 0; j < 2; j++) {
-        let x = hsp.rnd(2560); x -= 1280;
-        let y = hsp.rnd(2560); y -= 1280;
+        let x = hsp.rnd(10); x -= 5;
+        let y = hsp.rnd(10); y -= 5;
         hsp.prm = [1, hsp.EneX[ene] + x, hsp.EneY[ene] + y, -j * 3];
         hsp.AprEff();
       }
       for (let j = 0; j < 3; j++) {
-        let x = hsp.rnd(hsp.DatEne[ki][1] << 8); x -= hsp.DatEne[ki][1] << 7;
-        let y = hsp.rnd(hsp.DatEne[ki][2] << 8); y -= hsp.DatEne[ki][2] << 7;
+        let x = hsp.rnd(hsp.DatEne[ki][1]); x -= Math.floor(hsp.DatEne[ki][1] / 2);
+        let y = hsp.rnd(hsp.DatEne[ki][2]); y -= Math.floor(hsp.DatEne[ki][2] / 2);
         hsp.prm = [0, hsp.EneX[ene] + x, hsp.EneY[ene] + y, -j * 3];
         hsp.AprEff();
       }
@@ -371,7 +371,7 @@ hsp.DrwEne = () => {
       continue;
     }
     const ki = hsp.EneKi[i];
-    hsp.pos((hsp.EneX[i] >> 8) - Math.floor(hsp.DatEne[ki][1] / 2), (hsp.EneY[i] >> 8) - Math.floor(hsp.DatEne[ki][2] / 2));
+    hsp.pos(Math.floor(hsp.EneX[i]) - Math.floor(hsp.DatEne[ki][1] / 2), Math.floor(hsp.EneY[i]) - Math.floor(hsp.DatEne[ki][2] / 2));
     hsp.gcopy(4, hsp.EneCx[i], hsp.DatEne[ki][7], hsp.DatEne[ki][1], hsp.DatEne[ki][2]);
   }
 };

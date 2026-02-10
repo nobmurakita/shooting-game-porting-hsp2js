@@ -39,7 +39,8 @@ hsp.AprEneSht = () => {
     hsp.EneShtFrm[i] = 0;
     hsp.EneShtTmp[i] = [0, 0, 0, 0];
     if (shtki == 0) {
-      hsp.EneShtCx[i] = Math.floor(((hsp.r + 4) & 127) * 15 / 127) * 20;
+      let a = hsp.toAngle256(hsp.r);
+      hsp.EneShtCx[i] = Math.floor(((a + 4) & 127) * 15 / 127) * 20;
     }
     break;
   }
@@ -55,19 +56,19 @@ hsp.MovEneSht = () => {
 
     if (ki == 0) {
       hsp.r = hsp.EneShtDir[i];
-      hsp.EneShtX[i] += hsp.cos[hsp.r] * 7;
-      hsp.EneShtY[i] += hsp.sin[hsp.r] * 7;
-      if (hsp.EneShtX[i] < -2560 || hsp.EneShtX[i] > 79360 || hsp.EneShtY[i] < -2560 || hsp.EneShtY[i] > 79360) {
+      hsp.EneShtX[i] += Math.cos(hsp.r) * 7;
+      hsp.EneShtY[i] += Math.sin(hsp.r) * 7;
+      if (hsp.EneShtX[i] < -10 || hsp.EneShtX[i] > 310 || hsp.EneShtY[i] < -10 || hsp.EneShtY[i] > 310) {
         hsp.EneShtFlg[i] = 0;
       }
     }
 
     if (ki == 1) {
       hsp.r = hsp.EneShtDir[i];
-      hsp.EneShtX[i] += hsp.cos[hsp.r] * 5;
-      hsp.EneShtY[i] += hsp.sin[hsp.r] * 5;
+      hsp.EneShtX[i] += Math.cos(hsp.r) * 5;
+      hsp.EneShtY[i] += Math.sin(hsp.r) * 5;
       hsp.EneShtCx[i] = (hsp.EneShtFrm[i] % 16) * 20 + 320;
-      if (hsp.EneShtX[i] < -2560 || hsp.EneShtX[i] > 79360 || hsp.EneShtY[i] < -2560 || hsp.EneShtY[i] > 79360) {
+      if (hsp.EneShtX[i] < -10 || hsp.EneShtX[i] > 310 || hsp.EneShtY[i] < -10 || hsp.EneShtY[i] > 310) {
         hsp.EneShtFlg[i] = 0;
       }
     }
@@ -79,17 +80,18 @@ hsp.MovEneSht = () => {
         hsp.stg_dir();
         hsp.EneShtDir[i] = hsp.r;
       }
-      hsp.EneShtTmp[i][0] += Math.floor(hsp.cos[hsp.r] * 2 / 3);
-      hsp.EneShtTmp[i][1] += Math.floor(hsp.sin[hsp.r] * 2 / 3);
+      hsp.EneShtTmp[i][0] += Math.cos(hsp.r) * 2 / 3;
+      hsp.EneShtTmp[i][1] += Math.sin(hsp.r) * 2 / 3;
       hsp.EneShtX[i] += hsp.EneShtTmp[i][0];
       hsp.EneShtY[i] += hsp.EneShtTmp[i][1];
-      hsp.EneShtTmp[i][0] = Math.floor(hsp.EneShtTmp[i][0] * 14 / 15);
-      hsp.EneShtTmp[i][1] = Math.floor(hsp.EneShtTmp[i][1] * 14 / 15);
-      hsp.EneShtCx[i] = Math.floor((hsp.r + 4 & 255) * 31 / 255) * 20;
+      hsp.EneShtTmp[i][0] = hsp.EneShtTmp[i][0] * 14 / 15;
+      hsp.EneShtTmp[i][1] = hsp.EneShtTmp[i][1] * 14 / 15;
+      let a = hsp.toAngle256(hsp.r);
+      hsp.EneShtCx[i] = Math.floor(((a + 4) & 255) * 31 / 255) * 20;
       if (hsp.EneShtFrm[i] % 3 == 0) {
-        let x = hsp.rnd(2560); x -= 1280;
-        let y = hsp.rnd(2560); y -= 1280;
-        hsp.prm = [2, -hsp.cos[hsp.r] * 10 + hsp.EneShtX[i] + x, -hsp.sin[hsp.r] * 10 + hsp.EneShtY[i] + y, 0];
+        let x = hsp.rnd(10); x -= 5;
+        let y = hsp.rnd(10); y -= 5;
+        hsp.prm = [2, -Math.cos(hsp.r) * 10 + hsp.EneShtX[i] + x, -Math.sin(hsp.r) * 10 + hsp.EneShtY[i] + y, 0];
         hsp.AprEff();
       }
       hsp.prm = [
@@ -99,27 +101,27 @@ hsp.MovEneSht = () => {
           continue;
         }
         hsp.prm = [
-          (hsp.DatEneSht[ki][2] << 8) + hsp.EneShtX[i],
-          (hsp.DatEneSht[ki][3] << 8) + hsp.EneShtY[i],
-          (hsp.DatEneSht[ki][4] << 8) + hsp.EneShtX[i],
-          (hsp.DatEneSht[ki][5] << 8) + hsp.EneShtY[i],
-          hsp.PlyShtX[j] - 1280,
-          hsp.PlyShtY[j] - 2560,
-          hsp.PlyShtX[j] + 1280,
-          hsp.PlyShtY[j] + 2560,
+          hsp.DatEneSht[ki][2] + hsp.EneShtX[i],
+          hsp.DatEneSht[ki][3] + hsp.EneShtY[i],
+          hsp.DatEneSht[ki][4] + hsp.EneShtX[i],
+          hsp.DatEneSht[ki][5] + hsp.EneShtY[i],
+          hsp.PlyShtX[j] - 5,
+          hsp.PlyShtY[j] - 10,
+          hsp.PlyShtX[j] + 5,
+          hsp.PlyShtY[j] + 10,
         ];
         hsp.stg_clash();
         if (hsp.r == 1) {
           hsp.Score += 10;
           hsp.PlyShtFlg[j] = 0;
           hsp.EneShtFlg[i] = 0;
-          let x = hsp.rnd(2560); x -= 1280;
-          let y = hsp.rnd(2560); y -= 1280;
+          let x = hsp.rnd(10); x -= 5;
+          let y = hsp.rnd(10); y -= 5;
           hsp.prm = [1, hsp.PlyShtX[j] + x, hsp.PlyShtY[j] + y, 0];
           hsp.AprEff();
           for (let k = 0; k < 2; k++) {
-            let x = hsp.rnd(hsp.DatEneSht[ki][1] << 8); x -= hsp.DatEneSht[ki][1] << 7;
-            let y = hsp.rnd(hsp.DatEneSht[ki][2] << 8); y -= hsp.DatEneSht[ki][2] << 7;
+            let x = hsp.rnd(hsp.DatEneSht[ki][0]); x -= Math.floor(hsp.DatEneSht[ki][0] / 2);
+            let y = hsp.rnd(hsp.DatEneSht[ki][1]); y -= Math.floor(hsp.DatEneSht[ki][1] / 2);
             hsp.prm = [0, hsp.EneShtX[i] + x, hsp.EneShtY[i] + y, -k * 3];
             hsp.AprEff();
           }
@@ -127,7 +129,7 @@ hsp.MovEneSht = () => {
         }
       }
       if (hsp.EneShtFrm[i] > 80) {
-        if (hsp.EneShtX[i] < -2560 || hsp.EneShtX[i] > 79360 || hsp.EneShtY[i] < -2560 || hsp.EneShtY[i] > 79360) {
+        if (hsp.EneShtX[i] < -10 || hsp.EneShtX[i] > 310 || hsp.EneShtY[i] < -10 || hsp.EneShtY[i] > 310) {
           hsp.EneShtFlg[i] = 0;
         }
       }
@@ -140,14 +142,14 @@ hsp.MovEneSht = () => {
     }
 
     hsp.prm = [
-      (hsp.DatEneSht[ki][2] << 8) + hsp.EneShtX[i],
-      (hsp.DatEneSht[ki][3] << 8) + hsp.EneShtY[i],
-      (hsp.DatEneSht[ki][4] << 8) + hsp.EneShtX[i],
-      (hsp.DatEneSht[ki][5] << 8) + hsp.EneShtY[i],
-      hsp.PlyX - 1280,
-      hsp.PlyY - 1280,
-      hsp.PlyX + 1280,
-      hsp.PlyY + 1280,
+      hsp.DatEneSht[ki][2] + hsp.EneShtX[i],
+      hsp.DatEneSht[ki][3] + hsp.EneShtY[i],
+      hsp.DatEneSht[ki][4] + hsp.EneShtX[i],
+      hsp.DatEneSht[ki][5] + hsp.EneShtY[i],
+      hsp.PlyX - 5,
+      hsp.PlyY - 5,
+      hsp.PlyX + 5,
+      hsp.PlyY + 5,
     ];
     hsp.stg_clash();
     if (hsp.r == 1) {
@@ -155,16 +157,16 @@ hsp.MovEneSht = () => {
       hsp.PlyShield--;
       hsp.PlyHitCnt = 50;
       for (let j = 0; j < 2; j++) {
-        let x = hsp.rnd(2560); x -= 1280;
-        let y = hsp.rnd(2560); y -= 1280;
+        let x = hsp.rnd(10); x -= 5;
+        let y = hsp.rnd(10); y -= 5;
         hsp.prm = [1, hsp.EneShtX[i] + x, hsp.EneShtY[i] + y, -j * 3];
         hsp.AprEff();
       }
       if (hsp.PlyShield == 0) {
         hsp.PlyFlg = 0;
         for (let j = 0; j < 3; j++) {
-          let x = hsp.rnd(10240); x -= 5120;
-          let y = hsp.rnd(10240); y -= 5120;
+          let x = hsp.rnd(40); x -= 20;
+          let y = hsp.rnd(40); y -= 20;
           hsp.prm = [0, hsp.PlyX + x, hsp.PlyY + y, -j * 3];
           hsp.AprEff();
         }
@@ -180,7 +182,7 @@ hsp.DrwEneSht = () => {
       continue;
     }
     const ki = hsp.EneShtKi[i];
-    hsp.pos((hsp.EneShtX[i] >> 8) - Math.floor(hsp.DatEneSht[ki][0] / 2), (hsp.EneShtY[i] >> 8) - Math.floor(hsp.DatEneSht[ki][1] / 2));
+    hsp.pos(Math.floor(hsp.EneShtX[i]) - Math.floor(hsp.DatEneSht[ki][0] / 2), Math.floor(hsp.EneShtY[i]) - Math.floor(hsp.DatEneSht[ki][1] / 2));
     hsp.gcopy(3, hsp.EneShtCx[i], hsp.DatEneSht[ki][6], hsp.DatEneSht[ki][0], hsp.DatEneSht[ki][1]);
   }
 };

@@ -50,7 +50,7 @@ hsp.MovEff = () => {
 
     if (ki == 0) {
       if (hsp.EffFrm[i] >= 8) {
-        hsp.EffY[i] += 1792;
+        hsp.EffY[i] += 7;
       }
       hsp.EffCx[i] = Math.floor(hsp.EffFrm[i] / 3) % 6 * 40;
       if (hsp.EffFrm[i] == 17) {
@@ -78,7 +78,7 @@ hsp.DrwEff = () => {
       continue;
     }
     const ki = hsp.EffKi[eff];
-    hsp.pos((hsp.EffX[eff] >> 8) - Math.floor(hsp.DatEff[ki][0] / 2), (hsp.EffY[eff] >> 8) - Math.floor(hsp.DatEff[ki][1] / 2));
+    hsp.pos(Math.floor(hsp.EffX[eff]) - Math.floor(hsp.DatEff[ki][0] / 2), Math.floor(hsp.EffY[eff]) - Math.floor(hsp.DatEff[ki][1] / 2));
     hsp.gcopy(3, hsp.EffCx[eff], hsp.DatEff[ki][2], hsp.DatEff[ki][0], hsp.DatEff[ki][1]);
   }
 };

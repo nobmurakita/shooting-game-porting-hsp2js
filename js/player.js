@@ -12,8 +12,8 @@ hsp.IniPly = () => {
   hsp.PlyFlg = 1;
   hsp.PlyShield = 5;
   hsp.PlyFrm = 0;
-  hsp.PlyX = 150 << 8;
-  hsp.PlyY = 260 << 8;
+  hsp.PlyX = 150;
+  hsp.PlyY = 260;
   hsp.PlyHitCnt = 0;
   hsp.PlyGra = 0;
 
@@ -48,10 +48,10 @@ hsp.MovPly = () => {
   hsp.prm = [0, 0, ((hsp.Key & 4) >> 2) - (hsp.Key & 1), ((hsp.Key & 8) >> 3) - ((hsp.Key & 2) >> 1)];
   if (hsp.prm[2] || hsp.prm[3]) {
     hsp.stg_dir();
-    hsp.PlyX += Math.floor(hsp.cos[hsp.r] * 55 / 10);
-    hsp.PlyY += Math.floor(hsp.sin[hsp.r] * 55 / 10);
+    hsp.PlyX += Math.cos(hsp.r) * 5.5;
+    hsp.PlyY += Math.sin(hsp.r) * 5.5;
   } else {
-    hsp.r = 8;
+    hsp.r = hsp.toRad(8);
   }
   if (hsp.prm[2] == 0) {
     if (hsp.PlyGra < 0) { hsp.PlyGra++; }
@@ -63,10 +63,10 @@ hsp.MovPly = () => {
   }
 
   // はみ出したときの処理
-  if (hsp.PlyX < 5120) { hsp.PlyX = 5120; }
-  if (hsp.PlyY < 5120) { hsp.PlyY = 5120; }
-  if (hsp.PlyX > 71680) { hsp.PlyX = 71680; }
-  if (hsp.PlyY > 71680) { hsp.PlyY = 71680; }
+  if (hsp.PlyX < 20) { hsp.PlyX = 20; }
+  if (hsp.PlyY < 20) { hsp.PlyY = 20; }
+  if (hsp.PlyX > 280) { hsp.PlyX = 280; }
+  if (hsp.PlyY > 280) { hsp.PlyY = 280; }
 
   // ショット発射
   if (hsp.PlyShtCnt != 0) {
@@ -81,11 +81,10 @@ hsp.MovPly = () => {
           }
           hsp.PlyShtFlg[j] = 1;
           hsp.PlyShtFrm[j] = 0;
-          hsp.r = i + 6;
-          hsp.r = hsp.DatShtDir[hsp.r];
-          hsp.PlyShtX[j] = hsp.cos[hsp.r] * 20 + hsp.PlyX;
-          hsp.PlyShtY[j] = hsp.sin[hsp.r] * 20 + hsp.PlyY;
-          hsp.PlyShtDir[j] = hsp.DatShtDir[i];
+          let rad = hsp.toRad(hsp.DatShtDir[i + 6]);
+          hsp.PlyShtX[j] = Math.cos(rad) * 20 + hsp.PlyX;
+          hsp.PlyShtY[j] = Math.sin(rad) * 20 + hsp.PlyY;
+          hsp.PlyShtDir[j] = hsp.toRad(hsp.DatShtDir[i]);
           break;
         }
       }
@@ -116,12 +115,12 @@ hsp.MovPly = () => {
           }
           for (let j = 0; j < 8; j++) {
             hsp.LsrX[lsr][j] = hsp.PlyX;
-            hsp.LsrY[lsr][j] = hsp.PlyY - 5120;
+            hsp.LsrY[lsr][j] = hsp.PlyY - 20;
           }
-          hsp.r = hsp.DatLsrDir[lsr];
-          hsp.LsrVx[lsr] = hsp.cos[hsp.r] << 4;
-          hsp.LsrVy[lsr] = hsp.sin[hsp.r] << 4;
-          hsp.LsrDir[lsr] = 192;
+          let rad = hsp.toRad(hsp.DatLsrDir[lsr]);
+          hsp.LsrVx[lsr] = Math.cos(rad) * 16;
+          hsp.LsrVy[lsr] = Math.sin(rad) * 16;
+          hsp.LsrDir[lsr] = hsp.toRad(192);
         }
       }
     } else {
@@ -163,11 +162,11 @@ hsp.SearchTrget = () => {
       if (hsp.EneLckOn[hsp.trg] < hsp.EneLckOn[i]) {
         continue;
       }
-      let x = (hsp.EneX[hsp.trg] - hsp.PlyX) >> 8; x = x * x;
-      let y = (hsp.EneY[hsp.trg] - hsp.PlyY) >> 8; y = y * y;
+      let x = hsp.EneX[hsp.trg] - hsp.PlyX; x = x * x;
+      let y = hsp.EneY[hsp.trg] - hsp.PlyY; y = y * y;
       let r = x + y;
-      x = (hsp.EneX[i] - hsp.PlyX) >> 8; x = x * x;
-      y = (hsp.EneY[i] - hsp.PlyY) >> 8; y = y * y;
+      x = hsp.EneX[i] - hsp.PlyX; x = x * x;
+      y = hsp.EneY[i] - hsp.PlyY; y = y * y;
       if (r > x + y) {
         hsp.trg = i;
       }
@@ -189,11 +188,11 @@ hsp.SearchTrget = () => {
       // if (hsp.BossLckOn[hsp.trg] < hsp.BossLckOn[i]) {
       //   continue;
       // }
-      let x = (hsp.BossX >> 8) + hsp.DatBossPrt[hsp.trg][1] - (hsp.PlyX >> 8); x = x * x;
-      let y = (hsp.BossY >> 8) + hsp.DatBossPrt[hsp.trg][2] - (hsp.PlyY >> 8); y = y * y;
+      let x = hsp.BossX + hsp.DatBossPrt[hsp.trg][1] - hsp.PlyX; x = x * x;
+      let y = hsp.BossY + hsp.DatBossPrt[hsp.trg][2] - hsp.PlyY; y = y * y;
       hsp.r = x + y;
-      x = (hsp.BossX >> 8) + hsp.DatBossPrt[i][1] - (hsp.PlyX >> 8); x = x * x;
-      y = (hsp.BossY >> 8) + hsp.DatBossPrt[i][2] - (hsp.PlyY >> 8); y = y * y;
+      x = hsp.BossX + hsp.DatBossPrt[i][1] - hsp.PlyX; x = x * x;
+      y = hsp.BossY + hsp.DatBossPrt[i][2] - hsp.PlyY; y = y * y;
       if (hsp.r > x + y) {
         hsp.trg = i;
       }
@@ -206,7 +205,7 @@ hsp.DrwPly = () => {
   if (hsp.PlyFlg == 0) {
     return;
   }
-  hsp.pos((hsp.PlyX >> 8) - 20, (hsp.PlyY >> 8) - 20);
+  hsp.pos(Math.floor(hsp.PlyX) - 20, Math.floor(hsp.PlyY) - 20);
   if (Math.floor(hsp.PlyHitCnt / 3) % 2 == 0) {
     hsp.gcopy(3, (hsp.PlyGra >> 1) * 40 + 120, 0, 40, 40);
   } else {
@@ -221,9 +220,9 @@ hsp.MovPlySht = () => {
       continue;
     }
     hsp.r = hsp.PlyShtDir[i];
-    hsp.PlyShtX[i] += 16 * hsp.cos[hsp.r];
-    hsp.PlyShtY[i] += 16 * hsp.sin[hsp.r];
-    if (hsp.PlyShtY[i] < -5120) {
+    hsp.PlyShtX[i] += 16 * Math.cos(hsp.r);
+    hsp.PlyShtY[i] += 16 * Math.sin(hsp.r);
+    if (hsp.PlyShtY[i] < -20) {
       hsp.PlyShtFlg[i] = 0;
     }
   }
@@ -236,7 +235,7 @@ hsp.DrwPlySht = () => {
     if (hsp.PlyShtFlg[sht] == 0) {
       continue;
     }
-    hsp.pos((hsp.PlyShtX[sht] >> 8) - 5, (hsp.PlyShtY[sht] >> 8) - 10);
+    hsp.pos(Math.floor(hsp.PlyShtX[sht]) - 5, Math.floor(hsp.PlyShtY[sht]) - 10);
     hsp.gcopy(3, 280, 0, 10, 20);
   }
 }
@@ -262,12 +261,12 @@ hsp.MovLsr = () => {
     hsp.r = hsp.LsrDir[lsr];
 
     if (hsp.LsrSta[lsr] != 0) {
-      hsp.LsrVx[lsr] += hsp.cos[hsp.r] * 5;
-      hsp.LsrVy[lsr] += hsp.sin[hsp.r] * 5;
+      hsp.LsrVx[lsr] += Math.cos(hsp.r) * 5;
+      hsp.LsrVy[lsr] += Math.sin(hsp.r) * 5;
       hsp.LsrX[lsr][0] += hsp.LsrVx[lsr];
       hsp.LsrY[lsr][0] += hsp.LsrVy[lsr];
-      hsp.LsrVx[lsr] = Math.floor(hsp.LsrVx[lsr] * 4 / 5);
-      hsp.LsrVy[lsr] = Math.floor(hsp.LsrVy[lsr] * 4 / 5);
+      hsp.LsrVx[lsr] = hsp.LsrVx[lsr] * 0.8;
+      hsp.LsrVy[lsr] = hsp.LsrVy[lsr] * 0.8;
     } else {
       hsp.r = 0;
       for (let j = 0; j < 7; j++) {
@@ -308,16 +307,16 @@ hsp.MovLsr = () => {
           hsp.EneLckOn[ene]--;
           hsp.LsrSta[lsr] = 0;
           for (let j = 0; j < 2; j++) {
-            let x = hsp.rnd(2560); x -= 1280;
-            let y = hsp.rnd(2560); y -= 1280;
+            let x = hsp.rnd(10) - 5;
+            let y = hsp.rnd(10) - 5;
             hsp.prm = [1, hsp.LsrX[lsr][0] + x, hsp.LsrY[lsr][0] + y, -j * 3];
             hsp.AprEff();
           }
           if (hsp.EneShield[ene] <= 0) {
             hsp.EneFlg[ene] = 0;
             for (let j = 0; j < 3; j++) {
-              let x = hsp.rnd(hsp.DatEne[ki][1] << 8); x -= hsp.DatEne[ki][1] << 7;
-              let y = hsp.rnd(hsp.DatEne[ki][2] << 8); y -= hsp.DatEne[ki][2] << 7;
+              let x = hsp.rnd(hsp.DatEne[ki][1]) - hsp.DatEne[ki][1] / 2;
+              let y = hsp.rnd(hsp.DatEne[ki][2]) - hsp.DatEne[ki][2] / 2;
               hsp.prm = [0, hsp.EneX[ene] + x, hsp.EneY[ene] + y, -j * 3];
               hsp.AprEff();
             }
@@ -353,8 +352,8 @@ hsp.MovLsr = () => {
           // ;BossPrtCx.prt=DatBossPrt.3.prt
           hsp.LsrSta[lsr] = 0;
           for (let j = 0; j < 2; j++) {
-            let x = hsp.rnd(2560); x -= 1280;
-            let y = hsp.rnd(2560); y -= 1280;
+            let x = hsp.rnd(10) - 5;
+            let y = hsp.rnd(10) - 5;
             hsp.prm = [1, hsp.LsrX[lsr][0] + x, hsp.LsrY[lsr][0] + y, -j * 3];
             hsp.AprEff();
           }
@@ -367,20 +366,20 @@ hsp.MovLsr = () => {
             hsp.BossPrtFlg[prt] = 0;
             hsp.BossPrtCx[prt] = hsp.DatBossPrt[prt][3];
             for (let j = 0; j < 3; j++) {
-              let x = hsp.rnd(hsp.DatBossPrt[prt][3] << 8); x -= hsp.DatBossPrt[prt][3] << 7;
-              let y = hsp.rnd(hsp.DatBossPrt[prt][4] << 8); y -= hsp.DatBossPrt[prt][4] << 7;
-              hsp.prm = [0, (hsp.DatBossPrt[prt][1] << 8) + hsp.BossX + x, (hsp.DatBossPrt[prt][2] << 8) + hsp.BossY + y, -j * 3];
+              let x = hsp.rnd(hsp.DatBossPrt[prt][3]) - hsp.DatBossPrt[prt][3] / 2;
+              let y = hsp.rnd(hsp.DatBossPrt[prt][4]) - hsp.DatBossPrt[prt][4] / 2;
+              hsp.prm = [0, hsp.DatBossPrt[prt][1] + hsp.BossX + x, hsp.DatBossPrt[prt][2] + hsp.BossY + y, -j * 3];
               hsp.AprEff();
             }
           }
         }
-        hsp.prm = [hsp.LsrX[lsr][0], hsp.LsrY[lsr][0], (hsp.DatBossPrt[prt][1] << 8) + hsp.BossX, (hsp.DatBossPrt[prt][2] << 8) + hsp.BossY];
+        hsp.prm = [hsp.LsrX[lsr][0], hsp.LsrY[lsr][0], hsp.DatBossPrt[prt][1] + hsp.BossX, hsp.DatBossPrt[prt][2] + hsp.BossY];
         hsp.stg_dir();
         hsp.LsrDir[lsr] = hsp.r;
       }
     }
     if (hsp.LsrSta[lsr] == 2) {
-      if (hsp.LsrX[lsr][0] < 0 || 76800 < hsp.LsrX[lsr][0] || hsp.LsrY[lsr][0] < 0 || 76800 < hsp.LsrY[lsr][0]) {
+      if (hsp.LsrX[lsr][0] < 0 || 300 < hsp.LsrX[lsr][0] || hsp.LsrY[lsr][0] < 0 || 300 < hsp.LsrY[lsr][0]) {
         hsp.LsrSta[lsr] = 0;
       }
     }
@@ -396,19 +395,19 @@ hsp.LsrHit = () => {
     const lsr = hsp.prm[0];
     const ki = hsp.prm[1];
     const ene = hsp.prm[2];
-    if (hsp.LsrX[lsr][0] < ((hsp.DatEne[ki][3] << 8) + hsp.EneX[ene]) || ((hsp.DatEne[ki][5] << 8) + hsp.EneX[ene]) < hsp.LsrX[lsr][0]) {
+    if (hsp.LsrX[lsr][0] < (hsp.DatEne[ki][3] + hsp.EneX[ene]) || (hsp.DatEne[ki][5] + hsp.EneX[ene]) < hsp.LsrX[lsr][0]) {
       return;
     }
-    if (hsp.LsrY[lsr][0] < ((hsp.DatEne[ki][4] << 8) + hsp.EneY[ene]) || ((hsp.DatEne[ki][6] << 8) + hsp.EneY[ene]) < hsp.LsrY[lsr][0]) {
+    if (hsp.LsrY[lsr][0] < (hsp.DatEne[ki][4] + hsp.EneY[ene]) || (hsp.DatEne[ki][6] + hsp.EneY[ene]) < hsp.LsrY[lsr][0]) {
       return;
     }
   } else {
     const lsr = hsp.prm[0];
     const prt = hsp.prm[1];
-    if (hsp.LsrX[lsr][0] < (((hsp.DatBossPrt[prt][1] + hsp.DatBossPrt[prt][5]) << 8) + hsp.BossX) || (((hsp.DatBossPrt[prt][1] + hsp.DatBossPrt[prt][7]) << 8) + hsp.BossX) < hsp.LsrX[lsr][0]) {
+    if (hsp.LsrX[lsr][0] < ((hsp.DatBossPrt[prt][1] + hsp.DatBossPrt[prt][5]) + hsp.BossX) || ((hsp.DatBossPrt[prt][1] + hsp.DatBossPrt[prt][7]) + hsp.BossX) < hsp.LsrX[lsr][0]) {
       return;
     }
-    if (hsp.LsrY[lsr][0] < (((hsp.DatBossPrt[prt][2] + hsp.DatBossPrt[prt][6]) << 8) + hsp.BossY) || (((hsp.DatBossPrt[prt][2] + hsp.DatBossPrt[prt][8]) << 8) + hsp.BossY) < hsp.LsrY[lsr][0]) {
+    if (hsp.LsrY[lsr][0] < ((hsp.DatBossPrt[prt][2] + hsp.DatBossPrt[prt][6]) + hsp.BossY) || ((hsp.DatBossPrt[prt][2] + hsp.DatBossPrt[prt][8]) + hsp.BossY) < hsp.LsrY[lsr][0]) {
       return;
     }
   }
@@ -425,11 +424,13 @@ hsp.DrwLsr = () => {
       hsp.color(50, 255 - (j * 20), 160 - (j * 20));
       let a = j;
       let b = j + 1;
-      hsp.line(hsp.LsrX[i][a] >> 8, hsp.LsrY[i][a] >> 8, hsp.LsrX[i][b] >> 8, hsp.LsrY[i][b] >> 8);
-      hsp.line((hsp.LsrX[i][a] >> 8) + 1, hsp.LsrY[i][a] >> 8, (hsp.LsrX[i][b] >> 8) + 1, hsp.LsrY[i][b] >> 8);
-      hsp.line((hsp.LsrX[i][a] >> 8) - 1, hsp.LsrY[i][a] >> 8, (hsp.LsrX[i][b] >> 8) - 1, hsp.LsrY[i][b] >> 8);
-      hsp.line(hsp.LsrX[i][a] >> 8, (hsp.LsrY[i][a] >> 8) + 1, hsp.LsrX[i][b] >> 8, (hsp.LsrY[i][b] >> 8) + 1);
-      hsp.line(hsp.LsrX[i][a] >> 8, (hsp.LsrY[i][a] >> 8) - 1, hsp.LsrX[i][b] >> 8, (hsp.LsrY[i][b] >> 8) - 1);
+      let ax = Math.floor(hsp.LsrX[i][a]), ay = Math.floor(hsp.LsrY[i][a]);
+      let bx = Math.floor(hsp.LsrX[i][b]), by = Math.floor(hsp.LsrY[i][b]);
+      hsp.line(ax, ay, bx, by);
+      hsp.line(ax + 1, ay, bx + 1, by);
+      hsp.line(ax - 1, ay, bx - 1, by);
+      hsp.line(ax, ay + 1, bx, by + 1);
+      hsp.line(ax, ay - 1, bx, by - 1);
     }
   }
 };

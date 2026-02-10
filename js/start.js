@@ -112,8 +112,8 @@ hsp.MainLoop = () => {
     if (hsp.Key & 128) {
       hsp.GameSta = hsp.STA_OPENING;
     }
-    if (hsp.PlyY > -5120) {
-      hsp.PlyY -= 1792;
+    if (hsp.PlyY > -20) {
+      hsp.PlyY -= 7;
     } else {
       hsp.GameSta = hsp.STA_INIT;
     }
