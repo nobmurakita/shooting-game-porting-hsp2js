@@ -20,31 +20,10 @@ hsp.EnemyShot = class {
   update(ctx) {
     if (!this.alive) return;
 
-    const d = this.constructor.DATA;
-    const ply = ctx.player;
-
     // --- AI移動処理（サブクラスで委譲） ---
     this.updateAI(ctx);
 
     this.frm++;
-
-    // プレイヤーとの衝突判定
-    if (ply.hitCnt !== 0) return;
-    if (!this.alive) return;
-
-    if (hsp.CollisionSystem.checkAABB(
-      d.hitX1 + this.x, d.hitY1 + this.y, d.hitX2 + this.x, d.hitY2 + this.y,
-      ply.x - 5, ply.y - 5, ply.x + 5, ply.y + 5
-    )) {
-      this.alive = false;
-      ply.shield--;
-      ply.hitCnt = 50;
-      hsp.spawnHitSparks(ctx, this.x, this.y, 2);
-      if (ply.shield === 0) {
-        ply.alive = false;
-        hsp.spawnExplosion(ctx, ply.x, ply.y, 40, 40, 3);
-      }
-    }
   }
 
   draw() {
@@ -95,7 +74,6 @@ hsp.EnemyShot2 = class extends hsp.EnemyShot {
 
   updateAI(ctx) {
     const ply = ctx.player;
-    const d = this.constructor.DATA;
 
     if ((this.frm < 80 && ply.alive) || this.frm === 0) {
       this.dir = hsp.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
@@ -112,21 +90,6 @@ hsp.EnemyShot2 = class extends hsp.EnemyShot {
       let x = hsp.rnd(10) - 5;
       let y = hsp.rnd(10) - 5;
       hsp.spawnEffect(ctx, 2, -Math.cos(this.dir) * 10 + this.x + x, -Math.sin(this.dir) * 10 + this.y + y, 0);
-    }
-    // プレイヤーショットとの衝突判定
-    for (const ps of ctx.playerShots) {
-      if (!ps.alive) continue;
-      if (hsp.CollisionSystem.checkAABB(
-        d.hitX1 + this.x, d.hitY1 + this.y, d.hitX2 + this.x, d.hitY2 + this.y,
-        ps.x - 5, ps.y - 10, ps.x + 5, ps.y + 10
-      )) {
-        hsp.ctx.score += 10;
-        ps.alive = false;
-        this.alive = false;
-        hsp.spawnHitSpark(ctx, ps.x, ps.y);
-        hsp.spawnExplosion(ctx, this.x, this.y, d.sx, d.sy, 2);
-        break;
-      }
     }
     if (this.frm > 80) {
       if (this.x < -10 || this.x > 310 || this.y < -10 || this.y > 310) {

@@ -145,40 +145,6 @@ hsp.Boss = class {
       this.frm++;
     }
 
-    // プレイヤーショットとの衝突判定
-    for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
-      const prt = this.parts[i];
-      if (!prt.alive) continue;
-      const d = prt.constructor.DATA;
-
-      for (const s of ctx.playerShots) {
-        if (!s.alive) continue;
-
-        if (hsp.CollisionSystem.checkAABB(
-          this.x + d.x + d.hitX1, this.y + d.y + d.hitY1,
-          this.x + d.x + d.hitX2, this.y + d.y + d.hitY2,
-          s.x - 5, s.y - 10,
-          s.x + 5, s.y + 10
-        )) {
-          hsp.ctx.score += 10;
-          s.alive = false;
-          this.shield--;
-          prt.shield--;
-          hsp.spawnHitSpark(ctx, s.x, s.y);
-          if (this.shield === 0) {
-            this.flg = 2;
-            this.frm = 0;
-          }
-          if (prt.shield === 0) {
-            prt.alive = false;
-            prt.cx = d.sx;
-            hsp.spawnExplosion(ctx, d.x + this.x, d.y + this.y, d.sx, d.sy, 5);
-            break;
-          }
-        }
-      }
-    }
-
   }
 
   // ボス描画（旧DrwBoss）

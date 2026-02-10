@@ -44,6 +44,51 @@ hsp.ProgramStart = async () => {
   hsp.MainLoop();
 };
 
+;//////////残存オブジェクト更新（ショット・レーザー・エフェクト）//////////
+hsp.updateRemaining = (ctx) => {
+  for (const s of ctx.playerShots) { s.update(); }
+  for (const s of ctx.enemyShots) { s.update(ctx); }
+  // レーザーのLsrF初期化（全レーザーが非生存ならLsrF=1にする）
+  if (ctx.player.lsrPow === 0) { ctx.player.lsrF = 1; }
+  for (const l of ctx.lasers) { l.update(ctx); }
+  for (const e of ctx.effects) { e.update(); }
+};
+
+;//////////死亡要素の除去//////////
+hsp.filterDead = (ctx) => {
+  ctx.playerShots = ctx.playerShots.filter(s => s.alive);
+  ctx.lasers = ctx.lasers.filter(l => l.alive);
+  ctx.enemies = ctx.enemies.filter(e => e.alive);
+  ctx.enemyShots = ctx.enemyShots.filter(s => s.alive);
+  ctx.effects = ctx.effects.filter(e => e.alive);
+};
+
+;//////////ゲーム要素描画//////////
+hsp.renderObjects = (ctx) => {
+  hsp.BackGround();
+  if (ctx.boss.flg === 0) {
+    for (const e of ctx.enemies) { e.draw(); }
+  } else {
+    ctx.boss.draw();
+  }
+  // プレーヤーショット描画（逆順）
+  for (let i = ctx.playerShots.length - 1; i >= 0; i--) { ctx.playerShots[i].draw(); }
+  // プレーヤー描画
+  ctx.player.draw();
+  for (let i = ctx.effects.length - 1; i >= 0; i--) { ctx.effects[i].draw(); }
+  for (const s of ctx.enemyShots) { s.draw(); }
+  // レーザー描画
+  for (const l of ctx.lasers) { l.draw(); }
+  hsp.Disp();
+};
+
+;//////////フレームバッファ転送//////////
+hsp.flipBuffer = () => {
+  hsp.gsel(0);
+  hsp.pos(0, 0);
+  hsp.gcopy(1, 0, 0, 300, 300);
+};
+
 ;//////////メインループ//////////
 hsp.MainLoop = () => {
   hsp.ctx.nextLoopTime += 1000 / 30;
@@ -62,22 +107,7 @@ hsp.MainLoop = () => {
   } else if (hsp.ctx.gameSta == hsp.STA_INIT) {
     hsp.ctx.stage++
     if (hsp.ctx.stage <= hsp.MaxStage) {
-      // リセット
-      hsp.ctx.effects = [];
-      hsp.ctx.enemyShots = [];
-      // プレーヤー初期化
-      hsp.ctx.player.init();
-      hsp.ctx.playerShots = [];
-      hsp.ctx.lasers = [];
-      // 敵初期化
-      hsp.Enemy.table = hsp.Stages[hsp.ctx.stage];
-      hsp.Enemy.tableIndex = 0;
-      hsp.ctx.enemies = [];
-      // ボス初期化
-      hsp.ctx.boss.initData();
-      hsp.ctx.boss.init();
-      hsp.ctx.frame = 0;
-      hsp.ctx.key = 0;
+      hsp.ctx.initStage(hsp.ctx.stage);
       hsp.ctx.gameSta = hsp.STA_PLAY;
     } else {
       hsp.ctx.gameSta = hsp.STA_ENDING;
@@ -94,37 +124,21 @@ hsp.MainLoop = () => {
       for (const s of hsp.ctx.playerShots) { s.update(); }
       // レーザーのLsrF初期化（全レーザーが非生存ならLsrF=1にする）
       if (hsp.ctx.player.lsrPow === 0) { hsp.ctx.player.lsrF = 1; }
+      // 敵/ボス更新
       if (hsp.ctx.boss.flg === 0) {
         hsp.Enemy.appear(hsp.ctx);
         for (const e of hsp.ctx.enemies) { e.update(hsp.ctx); }
       } else {
         hsp.ctx.boss.update(hsp.ctx);
       }
+      // 敵ショット・レーザー・エフェクト更新
       for (const s of hsp.ctx.enemyShots) { s.update(hsp.ctx); }
-      // レーザー更新
       for (const l of hsp.ctx.lasers) { l.update(hsp.ctx); }
       for (const e of hsp.ctx.effects) { e.update(); }
-      // 死亡要素の除去
-      hsp.ctx.playerShots = hsp.ctx.playerShots.filter(s => s.alive);
-      hsp.ctx.lasers = hsp.ctx.lasers.filter(l => l.alive);
-      hsp.ctx.enemies = hsp.ctx.enemies.filter(e => e.alive);
-      hsp.ctx.enemyShots = hsp.ctx.enemyShots.filter(s => s.alive);
-      hsp.ctx.effects = hsp.ctx.effects.filter(e => e.alive);
-      hsp.BackGround();
-      if (hsp.ctx.boss.flg === 0) {
-        for (const e of hsp.ctx.enemies) { e.draw(); }
-      } else {
-        hsp.ctx.boss.draw();
-      }
-      // プレーヤーショット描画（逆順）
-      for (let i = hsp.ctx.playerShots.length - 1; i >= 0; i--) { hsp.ctx.playerShots[i].draw(); }
-      // プレーヤー描画
-      hsp.ctx.player.draw();
-      for (let i = hsp.ctx.effects.length - 1; i >= 0; i--) { hsp.ctx.effects[i].draw(); }
-      for (const s of hsp.ctx.enemyShots) { s.draw(); }
-      // レーザー描画
-      for (const l of hsp.ctx.lasers) { l.draw(); }
-      hsp.Disp();
+      // 衝突判定
+      hsp.CollisionSystem.checkAllCollisions(hsp.ctx);
+      hsp.filterDead(hsp.ctx);
+      hsp.renderObjects(hsp.ctx);
       hsp.ctx.frame++
       if (hsp.ctx.key & 64) {
         hsp.ctx.key = 0;
@@ -132,10 +146,7 @@ hsp.MainLoop = () => {
         hsp.pos(129, 142);
         hsp.gcopy(3, 0, 234, 42, 16);
       }
-      // 表示用のゲーム画面にオフスクリーンバッファの内容をコピー
-      hsp.gsel(0);
-      hsp.pos(0, 0);
-      hsp.gcopy(1, 0, 0, 300, 300);
+      hsp.flipBuffer();
     }
   } else if (hsp.ctx.gameSta == hsp.STA_CLEAR) {
     if (hsp.ctx.key & 128) {
@@ -148,28 +159,10 @@ hsp.MainLoop = () => {
     }
     // オフスクリーンバッファに描画
     hsp.gsel(1);
-    for (const s of hsp.ctx.playerShots) { s.update(); }
-    for (const s of hsp.ctx.enemyShots) { s.update(hsp.ctx); }
-    // レーザーのLsrF初期化
-    if (hsp.ctx.player.lsrPow === 0) { hsp.ctx.player.lsrF = 1; }
-    for (const l of hsp.ctx.lasers) { l.update(hsp.ctx); }
-    for (const e of hsp.ctx.effects) { e.update(); }
-    // 死亡要素の除去
-    hsp.ctx.playerShots = hsp.ctx.playerShots.filter(s => s.alive);
-    hsp.ctx.lasers = hsp.ctx.lasers.filter(l => l.alive);
-    hsp.ctx.enemyShots = hsp.ctx.enemyShots.filter(s => s.alive);
-    hsp.ctx.effects = hsp.ctx.effects.filter(e => e.alive);
-    hsp.BackGround();
-    for (let i = hsp.ctx.playerShots.length - 1; i >= 0; i--) { hsp.ctx.playerShots[i].draw(); }
-    hsp.ctx.player.draw();
-    for (let i = hsp.ctx.effects.length - 1; i >= 0; i--) { hsp.ctx.effects[i].draw(); }
-    for (const s of hsp.ctx.enemyShots) { s.draw(); }
-    for (const l of hsp.ctx.lasers) { l.draw(); }
-    hsp.Disp();
-    // 表示用のゲーム画面にオフスクリーンバッファの内容をコピー
-    hsp.gsel(0);
-    hsp.pos(0, 0);
-    hsp.gcopy(1, 0, 0, 300, 300);
+    hsp.updateRemaining(hsp.ctx);
+    hsp.filterDead(hsp.ctx);
+    hsp.renderObjects(hsp.ctx);
+    hsp.flipBuffer();
   } else if (hsp.ctx.gameSta == hsp.STA_ENDING) {
     hsp.ctx.gameSta = hsp.STA_OPENING;
   } else if (hsp.ctx.gameSta == hsp.STA_PAUSE) {

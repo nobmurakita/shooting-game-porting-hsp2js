@@ -27,55 +27,10 @@ hsp.Enemy = class {
   update(ctx) {
     if (!this.alive) return;
 
-    const d = this.constructor.DATA;
-    const ply = ctx.player;
-
     // --- AI移動処理（サブクラスで委譲） ---
     this.updateAI(ctx);
 
     this.frm++;
-
-    // --- プレイヤーショットとの衝突判定 ---
-    for (const s of ctx.playerShots) {
-      if (!s.alive) continue;
-      if (hsp.CollisionSystem.checkAABB(
-        d.hitX1 + this.x, d.hitY1 + this.y, d.hitX2 + this.x, d.hitY2 + this.y,
-        s.x - 5, s.y - 10, s.x + 5, s.y + 10
-      )) {
-        hsp.ctx.score += 10;
-        s.alive = false;
-        this.shield--;
-        hsp.spawnHitSpark(ctx, s.x, s.y);
-        if (this.shield === 0) {
-          this.alive = false;
-          hsp.spawnExplosion(ctx, this.x, this.y, d.sx, d.sy, 5);
-          break;
-        }
-      }
-    }
-
-    // --- プレイヤーとの接触判定 ---
-    if (ply.hitCnt !== 0) return;
-    if (!this.alive) return;
-
-    if (hsp.CollisionSystem.checkAABB(
-      d.hitX1 + this.x, d.hitY1 + this.y, d.hitX2 + this.x, d.hitY2 + this.y,
-      ply.x - 5, ply.y - 5, ply.x + 5, ply.y + 5
-    )) {
-      this.alive = false;
-      // 敵の爆発エフェクト（小）
-      hsp.spawnHitSparks(ctx, this.x, this.y, 2);
-      // 敵の爆発エフェクト（大）
-      hsp.spawnExplosion(ctx, this.x, this.y, d.sx, d.sy, 3);
-      // プレイヤーにダメージ
-      ply.hitCnt = 50;
-      ply.shield--;
-      if (ply.shield === 0) {
-        ply.alive = false;
-        // プレイヤー爆発エフェクト
-        hsp.spawnExplosion(ctx, ply.x, ply.y, 40, 40, 5);
-      }
-    }
   }
 
   // 敵描画

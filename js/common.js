@@ -28,6 +28,23 @@ hsp.GameContext = class {
     this.enemyShots = [];
     this.boss = null;
   }
+
+  // ステージ初期化
+  initStage(stageNum) {
+    this.stage = stageNum;
+    this.effects = [];
+    this.enemyShots = [];
+    this.player.init();
+    this.playerShots = [];
+    this.lasers = [];
+    this.enemies = [];
+    hsp.Enemy.table = hsp.Stages[stageNum];
+    hsp.Enemy.tableIndex = 0;
+    this.boss.initData();
+    this.boss.init();
+    this.frame = 0;
+    this.key = 0;
+  }
 };
 
 ;//////////初期設定//////////
