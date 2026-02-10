@@ -8,6 +8,16 @@ hsp.STA_PAUSE =   6;  // ポーズ
 
 hsp.MaxStage = 1;
 
+//////////キー入力ビットフラグ//////////
+hsp.KEY_LEFT  = 1;    // bit 0: ←
+hsp.KEY_DOWN  = 2;    // bit 1: ↓
+hsp.KEY_RIGHT = 4;    // bit 2: →
+hsp.KEY_UP    = 8;    // bit 3: ↑
+hsp.KEY_LASER = 16;   // bit 4: Ctrl（レーザー）
+hsp.KEY_SHOT  = 32;   // bit 5: Space（ショット）
+hsp.KEY_SHIFT = 64;   // bit 6: Shift（ポーズ）
+hsp.KEY_ESC   = 128;  // bit 7: Escape
+
 //////////ゲーム共有状態//////////
 hsp.GameContext = class {
   constructor() {

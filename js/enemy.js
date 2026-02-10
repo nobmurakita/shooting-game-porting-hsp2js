@@ -103,6 +103,7 @@ hsp.Enemy0 = class extends hsp.Enemy {
 hsp.Enemy1 = class extends hsp.Enemy {
   static DATA = { shield: 2, sx: 40, sy: 40, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10, cy: 40 };
 
+  // tmp[0]: 螺旋移動の角度カウンタ
   updateAI(ctx) {
     if (Math.floor(this.frm / 2) <= 64) {
       this.tmp[0] = this.frm >> 1;
@@ -130,6 +131,7 @@ hsp.Enemy1 = class extends hsp.Enemy {
 hsp.Enemy2 = class extends hsp.Enemy {
   static DATA = { shield: 4, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, cy: 80 };
 
+  // tmp[0]: 追尾方向（ラジアン）, tmp[1]: X速度, tmp[2]: Y速度
   updateAI(ctx) {
     const ply = ctx.player;
     let r = this.tmp[0];
@@ -177,6 +179,7 @@ hsp.Enemy3 = class extends hsp.Enemy {
 hsp.Enemy4 = class extends hsp.Enemy {
   static DATA = { shield: 40, sx: 120, sy: 60, hitX1: -50, hitY1: -10, hitX2: 50, hitY2: 15, cy: 180 };
 
+  // tmp[0]: 扇状弾の放射角度オフセット（8ずつ拡大）
   updateAI(ctx) {
     let r = hsp.toRad(this.frm);
     this.y -= 1;
@@ -266,6 +269,7 @@ hsp.Enemy7 = class extends hsp.Enemy {
 hsp.Enemy8 = class extends hsp.Enemy {
   static DATA = { shield: 4, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, cy: 390 };
 
+  // tmp[0]: 分岐方向の角度オフセット
   updateAI(ctx) {
     const ply = ctx.player;
     let r;
@@ -301,6 +305,7 @@ hsp.Enemy8 = class extends hsp.Enemy {
 hsp.Enemy9 = class extends hsp.Enemy {
   static DATA = { shield: 40, sx: 60, sy: 60, hitX1: -25, hitY1: -25, hitX2: 25, hitY2: 25, cy: 430 };
 
+  // tmp[0]: 左右移動方向（1 or -1）, tmp[1]: 回転弾の放射角度
   initAI() {
     this.tmp[0] = 1;
   }

@@ -83,14 +83,16 @@ hsp.Laser = class {
     }
 
     // --- ターゲットが消滅、またはターゲットなし状態なら再検索 ---
-    if ((this.sta === 1 && !this.trg.alive) || this.sta === 2) {
+    if (this.sta === 1 && !this.trg.alive) {
+      this.trg.lckOn--;
+      this.sta = 2;
+    }
+    if (this.sta === 2) {
       const newTrg = ctx.player.searchTarget(ctx);
       if (newTrg !== null) {
         this.sta = 1;
         this.trg = newTrg;
         newTrg.lckOn++;
-      } else {
-        this.sta = 2;
       }
     }
 
@@ -109,7 +111,7 @@ hsp.Laser = class {
         );
 
         if (hit) {
-          hsp.ctx.score += 100;
+          ctx.score += 100;
           e.shield -= 5;
           e.lckOn--;
           this.sta = 0;
@@ -146,7 +148,7 @@ hsp.Laser = class {
         );
 
         if (hit) {
-          hsp.ctx.score += 100;
+          ctx.score += 100;
           boss.shield -= 5;
           p.shield -= 5;
           p.lckOn--;
@@ -250,8 +252,8 @@ hsp.Player = class {
     }
 
     // 移動量＆傾き決定
-    const dx = ((hsp.ctx.key & 4) >> 2) - (hsp.ctx.key & 1);
-    const dy = ((hsp.ctx.key & 8) >> 3) - ((hsp.ctx.key & 2) >> 1);
+    const dx = ((hsp.ctx.key & hsp.KEY_RIGHT) >> 2) - (hsp.ctx.key & hsp.KEY_LEFT);
+    const dy = ((hsp.ctx.key & hsp.KEY_UP) >> 3) - ((hsp.ctx.key & hsp.KEY_DOWN) >> 1);
 
     if (dx || dy) {
       const r = hsp.CollisionSystem.calcDir(0, 0, dx, dy);
@@ -279,7 +281,7 @@ hsp.Player = class {
     if (this.shtCnt !== 0) {
       this.shtCnt--;
     } else {
-      if (hsp.ctx.key & 32) {
+      if (hsp.ctx.key & hsp.KEY_SHOT) {
         this.shtCnt = 3;
         for (let i = 0; i < this.shtLV * 2; i++) {
           const posRad = hsp.toRad(hsp.Player.SHT_DIR[i + 6]);
@@ -293,7 +295,7 @@ hsp.Player = class {
 
     // レーザー発射
     if (this.lsrF === 1) {
-      if (hsp.ctx.key & 16) {
+      if (hsp.ctx.key & hsp.KEY_LASER) {
         if (this.lsrPow >= 40) {
           const count = Math.floor(this.lsrPow / 40);
           for (let i = 0; i < count; i++) {
@@ -306,7 +308,7 @@ hsp.Player = class {
           }
         }
       } else {
-        this.lsrPow += (hsp.ctx.key & 32 ? 1 : 3);
+        this.lsrPow += (hsp.ctx.key & hsp.KEY_SHOT ? 1 : 3);
         if (this.lsrPow > 320) {
           this.lsrPow = 320;
         }

@@ -95,7 +95,7 @@ hsp.MainLoop = () => {
     hsp.ctx.score = 0;
     hsp.ctx.gameSta = hsp.STA_TITLE;
   } else if (hsp.ctx.gameSta === hsp.STA_TITLE) {
-    if (hsp.ctx.key & 16 || hsp.ctx.key & 32 || hsp.ctx.key & 64) {
+    if (hsp.ctx.key & hsp.KEY_LASER || hsp.ctx.key & hsp.KEY_SHOT || hsp.ctx.key & hsp.KEY_SHIFT) {
       hsp.ctx.gameSta = hsp.STA_INIT;
     }
   } else if (hsp.ctx.gameSta === hsp.STA_INIT) {
@@ -107,7 +107,7 @@ hsp.MainLoop = () => {
       hsp.ctx.gameSta = hsp.STA_ENDING;
     }
   } else if (hsp.ctx.gameSta === hsp.STA_PLAY) {
-    if (hsp.ctx.key & 128) {
+    if (hsp.ctx.key & hsp.KEY_ESC) {
       hsp.ctx.gameSta = hsp.STA_OPENING;
     } else {
       // オフスクリーンバッファに描画
@@ -134,7 +134,7 @@ hsp.MainLoop = () => {
       hsp.filterDead(hsp.ctx);
       hsp.renderObjects(hsp.ctx);
       hsp.ctx.frame++
-      if (hsp.ctx.key & 64) {
+      if (hsp.ctx.key & hsp.KEY_SHIFT) {
         hsp.ctx.key = 0;
         hsp.ctx.gameSta = hsp.STA_PAUSE;
         hsp.pos(129, 142);
@@ -143,7 +143,7 @@ hsp.MainLoop = () => {
       hsp.flipBuffer();
     }
   } else if (hsp.ctx.gameSta === hsp.STA_CLEAR) {
-    if (hsp.ctx.key & 128) {
+    if (hsp.ctx.key & hsp.KEY_ESC) {
       hsp.ctx.gameSta = hsp.STA_OPENING;
     }
     if (hsp.ctx.player.y > -20) {
@@ -160,9 +160,9 @@ hsp.MainLoop = () => {
   } else if (hsp.ctx.gameSta === hsp.STA_ENDING) {
     hsp.ctx.gameSta = hsp.STA_OPENING;
   } else if (hsp.ctx.gameSta === hsp.STA_PAUSE) {
-    if (hsp.ctx.key & 128) {
+    if (hsp.ctx.key & hsp.KEY_ESC) {
       hsp.ctx.gameSta = hsp.STA_OPENING;
-    } else if (hsp.ctx.key & 64) {
+    } else if (hsp.ctx.key & hsp.KEY_SHIFT) {
       hsp.ctx.gameSta = hsp.STA_PLAY;
     }
   }

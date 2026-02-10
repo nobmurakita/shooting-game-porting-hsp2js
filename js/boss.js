@@ -6,6 +6,14 @@ hsp.BossPart = class {
     this.cx = 0;
     this.lckOn = 0;
   }
+
+  // パーツ初期化（ステージ開始時にBoss.init()から呼ばれる）
+  init() {
+    this.alive = true;
+    this.shield = this.constructor.DATA.shield;
+    this.cx = 0;
+    this.lckOn = 0;
+  }
 };
 
 // パーツ0: 本体
@@ -57,10 +65,7 @@ hsp.Boss = class {
       this.aprFrm = 2450;
 
       for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
-        this.parts[i].alive = true;
-        this.parts[i].shield = this.parts[i].constructor.DATA.shield;
-        this.parts[i].cx = 0;
-        this.parts[i].lckOn = 0;
+        this.parts[i].init();
       }
     }
   }

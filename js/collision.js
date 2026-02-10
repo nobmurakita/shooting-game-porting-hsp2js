@@ -34,7 +34,7 @@ hsp.CollisionSystem = class {
           d.hitX1 + e.x, d.hitY1 + e.y, d.hitX2 + e.x, d.hitY2 + e.y,
           s.x - sh.hw, s.y - sh.hh, s.x + sh.hw, s.y + sh.hh
         )) {
-          hsp.ctx.score += 10;
+          ctx.score += 10;
           s.alive = false;
           e.shield--;
           hsp.spawnHitSpark(ctx, s.x, s.y);
@@ -100,7 +100,7 @@ hsp.CollisionSystem = class {
           s.x - sh.hw, s.y - sh.hh,
           s.x + sh.hw, s.y + sh.hh
         )) {
-          hsp.ctx.score += 10;
+          ctx.score += 10;
           s.alive = false;
           boss.shield--;
           prt.shield--;
@@ -161,7 +161,7 @@ hsp.CollisionSystem = class {
           d.hitX1 + es.x, d.hitY1 + es.y, d.hitX2 + es.x, d.hitY2 + es.y,
           ps.x - sh.hw, ps.y - sh.hh, ps.x + sh.hw, ps.y + sh.hh
         )) {
-          hsp.ctx.score += 10;
+          ctx.score += 10;
           ps.alive = false;
           es.alive = false;
           hsp.spawnHitSpark(ctx, ps.x, ps.y);

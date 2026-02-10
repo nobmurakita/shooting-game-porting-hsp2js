@@ -68,7 +68,7 @@ hsp.EnemyShot1 = class extends hsp.EnemyShot {
   }
 };
 
-// ki=2: 誘導弾（追尾＋プレイヤーショット衝突判定）
+// ki=2: 誘導弾（追尾）
 hsp.EnemyShot2 = class extends hsp.EnemyShot {
   static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 150 };
 
