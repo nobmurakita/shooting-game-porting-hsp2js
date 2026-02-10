@@ -92,7 +92,7 @@ game.Boss = class {
           let a = (i + 1) * 25;
           let t = -i * 2;
           for (let j = 0; j < 16; j++) {
-            let r = game.toRad((j * 16) & 255);
+            let r = j * Math.PI / 8;
             game.spawnEffect(ctx, 0, a * Math.cos(r) + this.x, a * Math.sin(r) + this.y, t);
           }
         }
@@ -120,7 +120,7 @@ game.Boss = class {
           this.x += 0.5;
         }
 
-        let r = game.toRad(this.frm * 0.5);
+        let r = this.frm * 0.5 * game.A256;
         this.y += Math.sin(r) * 0.5;
 
         // 誘導弾発射（パーツ1,2）
@@ -142,8 +142,8 @@ game.Boss = class {
         // 通常弾発射
         if ((this.frm - 400) % 64 === 63) {
           if (this.flg === 1) {
-            game.spawnEnemyShot(ctx, 0, -5 + this.x, 25 + this.y, game.toRad(64));
-            game.spawnEnemyShot(ctx, 0, 5 + this.x, 25 + this.y, game.toRad(64));
+            game.spawnEnemyShot(ctx, 0, -5 + this.x, 25 + this.y, game.DIR_DOWN);
+            game.spawnEnemyShot(ctx, 0, 5 + this.x, 25 + this.y, game.DIR_DOWN);
           }
         }
       }

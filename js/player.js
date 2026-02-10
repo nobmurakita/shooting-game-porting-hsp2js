@@ -43,7 +43,7 @@ game.Laser = class {
     this.y = [py, py, py, py, py, py, py, py];
     this.vx = vx;
     this.vy = vy;
-    this.dir = game.toRad(192);
+    this.dir = game.DIR_UP;
     this.frm = 0;
   }
 
@@ -229,10 +229,10 @@ game.Player = class {
   // 移動制限（画面端からのマージン）
   static MOVE_MIN = 20;
   static MOVE_MAX = 280;
-  // ショット発射方向テーブル（256段階角度、旧DatShtDir）
-  static SHT_DIR = [192, 192, 191, 193, 190, 194, 184, 200, 174, 210, 166, 218];
-  // レーザー発射方向テーブル（256段階角度、旧DatLsrDir）
-  static LSR_DIR = [187, 197, 177, 207, 167, 217, 157, 227];
+  // ショット発射方向テーブル（ラジアン、旧DatShtDir）
+  static SHT_DIR = [192, 192, 191, 193, 190, 194, 184, 200, 174, 210, 166, 218].map(a => a * Math.PI / 128);
+  // レーザー発射方向テーブル（ラジアン、旧DatLsrDir）
+  static LSR_DIR = [187, 197, 177, 207, 167, 217, 157, 227].map(a => a * Math.PI / 128);
 
   constructor() {
     this.init();
@@ -293,10 +293,10 @@ game.Player = class {
       if (game.ctx.key & game.KEY_SHOT) {
         this.shtCnt = 6;
         for (let i = 0; i < this.shtLV * 2; i++) {
-          const posRad = game.toRad(game.Player.SHT_DIR[i + 6]);
+          const posRad = game.Player.SHT_DIR[i + 6];
           const x = Math.cos(posRad) * 20 + this.x;
           const y = Math.sin(posRad) * 20 + this.y;
-          const dir = game.toRad(game.Player.SHT_DIR[i]);
+          const dir = game.Player.SHT_DIR[i];
           ctx.playerShots.push(new game.PlayerShot(x, y, dir));
         }
       }
@@ -310,7 +310,7 @@ game.Player = class {
           for (let i = 0; i < count; i++) {
             const trg = this.searchTarget(ctx);
             if (trg !== null) { trg.lckOn++; }
-            const rad = game.toRad(game.Player.LSR_DIR[i]);
+            const rad = game.Player.LSR_DIR[i];
             const vx = Math.cos(rad) * 8;
             const vy = Math.sin(rad) * 8;
             ctx.lasers.push(new game.Laser(this.x, this.y - 20, vx, vy, trg));

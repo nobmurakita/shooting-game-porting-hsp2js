@@ -1,11 +1,23 @@
 const game = {};
 
-// 256段階角度をラジアンに変換するヘルパー
-game.toRad = (angle256) => (angle256 & 255) * Math.PI / 128;
+// 方向定数（ラジアン）
+game.DIR_DOWN  = Math.PI / 2;        // 旧256段階: 64
+game.DIR_LEFT  = Math.PI;            // 旧256段階: 128
+game.DIR_UP    = 3 * Math.PI / 2;    // 旧256段階: 192
 
-// ラジアンを256段階角度に変換するヘルパー（スプライト選択用）
-game.toAngle256 = (rad) => {
-  let a = Math.round(rad * 128 / Math.PI) % 256;
-  if (a < 0) a += 256;
-  return a;
+// 256段階角度1刻みのラジアン値（周期運動のフレームカウンタ用）
+game.A256 = Math.PI / 128;
+
+// ラジアンからスプライトフレーム番号を計算（全周: 0〜2π）
+game.radToSpriteFrame = (rad, divisions, spriteWidth) => {
+  let norm = rad / (2 * Math.PI);
+  norm = ((norm % 1) + 1) % 1;
+  return (Math.round(norm * divisions) % divisions) * spriteWidth;
+};
+
+// ラジアンからスプライトフレーム番号を計算（半周期: 0〜π で折り返し）
+game.radToSpriteFrameHalf = (rad, divisions, spriteWidth) => {
+  let norm = rad / Math.PI;
+  norm = ((norm % 1) + 1) % 1;
+  return (Math.round(norm * divisions) % divisions) * spriteWidth;
 };

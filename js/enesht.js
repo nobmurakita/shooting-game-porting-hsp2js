@@ -41,8 +41,7 @@ game.EnemyShot0 = class extends game.EnemyShot {
   static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 130 };
 
   initAI() {
-    let a = game.toAngle256(this.dir);
-    this.cx = Math.floor(((a + 4) & 127) * 15 / 127) * 20;
+    this.cx = game.radToSpriteFrameHalf(this.dir, 16, 20);
   }
 
   updateAI(ctx) {
@@ -88,8 +87,7 @@ game.EnemyShot2 = class extends game.EnemyShot {
       this.tmp[0] = this.tmp[0] * 14 / 15;
       this.tmp[1] = this.tmp[1] * 14 / 15;
     }
-    let a = game.toAngle256(this.dir);
-    this.cx = Math.floor(((a + 4) & 255) * 31 / 255) * 20;
+    this.cx = game.radToSpriteFrame(this.dir, 32, 20);
     if (this.frm % 6 === 0) {
       let x = hsp.rnd(10) - 5;
       let y = hsp.rnd(10) - 5;
