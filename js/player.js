@@ -1,12 +1,10 @@
 ;//////////プレーヤーショットクラス//////////
 hsp.PlayerShot = class {
-  static MAX = 36;
-
-  constructor() {
-    this.alive = false;
-    this.x = 0;
-    this.y = 0;
-    this.dir = 0;
+  constructor(x, y, dir) {
+    this.alive = true;
+    this.x = x;
+    this.y = y;
+    this.dir = dir;
     this.frm = 0;
   }
 
@@ -34,17 +32,15 @@ hsp.PlayerShot = class {
 
 ;//////////レーザークラス//////////
 hsp.Laser = class {
-  static MAX = 8;
-
-  constructor() {
-    this.alive = false;
-    this.trg = null;
-    this.sta = 0;
-    this.x = [0, 0, 0, 0, 0, 0, 0, 0];
-    this.y = [0, 0, 0, 0, 0, 0, 0, 0];
-    this.vx = 0;
-    this.vy = 0;
-    this.dir = 0;
+  constructor(px, py, vx, vy, trg) {
+    this.alive = true;
+    this.trg = trg;
+    this.sta = 1;
+    this.x = [px, px, px, px, px, px, px, px];
+    this.y = [py, py, py, py, py, py, py, py];
+    this.vx = vx;
+    this.vy = vy;
+    this.dir = hsp.toRad(192);
   }
 
   // レーザー移動・追跡・衝突判定（旧MovLsr内ループ1回分 + LsrHit）
@@ -110,7 +106,7 @@ hsp.Laser = class {
         );
 
         if (hit) {
-          hsp.Score += 100;
+          hsp.ctx.score += 100;
           e.shield -= 5;
           e.lckOn--;
           this.sta = 0;
@@ -155,7 +151,7 @@ hsp.Laser = class {
         );
 
         if (hit) {
-          hsp.Score += 100;
+          hsp.ctx.score += 100;
           boss.shield -= 5;
           p.shield -= 5;
           p.lckOn--;
@@ -276,8 +272,8 @@ hsp.Player = class {
     }
 
     // 移動量＆傾き決定
-    const dx = ((hsp.Key & 4) >> 2) - (hsp.Key & 1);
-    const dy = ((hsp.Key & 8) >> 3) - ((hsp.Key & 2) >> 1);
+    const dx = ((hsp.ctx.key & 4) >> 2) - (hsp.ctx.key & 1);
+    const dy = ((hsp.ctx.key & 8) >> 3) - ((hsp.ctx.key & 2) >> 1);
 
     if (dx || dy) {
       const r = hsp.CollisionSystem.calcDir(0, 0, dx, dy);
@@ -305,62 +301,34 @@ hsp.Player = class {
     if (this.shtCnt !== 0) {
       this.shtCnt--;
     } else {
-      if (hsp.Key & 32) {
+      if (hsp.ctx.key & 32) {
         this.shtCnt = 3;
         for (let i = 0; i < this.shtLV * 2; i++) {
-          // プールから空きスロットを探す
-          for (let j = 0; j < hsp.PlayerShot.MAX; j++) {
-            if (ctx.playerShots[j].alive) continue;
-
-            const s = ctx.playerShots[j];
-            s.alive = true;
-            s.frm = 0;
-            const rad = hsp.toRad(hsp.Player.SHT_DIR[i + 6]);
-            s.x = Math.cos(rad) * 20 + this.x;
-            s.y = Math.sin(rad) * 20 + this.y;
-            s.dir = hsp.toRad(hsp.Player.SHT_DIR[i]);
-            break;
-          }
+          const posRad = hsp.toRad(hsp.Player.SHT_DIR[i + 6]);
+          const x = Math.cos(posRad) * 20 + this.x;
+          const y = Math.sin(posRad) * 20 + this.y;
+          const dir = hsp.toRad(hsp.Player.SHT_DIR[i]);
+          ctx.playerShots.push(new hsp.PlayerShot(x, y, dir));
         }
       }
     }
 
     // レーザー発射
     if (this.lsrF === 1) {
-      if (hsp.Key & 16) {
+      if (hsp.ctx.key & 16) {
         if (this.lsrPow >= 40) {
-          for (let i = 0; i < Math.floor(this.lsrPow / 40); i++) {
-            const lsr = i;
-            if (ctx.lasers[lsr].alive) continue;
-
-            const l = ctx.lasers[lsr];
-            l.alive = true;
-
-            // ターゲット検索
+          const count = Math.floor(this.lsrPow / 40);
+          for (let i = 0; i < count; i++) {
             const trg = this.searchTarget(ctx);
-            if (trg !== null) {
-              l.trg = trg;
-              l.sta = 1;
-              trg.lckOn++;
-            } else {
-              l.sta = 1;
-            }
-
-            // 初期位置設定
-            for (let j = 0; j < 8; j++) {
-              l.x[j] = this.x;
-              l.y[j] = this.y - 20;
-            }
-
-            // 初期速度・方向
-            const rad = hsp.toRad(hsp.Player.LSR_DIR[lsr]);
-            l.vx = Math.cos(rad) * 16;
-            l.vy = Math.sin(rad) * 16;
-            l.dir = hsp.toRad(192);
+            if (trg !== null) { trg.lckOn++; }
+            const rad = hsp.toRad(hsp.Player.LSR_DIR[i]);
+            const vx = Math.cos(rad) * 16;
+            const vy = Math.sin(rad) * 16;
+            ctx.lasers.push(new hsp.Laser(this.x, this.y - 20, vx, vy, trg));
           }
         }
       } else {
-        this.lsrPow += (hsp.Key & 32 ? 1 : 3);
+        this.lsrPow += (hsp.ctx.key & 32 ? 1 : 3);
         if (this.lsrPow > 320) {
           this.lsrPow = 320;
         }

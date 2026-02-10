@@ -40,7 +40,7 @@ hsp.Boss = class {
   // ボスパーツ画像初期化（旧IniDatBossPrt）
   initData() {
     hsp.buffer(5, 1000, 1000);
-    if (hsp.Stage === 1) {
+    if (hsp.ctx.stage === 1) {
       hsp.picload('img/boss00.png', 0, 0);
       hsp.picload('img/boss01.png', 0, 75);
     }
@@ -48,7 +48,7 @@ hsp.Boss = class {
 
   // ボス初期化（旧IniBoss）
   init() {
-    if (hsp.Stage === 1) {
+    if (hsp.ctx.stage === 1) {
       this.flg = 0;
       this.shield = 500;
       this.x = 150;
@@ -94,7 +94,7 @@ hsp.Boss = class {
       }
       if (this.frm === 60) {
         this.flg = 0;
-        hsp.GameSta = hsp.STA_CLEAR;
+        hsp.ctx.gameSta = hsp.STA_CLEAR;
       }
     }
 
@@ -103,7 +103,7 @@ hsp.Boss = class {
     }
 
     // ステージ1のボスAI
-    if (hsp.Stage === 1) {
+    if (hsp.ctx.stage === 1) {
       if (this.frm < 200) {
         this.y += 1;
       } else {
@@ -151,8 +151,7 @@ hsp.Boss = class {
       if (!prt.alive) continue;
       const d = prt.constructor.DATA;
 
-      for (let j = 0; j < hsp.PlayerShot.MAX; j++) {
-        const s = ctx.playerShots[j];
+      for (const s of ctx.playerShots) {
         if (!s.alive) continue;
 
         if (hsp.CollisionSystem.checkAABB(
@@ -161,7 +160,7 @@ hsp.Boss = class {
           s.x - 5, s.y - 10,
           s.x + 5, s.y + 10
         )) {
-          hsp.Score += 10;
+          hsp.ctx.score += 10;
           s.alive = false;
           this.shield--;
           prt.shield--;
@@ -192,7 +191,7 @@ hsp.Boss = class {
   draw() {
     if (this.flg === 0) return;
 
-    if (hsp.Stage === 1) {
+    if (hsp.ctx.stage === 1) {
       for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
         const prt = this.parts[i];
         const d = prt.constructor.DATA;

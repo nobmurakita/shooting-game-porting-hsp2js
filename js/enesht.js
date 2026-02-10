@@ -4,7 +4,6 @@ hsp.EnemyShot = class {
 
   constructor(x, y, dir) {
     this.alive = true;
-    this.ki = this.constructor.KI;
     this.x = x;
     this.y = y;
     this.dir = dir;
@@ -68,7 +67,6 @@ hsp.EnemyShot = class {
 
 ;// ki=0: 通常弾（直進）
 hsp.EnemyShot0 = class extends hsp.EnemyShot {
-  static KI = 0;
   static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 130 };
 
   initAI() {
@@ -87,7 +85,6 @@ hsp.EnemyShot0 = class extends hsp.EnemyShot {
 
 ;// ki=1: 照準弾（直進＋アニメーション）
 hsp.EnemyShot1 = class extends hsp.EnemyShot {
-  static KI = 1;
   static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 130 };
 
   updateAI(ctx) {
@@ -102,7 +99,6 @@ hsp.EnemyShot1 = class extends hsp.EnemyShot {
 
 ;// ki=2: 誘導弾（追尾＋プレイヤーショット衝突判定）
 hsp.EnemyShot2 = class extends hsp.EnemyShot {
-  static KI = 2;
   static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 150 };
 
   updateAI(ctx) {
@@ -126,14 +122,13 @@ hsp.EnemyShot2 = class extends hsp.EnemyShot {
       hsp.spawnEffect(ctx, 2, -Math.cos(this.dir) * 10 + this.x + x, -Math.sin(this.dir) * 10 + this.y + y, 0);
     }
     // プレイヤーショットとの衝突判定
-    for (let j = 0; j < hsp.PlayerShot.MAX; j++) {
-      const ps = ctx.playerShots[j];
+    for (const ps of ctx.playerShots) {
       if (!ps.alive) continue;
       if (hsp.CollisionSystem.checkAABB(
         d.hitX1 + this.x, d.hitY1 + this.y, d.hitX2 + this.x, d.hitY2 + this.y,
         ps.x - 5, ps.y - 10, ps.x + 5, ps.y + 10
       )) {
-        hsp.Score += 10;
+        hsp.ctx.score += 10;
         ps.alive = false;
         this.alive = false;
         let x = hsp.rnd(10) - 5;

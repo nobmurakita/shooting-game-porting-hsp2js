@@ -17,6 +17,9 @@ hsp.GameContext = class {
     this.hiScore = 0;
     this.frame = 0;
     this.key = 0;
+    this.nextLoopTime = 0;
+    this.bg1 = 0;
+    this.bg2 = 0;
     this.effects = [];
     this.player = null;
     this.playerShots = [];
@@ -29,10 +32,10 @@ hsp.GameContext = class {
 
 ;//////////初期設定//////////
 hsp.IniCom = () => {
-  hsp.GameSta = hsp.STA_OPENING;
-  hsp.Stage = 0;
-  hsp.Score = 0;
-  hsp.HiScore = 0;
+  hsp.ctx.gameSta = hsp.STA_OPENING;
+  hsp.ctx.stage = 0;
+  hsp.ctx.score = 0;
+  hsp.ctx.hiScore = 0;
 
   // ゲーム画面
   hsp.screen(0, 300, 300);  // 表示用
@@ -46,8 +49,8 @@ hsp.IniCom = () => {
     hsp.color(255 - hsp.rnd(100), 255 - hsp.rnd(100), 255 - hsp.rnd(100));
     hsp.pset(hsp.rnd(300), hsp.rnd(300));
   }
-  hsp.BG1 = 0;
-  hsp.BG2 = 0;
+  hsp.ctx.bg1 = 0;
+  hsp.ctx.bg2 = 0;
 
   // 基本画像
   hsp.buffer(3, 1000, 1000);
@@ -59,14 +62,14 @@ hsp.IniCom = () => {
 
 ;//////////背景//////////
 hsp.BackGround = () => {
-  hsp.BG2 = 300 - hsp.BG1;
+  hsp.ctx.bg2 = 300 - hsp.ctx.bg1;
   hsp.pos(0, 0);
-  hsp.gcopy(2, 0, hsp.BG2, 300, hsp.BG1);
-  hsp.pos(0, hsp.BG1);
-  hsp.gcopy(2, 0, 0, 300, hsp.BG2);
-  hsp.BG1++;
-  if (hsp.BG1 == 300) {
-    hsp.BG1 -= 300;
+  hsp.gcopy(2, 0, hsp.ctx.bg2, 300, hsp.ctx.bg1);
+  hsp.pos(0, hsp.ctx.bg1);
+  hsp.gcopy(2, 0, 0, 300, hsp.ctx.bg2);
+  hsp.ctx.bg1++;
+  if (hsp.ctx.bg1 == 300) {
+    hsp.ctx.bg1 -= 300;
   }
 };
 
@@ -75,7 +78,7 @@ hsp.Disp = () => {
   // スコア
   hsp.pos(0, 0);
   hsp.gcopy(3, 17, 186, 45, 16);
-  let a = hsp.Score;
+  let a = hsp.ctx.score;
   let x = 0;
   let y = 170;
   for (let i = 0; i < 8; i++) {
@@ -91,7 +94,7 @@ hsp.Disp = () => {
   // ハイスコア
   hsp.pos(173, 0);
   hsp.gcopy(3, 0, 186, 62, 16);
-  a = hsp.HiScore;
+  a = hsp.ctx.hiScore;
   x = 0;
   y = 170;
   for (let i = 0; i < 8; i++) {

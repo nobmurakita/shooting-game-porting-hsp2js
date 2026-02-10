@@ -4,7 +4,6 @@ hsp.Effect = class {
 
   constructor(x, y, startFrm) {
     this.alive = true;
-    this.ki = this.constructor.KI;
     this.x = x;
     this.y = y;
     this.frm = startFrm;
@@ -35,7 +34,6 @@ hsp.Effect = class {
 
 ;// ki=0: 爆発（大）
 hsp.Effect0 = class extends hsp.Effect {
-  static KI = 0;
   static DATA = { sx: 40, sy: 40, cy: 80 };
 
   updateAI() {
@@ -51,7 +49,6 @@ hsp.Effect0 = class extends hsp.Effect {
 
 ;// ki=1: 火花
 hsp.Effect1 = class extends hsp.Effect {
-  static KI = 1;
   static DATA = { sx: 10, sy: 10, cy: 120 };
 
   updateAI() {
@@ -64,7 +61,6 @@ hsp.Effect1 = class extends hsp.Effect {
 
 ;// ki=2: 煙
 hsp.Effect2 = class extends hsp.Effect {
-  static KI = 2;
   static DATA = { sx: 10, sy: 10, cy: 120 };
 
   updateAI() {

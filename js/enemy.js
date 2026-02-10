@@ -6,7 +6,6 @@ hsp.Enemy = class {
 
   constructor(mv, x, y) {
     this.alive = true;
-    this.ki = this.constructor.KI;
     this.shield = this.constructor.DATA.shield;
     this.mv = mv;
     this.x = x;
@@ -37,14 +36,13 @@ hsp.Enemy = class {
     this.frm++;
 
     // --- プレイヤーショットとの衝突判定 ---
-    for (let j = 0; j < hsp.PlayerShot.MAX; j++) {
-      const s = ctx.playerShots[j];
+    for (const s of ctx.playerShots) {
       if (!s.alive) continue;
       if (hsp.CollisionSystem.checkAABB(
         d.hitX1 + this.x, d.hitY1 + this.y, d.hitX2 + this.x, d.hitY2 + this.y,
         s.x - 5, s.y - 10, s.x + 5, s.y + 10
       )) {
-        hsp.Score += 10;
+        hsp.ctx.score += 10;
         s.alive = false;
         this.shield--;
         let x = hsp.rnd(10) - 5;
@@ -124,13 +122,13 @@ hsp.Enemy = class {
   // 敵出現処理（旧AprEne）
   static appear(ctx) {
     while (true) {
-      if (ctx.boss.aprFrm === hsp.Frame) {
+      if (ctx.boss.aprFrm === hsp.ctx.frame) {
         ctx.boss.flg = 1;
       }
       if (hsp.Enemy.tableIndex === hsp.Enemy.table.length) {
         return;
       }
-      if (hsp.Enemy.table[hsp.Enemy.tableIndex][0] === hsp.Frame) {
+      if (hsp.Enemy.table[hsp.Enemy.tableIndex][0] === hsp.ctx.frame) {
         const entry = hsp.Enemy.table[hsp.Enemy.tableIndex];
         const EnemyClass = hsp.Enemy.CLASS_MAP[entry[1]];
         ctx.enemies.push(new EnemyClass(entry[2], entry[3], entry[4]));
@@ -146,7 +144,6 @@ hsp.Enemy = class {
 
 ;// ki=0: 蛇行しながら下降する雑魚
 hsp.Enemy0 = class extends hsp.Enemy {
-  static KI = 0;
   static DATA = { shield: 2, sx: 20, sy: 40, hitX1: -5, hitY1: -15, hitX2: 5, hitY2: 15, cy: 0 };
 
   updateAI(ctx) {
@@ -167,7 +164,6 @@ hsp.Enemy0 = class extends hsp.Enemy {
 
 ;// ki=1: 螺旋移動する敵
 hsp.Enemy1 = class extends hsp.Enemy {
-  static KI = 1;
   static DATA = { shield: 2, sx: 40, sy: 40, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10, cy: 40 };
 
   updateAI(ctx) {
@@ -195,7 +191,6 @@ hsp.Enemy1 = class extends hsp.Enemy {
 
 ;// ki=2: プレイヤー追尾型
 hsp.Enemy2 = class extends hsp.Enemy {
-  static KI = 2;
   static DATA = { shield: 4, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, cy: 80 };
 
   updateAI(ctx) {
@@ -225,7 +220,6 @@ hsp.Enemy2 = class extends hsp.Enemy {
 
 ;// ki=3: 直進しながら弾を撃つ
 hsp.Enemy3 = class extends hsp.Enemy {
-  static KI = 3;
   static DATA = { shield: 4, sx: 40, sy: 60, hitX1: -20, hitY1: -20, hitX2: 20, hitY2: 20, cy: 120 };
 
   updateAI(ctx) {
@@ -244,7 +238,6 @@ hsp.Enemy3 = class extends hsp.Enemy {
 
 ;// ki=4: 上昇しながら扇状弾を撃つ
 hsp.Enemy4 = class extends hsp.Enemy {
-  static KI = 4;
   static DATA = { shield: 40, sx: 120, sy: 60, hitX1: -50, hitY1: -10, hitX2: 50, hitY2: 15, cy: 180 };
 
   updateAI(ctx) {
@@ -265,7 +258,6 @@ hsp.Enemy4 = class extends hsp.Enemy {
 
 ;// ki=5: 円運動する敵
 hsp.Enemy5 = class extends hsp.Enemy {
-  static KI = 5;
   static DATA = { shield: 3, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, cy: 240 };
 
   updateAI(ctx) {
@@ -292,7 +284,6 @@ hsp.Enemy5 = class extends hsp.Enemy {
 
 ;// ki=6: 上下に揺れながら弾を撃つ
 hsp.Enemy6 = class extends hsp.Enemy {
-  static KI = 6;
   static DATA = { shield: 4, sx: 40, sy: 50, hitX1: -15, hitY1: -10, hitX2: 15, hitY2: 10, cy: 280 };
 
   updateAI(ctx) {
@@ -313,7 +304,6 @@ hsp.Enemy6 = class extends hsp.Enemy {
 
 ;// ki=7: 蛇行しながら下降、定期的に弾を撃つ
 hsp.Enemy7 = class extends hsp.Enemy {
-  static KI = 7;
   static DATA = { shield: 2, sx: 40, sy: 60, hitX1: -15, hitY1: -25, hitX2: 15, hitY2: 25, cy: 330 };
 
   updateAI(ctx) {
@@ -337,7 +327,6 @@ hsp.Enemy7 = class extends hsp.Enemy {
 
 ;// ki=8: 直進後に分岐する敵
 hsp.Enemy8 = class extends hsp.Enemy {
-  static KI = 8;
   static DATA = { shield: 4, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, cy: 390 };
 
   updateAI(ctx) {
@@ -373,7 +362,6 @@ hsp.Enemy8 = class extends hsp.Enemy {
 
 ;// ki=9: 左右に揺れながら下降、回転弾を撃つ中ボス級
 hsp.Enemy9 = class extends hsp.Enemy {
-  static KI = 9;
   static DATA = { shield: 40, sx: 60, sy: 60, hitX1: -25, hitY1: -25, hitX2: 25, hitY2: 25, cy: 430 };
 
   initAI() {
