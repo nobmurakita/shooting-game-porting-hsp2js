@@ -1,5 +1,5 @@
 //////////プログラムスタート//////////
-hsp.ProgramStart = async () => {
+game.ProgramStart = async () => {
   await Promise.all([
     hsp.preload('img/title.png'),
     hsp.preload('img/player.png'),
@@ -21,25 +21,25 @@ hsp.ProgramStart = async () => {
   ]);
 
   // GameContext生成
-  hsp.ctx = new hsp.GameContext();
-  hsp.ctx.player = new hsp.Player();
-  hsp.ctx.boss = new hsp.Boss();
+  game.ctx = new game.GameContext();
+  game.ctx.player = new game.Player();
+  game.ctx.boss = new game.Boss();
 
-  hsp.IniCom();
-  hsp.Enemy.initData();
+  game.IniCom();
+  game.Enemy.initData();
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      hsp.ctx.nextLoopTime = performance.now();
+      game.ctx.nextLoopTime = performance.now();
     }
   });
 
-  hsp.ctx.nextLoopTime = performance.now();
-  hsp.MainLoop();
+  game.ctx.nextLoopTime = performance.now();
+  game.MainLoop();
 };
 
 //////////残存オブジェクト更新（ショット・レーザー・エフェクト）//////////
-hsp.updateRemaining = (ctx) => {
+game.updateRemaining = (ctx) => {
   for (const s of ctx.playerShots) { s.update(); }
   for (const s of ctx.enemyShots) { s.update(ctx); }
   // レーザーのLsrF初期化（全レーザーが非生存ならLsrF=1にする）
@@ -49,7 +49,7 @@ hsp.updateRemaining = (ctx) => {
 };
 
 //////////死亡要素の除去//////////
-hsp.filterDead = (ctx) => {
+game.filterDead = (ctx) => {
   ctx.playerShots = ctx.playerShots.filter(s => s.alive);
   ctx.lasers = ctx.lasers.filter(l => l.alive);
   ctx.enemies = ctx.enemies.filter(e => e.alive);
@@ -58,8 +58,8 @@ hsp.filterDead = (ctx) => {
 };
 
 //////////ゲーム要素描画//////////
-hsp.renderObjects = (ctx) => {
-  hsp.BackGround();
+game.renderObjects = (ctx) => {
+  game.BackGround();
   if (ctx.boss.flg === 0) {
     for (const e of ctx.enemies) { e.draw(); }
   } else {
@@ -73,104 +73,104 @@ hsp.renderObjects = (ctx) => {
   for (const s of ctx.enemyShots) { s.draw(); }
   // レーザー描画
   for (const l of ctx.lasers) { l.draw(); }
-  hsp.Disp();
+  game.Disp();
 };
 
 //////////フレームバッファ転送//////////
-hsp.flipBuffer = () => {
+game.flipBuffer = () => {
   hsp.gsel(0);
   hsp.pos(0, 0);
   hsp.gcopy(1, 0, 0, 300, 300);
 };
 
 //////////メインループ//////////
-hsp.MainLoop = () => {
-  hsp.ctx.nextLoopTime += 1000 / 60;
-  hsp.ctx.key = hsp.stick();
+game.MainLoop = () => {
+  game.ctx.nextLoopTime += 1000 / 60;
+  game.ctx.key = hsp.stick();
 
-  if (hsp.ctx.gameSta === hsp.STA_OPENING) {
+  if (game.ctx.gameSta === game.STA_OPENING) {
     hsp.gsel(0);
     hsp.picload('img/title.png', 0, 0);
-    hsp.ctx.stage = 0;
-    hsp.ctx.score = 0;
-    hsp.ctx.gameSta = hsp.STA_TITLE;
-  } else if (hsp.ctx.gameSta === hsp.STA_TITLE) {
-    if (hsp.ctx.key & hsp.KEY_LASER || hsp.ctx.key & hsp.KEY_SHOT || hsp.ctx.key & hsp.KEY_SHIFT) {
-      hsp.ctx.gameSta = hsp.STA_INIT;
+    game.ctx.stage = 0;
+    game.ctx.score = 0;
+    game.ctx.gameSta = game.STA_TITLE;
+  } else if (game.ctx.gameSta === game.STA_TITLE) {
+    if (game.ctx.key & game.KEY_LASER || game.ctx.key & game.KEY_SHOT || game.ctx.key & game.KEY_SHIFT) {
+      game.ctx.gameSta = game.STA_INIT;
     }
-  } else if (hsp.ctx.gameSta === hsp.STA_INIT) {
-    hsp.ctx.stage++
-    if (hsp.ctx.stage <= hsp.MaxStage) {
-      hsp.ctx.initStage(hsp.ctx.stage);
-      hsp.ctx.gameSta = hsp.STA_PLAY;
+  } else if (game.ctx.gameSta === game.STA_INIT) {
+    game.ctx.stage++
+    if (game.ctx.stage <= game.MaxStage) {
+      game.ctx.initStage(game.ctx.stage);
+      game.ctx.gameSta = game.STA_PLAY;
     } else {
-      hsp.ctx.gameSta = hsp.STA_ENDING;
+      game.ctx.gameSta = game.STA_ENDING;
     }
-  } else if (hsp.ctx.gameSta === hsp.STA_PLAY) {
-    if (hsp.ctx.key & hsp.KEY_ESC) {
-      hsp.ctx.gameSta = hsp.STA_OPENING;
+  } else if (game.ctx.gameSta === game.STA_PLAY) {
+    if (game.ctx.key & game.KEY_ESC) {
+      game.ctx.gameSta = game.STA_OPENING;
     } else {
       // オフスクリーンバッファに描画
       hsp.gsel(1);
       // プレーヤー更新
-      hsp.ctx.player.update(hsp.ctx);
+      game.ctx.player.update(game.ctx);
       // プレーヤーショット更新
-      for (const s of hsp.ctx.playerShots) { s.update(); }
+      for (const s of game.ctx.playerShots) { s.update(); }
       // レーザーのLsrF初期化（全レーザーが非生存ならLsrF=1にする）
-      if (hsp.ctx.player.lsrPow === 0) { hsp.ctx.player.lsrF = 1; }
+      if (game.ctx.player.lsrPow === 0) { game.ctx.player.lsrF = 1; }
       // 敵/ボス更新
-      if (hsp.ctx.boss.flg === 0) {
-        hsp.Enemy.appear(hsp.ctx);
-        for (const e of hsp.ctx.enemies) { e.update(hsp.ctx); }
+      if (game.ctx.boss.flg === 0) {
+        game.Enemy.appear(game.ctx);
+        for (const e of game.ctx.enemies) { e.update(game.ctx); }
       } else {
-        hsp.ctx.boss.update(hsp.ctx);
+        game.ctx.boss.update(game.ctx);
       }
       // 敵ショット・レーザー・エフェクト更新
-      for (const s of hsp.ctx.enemyShots) { s.update(hsp.ctx); }
-      for (const l of hsp.ctx.lasers) { l.update(hsp.ctx); }
-      for (const e of hsp.ctx.effects) { e.update(); }
+      for (const s of game.ctx.enemyShots) { s.update(game.ctx); }
+      for (const l of game.ctx.lasers) { l.update(game.ctx); }
+      for (const e of game.ctx.effects) { e.update(); }
       // 衝突判定
-      hsp.CollisionSystem.checkAllCollisions(hsp.ctx);
-      hsp.filterDead(hsp.ctx);
-      hsp.renderObjects(hsp.ctx);
-      hsp.ctx.frame++
-      if (hsp.ctx.key & hsp.KEY_SHIFT) {
-        hsp.ctx.key = 0;
-        hsp.ctx.gameSta = hsp.STA_PAUSE;
+      game.CollisionSystem.checkAllCollisions(game.ctx);
+      game.filterDead(game.ctx);
+      game.renderObjects(game.ctx);
+      game.ctx.frame++
+      if (game.ctx.key & game.KEY_SHIFT) {
+        game.ctx.key = 0;
+        game.ctx.gameSta = game.STA_PAUSE;
         hsp.pos(129, 142);
         hsp.gcopy(3, 0, 234, 42, 16);
       }
-      hsp.flipBuffer();
+      game.flipBuffer();
     }
-  } else if (hsp.ctx.gameSta === hsp.STA_CLEAR) {
-    if (hsp.ctx.key & hsp.KEY_ESC) {
-      hsp.ctx.gameSta = hsp.STA_OPENING;
+  } else if (game.ctx.gameSta === game.STA_CLEAR) {
+    if (game.ctx.key & game.KEY_ESC) {
+      game.ctx.gameSta = game.STA_OPENING;
     }
-    if (hsp.ctx.player.y > -20) {
-      hsp.ctx.player.y -= 3.5;
+    if (game.ctx.player.y > -20) {
+      game.ctx.player.y -= 3.5;
     } else {
-      hsp.ctx.gameSta = hsp.STA_INIT;
+      game.ctx.gameSta = game.STA_INIT;
     }
     // オフスクリーンバッファに描画
     hsp.gsel(1);
-    hsp.updateRemaining(hsp.ctx);
-    hsp.filterDead(hsp.ctx);
-    hsp.renderObjects(hsp.ctx);
-    hsp.flipBuffer();
-  } else if (hsp.ctx.gameSta === hsp.STA_ENDING) {
-    hsp.ctx.gameSta = hsp.STA_OPENING;
-  } else if (hsp.ctx.gameSta === hsp.STA_PAUSE) {
-    if (hsp.ctx.key & hsp.KEY_ESC) {
-      hsp.ctx.gameSta = hsp.STA_OPENING;
-    } else if (hsp.ctx.key & hsp.KEY_SHIFT) {
-      hsp.ctx.gameSta = hsp.STA_PLAY;
+    game.updateRemaining(game.ctx);
+    game.filterDead(game.ctx);
+    game.renderObjects(game.ctx);
+    game.flipBuffer();
+  } else if (game.ctx.gameSta === game.STA_ENDING) {
+    game.ctx.gameSta = game.STA_OPENING;
+  } else if (game.ctx.gameSta === game.STA_PAUSE) {
+    if (game.ctx.key & game.KEY_ESC) {
+      game.ctx.gameSta = game.STA_OPENING;
+    } else if (game.ctx.key & game.KEY_SHIFT) {
+      game.ctx.gameSta = game.STA_PLAY;
     }
   }
 
-  hsp.ctx.hiScore = Math.max(hsp.ctx.score, hsp.ctx.hiScore);
+  game.ctx.hiScore = Math.max(game.ctx.score, game.ctx.hiScore);
 
-  let delay = hsp.ctx.nextLoopTime - performance.now();
-  setTimeout(hsp.MainLoop, delay);
+  let delay = game.ctx.nextLoopTime - performance.now();
+  setTimeout(game.MainLoop, delay);
 };
 
-hsp.ProgramStart();
+game.ProgramStart();

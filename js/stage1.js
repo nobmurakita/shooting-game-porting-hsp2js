@@ -1,6 +1,6 @@
-hsp.Stages ||= {};
+game.Stages ||= {};
 
-hsp.Stages[1] = [
+game.Stages[1] = [
   // [Frm, ki, Mv, X, Y],
   [120, 3, 0, 100, -25],
   [120, 3, 0, 200, -25],

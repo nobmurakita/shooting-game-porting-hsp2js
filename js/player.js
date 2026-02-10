@@ -1,5 +1,5 @@
 //////////プレーヤーショットクラス//////////
-hsp.PlayerShot = class {
+game.PlayerShot = class {
   // 当たり判定の半幅・半高（中心からの距離）
   static HITBOX = { hw: 5, hh: 10 };
 
@@ -34,7 +34,7 @@ hsp.PlayerShot = class {
 };
 
 //////////レーザークラス//////////
-hsp.Laser = class {
+game.Laser = class {
   constructor(px, py, vx, vy, trg) {
     this.alive = true;
     this.trg = trg;
@@ -43,7 +43,7 @@ hsp.Laser = class {
     this.y = [py, py, py, py, py, py, py, py];
     this.vx = vx;
     this.vy = vy;
-    this.dir = hsp.toRad(192);
+    this.dir = game.toRad(192);
     this.frm = 0;
   }
 
@@ -107,7 +107,7 @@ hsp.Laser = class {
         const d = e.constructor.DATA;
 
         // 衝突判定（点 vs 矩形）
-        const hit = hsp.CollisionSystem.checkAABB(
+        const hit = game.CollisionSystem.checkAABB(
           this.x[0], this.y[0], this.x[0], this.y[0],
           d.hitX1 + e.x, d.hitY1 + e.y,
           d.hitX2 + e.x, d.hitY2 + e.y
@@ -120,18 +120,18 @@ hsp.Laser = class {
           this.sta = 0;
 
           // ヒットエフェクト
-          hsp.spawnHitSparks(ctx, this.x[0], this.y[0], 2);
+          game.spawnHitSparks(ctx, this.x[0], this.y[0], 2);
 
           // 敵撃破
           if (e.shield <= 0) {
             e.alive = false;
-            hsp.spawnExplosion(ctx, e.x, e.y, d.sx, d.sy, 3);
+            game.spawnExplosion(ctx, e.x, e.y, d.sx, d.sy, 3);
           }
         }
 
         // ターゲットへの方向を更新（2フレームに1回）
         if (this.frm % 2 === 0) {
-          this.dir = hsp.CollisionSystem.calcDir(
+          this.dir = game.CollisionSystem.calcDir(
             this.x[0], this.y[0], e.x, e.y
           );
         }
@@ -146,7 +146,7 @@ hsp.Laser = class {
         const pd = p.constructor.DATA;
 
         // 衝突判定（点 vs 矩形）
-        const hit = hsp.CollisionSystem.checkAABB(
+        const hit = game.CollisionSystem.checkAABB(
           this.x[0], this.y[0], this.x[0], this.y[0],
           (pd.x + pd.hitX1) + boss.x, (pd.y + pd.hitY1) + boss.y,
           (pd.x + pd.hitX2) + boss.x, (pd.y + pd.hitY2) + boss.y
@@ -160,7 +160,7 @@ hsp.Laser = class {
           this.sta = 0;
 
           // ヒットエフェクト
-          hsp.spawnHitSparks(ctx, this.x[0], this.y[0], 2);
+          game.spawnHitSparks(ctx, this.x[0], this.y[0], 2);
 
           // ボス撃破判定
           if (boss.shield <= 0) {
@@ -173,13 +173,13 @@ hsp.Laser = class {
           if (p.shield <= 0) {
             p.alive = false;
             p.cx = pd.sx;
-            hsp.spawnExplosion(ctx, pd.x + boss.x, pd.y + boss.y, pd.sx, pd.sy, 3);
+            game.spawnExplosion(ctx, pd.x + boss.x, pd.y + boss.y, pd.sx, pd.sy, 3);
           }
         }
 
         // ターゲットパーツへの方向を更新（2フレームに1回）
         if (this.frm % 2 === 0) {
-          this.dir = hsp.CollisionSystem.calcDir(
+          this.dir = game.CollisionSystem.calcDir(
             this.x[0], this.y[0],
             pd.x + boss.x,
             pd.y + boss.y
@@ -223,7 +223,7 @@ hsp.Laser = class {
 };
 
 //////////プレーヤークラス//////////
-hsp.Player = class {
+game.Player = class {
   // 当たり判定の半幅・半高（中心からの距離）
   static HITBOX = { hw: 5, hh: 5 };
   // 移動制限（画面端からのマージン）
@@ -261,11 +261,11 @@ hsp.Player = class {
     }
 
     // 移動量＆傾き決定
-    const dx = ((hsp.ctx.key & hsp.KEY_RIGHT) >> 2) - (hsp.ctx.key & hsp.KEY_LEFT);
-    const dy = ((hsp.ctx.key & hsp.KEY_UP) >> 3) - ((hsp.ctx.key & hsp.KEY_DOWN) >> 1);
+    const dx = ((game.ctx.key & game.KEY_RIGHT) >> 2) - (game.ctx.key & game.KEY_LEFT);
+    const dy = ((game.ctx.key & game.KEY_UP) >> 3) - ((game.ctx.key & game.KEY_DOWN) >> 1);
 
     if (dx || dy) {
-      const r = hsp.CollisionSystem.calcDir(0, 0, dx, dy);
+      const r = game.CollisionSystem.calcDir(0, 0, dx, dy);
       this.x += Math.cos(r) * 2.75;
       this.y += Math.sin(r) * 2.75;
     }
@@ -281,43 +281,43 @@ hsp.Player = class {
     }
 
     // はみ出し制限
-    if (this.x < hsp.Player.MOVE_MIN) { this.x = hsp.Player.MOVE_MIN; }
-    if (this.y < hsp.Player.MOVE_MIN) { this.y = hsp.Player.MOVE_MIN; }
-    if (this.x > hsp.Player.MOVE_MAX) { this.x = hsp.Player.MOVE_MAX; }
-    if (this.y > hsp.Player.MOVE_MAX) { this.y = hsp.Player.MOVE_MAX; }
+    if (this.x < game.Player.MOVE_MIN) { this.x = game.Player.MOVE_MIN; }
+    if (this.y < game.Player.MOVE_MIN) { this.y = game.Player.MOVE_MIN; }
+    if (this.x > game.Player.MOVE_MAX) { this.x = game.Player.MOVE_MAX; }
+    if (this.y > game.Player.MOVE_MAX) { this.y = game.Player.MOVE_MAX; }
 
     // ショット発射
     if (this.shtCnt !== 0) {
       this.shtCnt--;
     } else {
-      if (hsp.ctx.key & hsp.KEY_SHOT) {
+      if (game.ctx.key & game.KEY_SHOT) {
         this.shtCnt = 6;
         for (let i = 0; i < this.shtLV * 2; i++) {
-          const posRad = hsp.toRad(hsp.Player.SHT_DIR[i + 6]);
+          const posRad = game.toRad(game.Player.SHT_DIR[i + 6]);
           const x = Math.cos(posRad) * 20 + this.x;
           const y = Math.sin(posRad) * 20 + this.y;
-          const dir = hsp.toRad(hsp.Player.SHT_DIR[i]);
-          ctx.playerShots.push(new hsp.PlayerShot(x, y, dir));
+          const dir = game.toRad(game.Player.SHT_DIR[i]);
+          ctx.playerShots.push(new game.PlayerShot(x, y, dir));
         }
       }
     }
 
     // レーザー発射
     if (this.lsrF === 1) {
-      if (hsp.ctx.key & hsp.KEY_LASER) {
+      if (game.ctx.key & game.KEY_LASER) {
         if (this.lsrPow >= 40) {
           const count = Math.floor(this.lsrPow / 40);
           for (let i = 0; i < count; i++) {
             const trg = this.searchTarget(ctx);
             if (trg !== null) { trg.lckOn++; }
-            const rad = hsp.toRad(hsp.Player.LSR_DIR[i]);
+            const rad = game.toRad(game.Player.LSR_DIR[i]);
             const vx = Math.cos(rad) * 8;
             const vy = Math.sin(rad) * 8;
-            ctx.lasers.push(new hsp.Laser(this.x, this.y - 20, vx, vy, trg));
+            ctx.lasers.push(new game.Laser(this.x, this.y - 20, vx, vy, trg));
           }
         }
       } else {
-        this.lsrPow += (hsp.ctx.key & hsp.KEY_SHOT ? 1 : 3);
+        this.lsrPow += (game.ctx.key & game.KEY_SHOT ? 1 : 3);
         if (this.lsrPow > 320) {
           this.lsrPow = 320;
         }
@@ -374,7 +374,7 @@ hsp.Player = class {
     } else {
       // ボスモード
       const boss = ctx.boss;
-      for (let i = 0; i < hsp.Boss.MAX_PARTS; i++) {
+      for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
         const p = boss.parts[i];
         if (!p.alive) continue;
 
@@ -420,4 +420,3 @@ hsp.Player = class {
   }
 
 };
-
