@@ -75,8 +75,7 @@ game.Enemy0 = class extends game.Enemy {
     let r = 1.5 * this.frm * game.A256;
     if (this.mv === 0) {
       this.x = 80 * Math.sin(r) + this.x0;
-    }
-    if (this.mv === 1) {
+    } else {
       this.x = -80 * Math.sin(r) + this.x0;
     }
     this.y -= 2;
@@ -102,8 +101,7 @@ game.Enemy1 = class extends game.Enemy {
     let r;
     if (this.mv === 0) {
       r = game.DIR_DOWN - this.angleStep * game.A256;
-    }
-    if (this.mv === 1) {
+    } else {
       r = game.DIR_DOWN + this.angleStep * game.A256;
     }
     this.x += Math.cos(r) * 4;
@@ -253,8 +251,7 @@ game.Enemy7 = class extends game.Enemy {
     let r = this.frm * 2 * game.A256;
     if (this.mv === 0) {
       this.x = 80 * Math.sin(r) + this.x0;
-    }
-    if (this.mv === 1) {
+    } else {
       this.x = -80 * Math.sin(r) + this.x0;
     }
     this.y -= 2;
@@ -287,8 +284,7 @@ game.Enemy8 = class extends game.Enemy {
       }
       if (this.mv === 0) {
         r = game.DIR_UP - this.angleStep * game.A256;
-      }
-      if (this.mv === 1) {
+      } else {
         r = game.DIR_UP + this.angleStep * game.A256;
       }
     }

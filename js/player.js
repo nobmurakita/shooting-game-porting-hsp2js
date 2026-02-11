@@ -3,11 +3,10 @@ game.PlayerShot = class {
   static CONFIG = { speed: 16, offscreenY: 340 };
   static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: game.TEX.PLAYER, hitX1: -10, hitY1: -20, hitX2: 10, hitY2: 20 };
 
-  constructor(x, y, dir) {
+  constructor(x, y) {
     this.alive = true;
     this.x = x;
     this.y = y;
-    this.dir = dir;
     this.frm = 0;
   }
 
@@ -15,9 +14,7 @@ game.PlayerShot = class {
   update() {
     if (!this.alive) return;
 
-    const spd = game.PlayerShot.CONFIG.speed;
-    this.x += spd * Math.cos(this.dir);
-    this.y += spd * Math.sin(this.dir);
+    this.y += game.PlayerShot.CONFIG.speed;
 
     // 画面外で消滅
     if (this.y > game.PlayerShot.CONFIG.offscreenY) {
@@ -244,8 +241,8 @@ game.Player = class {
     hitInvincible: 100,
   };
   static DATA = { sx: 80, sy: 80, baseX: 240, normalY: 0, hitY: 80, tex: game.TEX.PLAYER, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10 };
-  // ショット発射方向テーブル（ラジアン、旧DatShtDir）
-  static SHT_DIR = [192, 192, 191, 193, 190, 194, 184, 200, 174, 210, 166, 218].map(a => -a * Math.PI / 128);
+  // ショット発射位置テーブル（ラジアン、旧DatShtDir後半6要素）
+  static SHT_POS = [184, 200, 174, 210, 166, 218].map(a => -a * Math.PI / 128);
   // レーザー発射方向テーブル（ラジアン、旧DatLsrDir）
   static LSR_DIR = [187, 197, 177, 207, 167, 217, 157, 227].map(a => -a * Math.PI / 128);
 
@@ -308,11 +305,10 @@ game.Player = class {
       if (game.keyIsDown(game.KEY_SHOT)) {
         this.shtCnt = game.Player.CONFIG.shotInterval;
         for (let i = 0; i < this.shtLV * 2; i++) {
-          const posRad = game.Player.SHT_DIR[i + 6];
+          const posRad = game.Player.SHT_POS[i];
           const x = Math.cos(posRad) * 40 + this.x;
           const y = Math.sin(posRad) * 40 + this.y;
-          const dir = game.Player.SHT_DIR[i];
-          ctx.playerShots.push(new game.PlayerShot(x, y, dir));
+          ctx.playerShots.push(new game.PlayerShot(x, y));
         }
       }
     }

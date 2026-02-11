@@ -72,8 +72,6 @@ game.CollisionSystem = class {
         ply.shield--;
         if (ply.shield === 0) {
           ply.alive = false;
-          // プレイヤー爆発エフェクト
-          const pd = game.Player.DATA;
           game.spawnExplosion(ctx, ply.x, ply.y, pd.sx, pd.sy, 5);
         }
         break;
@@ -141,7 +139,6 @@ game.CollisionSystem = class {
         game.spawnHitSparks(ctx, es.x, es.y, 2);
         if (ply.shield === 0) {
           ply.alive = false;
-          const pd = game.Player.DATA;
           game.spawnExplosion(ctx, ply.x, ply.y, pd.sx, pd.sy, 3);
         }
         break;
