@@ -23,7 +23,7 @@ game.gameInit = () => {
 game.gameUpdatePost = () => {
   // レーザー充填判定（Player.update後に実行する必要がある）
   if (game.ctx.gameSta === game.STA_PLAY || game.ctx.gameSta === game.STA_CLEAR) {
-    if (engineObjects.some(o => o instanceof game.Laser && !o.destroyed)) {
+    if (game.objectsOf(game.Laser).length > 0) {
       game.ctx.player.lsrF = game.LSR_CHARGE_OFF;
     } else if (game.ctx.player.lsrPow <= 0) {
       game.ctx.player.lsrF = game.LSR_CHARGE_ON;

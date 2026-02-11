@@ -375,8 +375,7 @@ game.Player = class extends game.GameObject {
 
     if (ctx.boss.flg !== game.BOSS_BATTLE) {
       // 敵モード
-      for (const e of engineObjects) {
-        if (!(e instanceof game.Enemy) || e.destroyed) continue;
+      for (const e of game.objectsOf(game.Enemy)) {
 
         if (trg === null) {
           trg = e;

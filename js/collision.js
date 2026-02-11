@@ -26,12 +26,13 @@ game.CollisionSystem = class {
   // プレイヤーショット vs 敵
   static checkPlayerShotsVsEnemies(ctx) {
     const sd = game.PlayerShot.DATA;
-    for (const e of engineObjects) {
-      if (!(e instanceof game.Enemy) || e.destroyed) continue;
+    const enemies = game.objectsOf(game.Enemy);
+    const shots = game.objectsOf(game.PlayerShot);
+    for (const e of enemies) {
       const d = e.constructor.DATA;
 
-      for (const s of engineObjects) {
-        if (!(s instanceof game.PlayerShot) || s.destroyed) continue;
+      for (const s of shots) {
+        if (s.destroyed) continue;
         if (game.CollisionSystem.checkAABB(
           d.hitX1 + e.x, d.hitY1 + e.y, d.hitX2 + e.x, d.hitY2 + e.y,
           sd.hitX1 + s.x, sd.hitY1 + s.y, sd.hitX2 + s.x, sd.hitY2 + s.y
@@ -56,8 +57,7 @@ game.CollisionSystem = class {
     if (!ply.alive || ply.hitCnt !== 0) return;
     const pd = game.Player.DATA;
 
-    for (const e of engineObjects) {
-      if (!(e instanceof game.Enemy) || e.destroyed) continue;
+    for (const e of game.objectsOf(game.Enemy)) {
       const d = e.constructor.DATA;
 
       if (game.CollisionSystem.checkAABB(
@@ -86,14 +86,15 @@ game.CollisionSystem = class {
     const boss = ctx.boss;
     if (boss.flg !== game.BOSS_BATTLE) return;
     const sd = game.PlayerShot.DATA;
+    const shots = game.objectsOf(game.PlayerShot);
 
     for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
       const prt = boss.parts[i];
       if (!prt.alive) continue;
       const d = prt.constructor.DATA;
 
-      for (const s of engineObjects) {
-        if (!(s instanceof game.PlayerShot) || s.destroyed) continue;
+      for (const s of shots) {
+        if (s.destroyed) continue;
 
         if (game.CollisionSystem.checkAABB(
           prt.pos.x + d.hitX1, prt.pos.y + d.hitY1,
@@ -127,8 +128,7 @@ game.CollisionSystem = class {
     if (!ply.alive || ply.hitCnt !== 0) return;
     const pd = game.Player.DATA;
 
-    for (const es of engineObjects) {
-      if (!(es instanceof game.EnemyShot) || es.destroyed) continue;
+    for (const es of game.objectsOf(game.EnemyShot)) {
       const d = es.constructor.DATA;
 
       if (game.CollisionSystem.checkAABB(
@@ -151,12 +151,13 @@ game.CollisionSystem = class {
   // プレイヤーショット vs 誘導弾（EnemyShot2）
   static checkPlayerShotsVsEnemyShots(ctx) {
     const sd = game.PlayerShot.DATA;
-    for (const es of engineObjects) {
-      if (!(es instanceof game.EnemyShot2) || es.destroyed) continue;
+    const enemyShots = game.objectsOf(game.EnemyShot2);
+    const playerShots = game.objectsOf(game.PlayerShot);
+    for (const es of enemyShots) {
       const d = es.constructor.DATA;
 
-      for (const ps of engineObjects) {
-        if (!(ps instanceof game.PlayerShot) || ps.destroyed) continue;
+      for (const ps of playerShots) {
+        if (ps.destroyed) continue;
         if (game.CollisionSystem.checkAABB(
           d.hitX1 + es.x, d.hitY1 + es.y, d.hitX2 + es.x, d.hitY2 + es.y,
           sd.hitX1 + ps.x, sd.hitY1 + ps.y, sd.hitX2 + ps.x, sd.hitY2 + ps.y
