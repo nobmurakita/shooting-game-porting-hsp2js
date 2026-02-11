@@ -97,7 +97,7 @@ game.Enemy1 = class extends game.Enemy {
     }
     this.x += Math.cos(r) * 4;
     this.y += Math.sin(r) * 4;
-    this.cx = Math.floor(Math.cos(r) * 6) + 240;
+    this.cx = (Math.floor(Math.cos(r) * 3) + 3) * 80;
     if (this.frm === 64) {
       game.spawnEnemyShot(ctx, 0, this.x, this.y - 40, game.DIR_DOWN);
     }
