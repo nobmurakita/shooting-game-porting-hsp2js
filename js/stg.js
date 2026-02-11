@@ -46,7 +46,36 @@ game.radToSpriteFrameHalf = (rad, divisions, spriteWidth) => {
   return (Math.round(norm * divisions) % divisions) * spriteWidth;
 };
 
-// ゲームX座標 → スクリーンX座標（スプライト左上）
-game.screenX = (x, w) => Math.floor(game.SCREEN_W / 2 + x) - Math.floor(w / 2);
-// ゲームY座標 → スクリーンY座標（スプライト左上）
-game.screenY = (y, h) => Math.floor(game.SCREEN_H / 2 - y) - Math.floor(h / 2);
+//////////テクスチャインデックス//////////
+game.TEX = {
+  PLAYER: 0, EFFECT: 1, ENESHT: 2, UI: 3,
+  ENEMY0: 4, ENEMY1: 5, ENEMY2: 6, ENEMY3: 7, ENEMY4: 8,
+  ENEMY5: 9, ENEMY6: 10, ENEMY7: 11, ENEMY8: 12, ENEMY9: 13,
+  BOSS0: 14, BOSS1: 15, TITLE: 16,
+};
+
+//////////タイル生成ヘルパー（ピクセル座標版）//////////
+// tile()はタイルインデックスを受け取るため、ピクセル座標をインデックスに変換
+// 半テクセル内側にインセットし、カメラ拡大時のテクスチャブリーディングを防止
+game.tile = (pixelX, pixelY, w, h, texIndex) => {
+  const t = tile(vec2(pixelX / w, pixelY / h), vec2(w, h), texIndex);
+  const pad = 0.5;
+  t.pos.x += pad;
+  t.pos.y += pad;
+  t.size.x -= pad * 2;
+  t.size.y -= pad * 2;
+  return t;
+};
+
+//////////乱数ヘルパー（hsp.rnd置き換え）//////////
+game.rnd = (max) => Math.floor(Math.random() * max);
+
+//////////UI描画ヘルパー//////////
+// スクリーン座標（Y↓左上原点、スプライト左上）→ ワールド座標（Y↑中心原点、スプライト中心）
+game.drawUI = (screenX, screenY, tileInfo) => {
+  const w = tileInfo.size.x;
+  const h = tileInfo.size.y;
+  const wx = screenX + w / 2 - game.SCREEN_W / 2;
+  const wy = game.SCREEN_H / 2 - (screenY + h / 2);
+  drawTile(vec2(wx, wy), vec2(w, h), tileInfo);
+};

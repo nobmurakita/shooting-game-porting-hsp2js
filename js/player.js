@@ -3,7 +3,7 @@ game.PlayerShot = class {
   // 当たり判定の半幅・半高（中心からの距離）
   static HITBOX = { hw: 5, hh: 10 };
   static CONFIG = { speed: 8, offscreenY: 170 };
-  static DATA = { buf: 3, sx: 10, sy: 20, cx: 280, cy: 0 };
+  static DATA = { sx: 10, sy: 20, cx: 280, cy: 0, tex: game.TEX.PLAYER };
 
   constructor(x, y, dir) {
     this.alive = true;
@@ -31,8 +31,8 @@ game.PlayerShot = class {
   draw() {
     if (!this.alive) return;
     const d = game.PlayerShot.DATA;
-    hsp.pos(game.screenX(this.x, d.sx), game.screenY(this.y, d.sy));
-    hsp.gcopy(d.buf, d.cx, d.cy, d.sx, d.sy);
+    drawTile(vec2(this.x, this.y), vec2(d.sx, d.sy),
+      game.tile(d.cx, d.cy, d.sx, d.sy, d.tex));
   }
 };
 
@@ -218,16 +218,8 @@ game.Laser = class {
     if (!this.alive) return;
     const d = game.Laser.DRAW;
     for (let j = 0; j < d.segments; j++) {
-      hsp.color(d.baseR, d.baseG - (j * d.fadeG), d.baseB - (j * d.fadeB));
-      const ax = Math.floor(game.SCREEN_W / 2 + this.x[j]);
-      const ay = Math.floor(game.SCREEN_H / 2 - this.y[j]);
-      const bx = Math.floor(game.SCREEN_W / 2 + this.x[j + 1]);
-      const by = Math.floor(game.SCREEN_H / 2 - this.y[j + 1]);
-      hsp.line(ax, ay, bx, by);
-      hsp.line(ax + 1, ay, bx + 1, by);
-      hsp.line(ax - 1, ay, bx - 1, by);
-      hsp.line(ax, ay + 1, bx, by + 1);
-      hsp.line(ax, ay - 1, bx, by - 1);
+      const c = new Color(d.baseR/255, (d.baseG - j*d.fadeG)/255, (d.baseB - j*d.fadeB)/255);
+      drawLine(vec2(this.x[j], this.y[j]), vec2(this.x[j+1], this.y[j+1]), 3, c);
     }
   }
 };
@@ -252,7 +244,7 @@ game.Player = class {
     initY: -110,
     hitInvincible: 100,
   };
-  static DATA = { buf: 3, sx: 40, sy: 40, baseX: 120, normalY: 0, hitY: 40 };
+  static DATA = { sx: 40, sy: 40, baseX: 120, normalY: 0, hitY: 40, tex: game.TEX.PLAYER };
   // ショット発射方向テーブル（ラジアン、旧DatShtDir）
   static SHT_DIR = [192, 192, 191, 193, 190, 194, 184, 200, 174, 210, 166, 218].map(a => -a * Math.PI / 128);
   // レーザー発射方向テーブル（ラジアン、旧DatLsrDir）
@@ -435,10 +427,10 @@ game.Player = class {
   draw() {
     if (!this.alive) return;
     const d = game.Player.DATA;
-    hsp.pos(game.screenX(this.x, d.sx), game.screenY(this.y, d.sy));
     const frameX = (this.gra >> 1) * d.sx + d.baseX;
     const frameY = (Math.floor(this.hitCnt / 6) % 2 === 0) ? d.normalY : d.hitY;
-    hsp.gcopy(d.buf, frameX, frameY, d.sx, d.sy);
+    drawTile(vec2(this.x, this.y), vec2(d.sx, d.sy),
+      game.tile(frameX, frameY, d.sx, d.sy, d.tex));
   }
 
 };

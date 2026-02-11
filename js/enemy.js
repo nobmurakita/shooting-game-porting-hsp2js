@@ -1,6 +1,5 @@
 //////////敵基底クラス//////////
 game.Enemy = class {
-  static BUF = 4;           // 描画バッファ番号
   static table = null;      // 出現テーブル
   static tableIndex = 0;    // 出現テーブルインデックス
   static CLASS_MAP = [];    // ki → サブクラスのマッピング（ファイル末尾で設定）
@@ -38,23 +37,12 @@ game.Enemy = class {
   draw() {
     if (!this.alive) return;
     const d = this.constructor.DATA;
-    hsp.pos(game.screenX(this.x, d.sx), game.screenY(this.y, d.sy));
-    hsp.gcopy(game.Enemy.BUF, this.cx, d.cy, d.sx, d.sy);
+    drawTile(vec2(this.x, this.y), vec2(d.sx, d.sy),
+      game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex));
   }
 
-  // 画像データ初期化（旧IniDatEne）
+  // 画像データ初期化（LittleJSが画像をロード済み）
   static initData() {
-    hsp.buffer(4, 2000, 2000);
-    hsp.picload('img/enemy00.png', 0, 0);
-    hsp.picload('img/enemy01.png', 0, 40);
-    hsp.picload('img/enemy02.png', 0, 80);
-    hsp.picload('img/enemy03.png', 0, 120);
-    hsp.picload('img/enemy04.png', 0, 180);
-    hsp.picload('img/enemy05.png', 0, 240);
-    hsp.picload('img/enemy06.png', 0, 280);
-    hsp.picload('img/enemy07.png', 0, 330);
-    hsp.picload('img/enemy08.png', 0, 390);
-    hsp.picload('img/enemy09.png', 0, 430);
   }
 
   // 敵出現処理（旧AprEne）
@@ -82,7 +70,7 @@ game.Enemy = class {
 
 // ki=0: 蛇行しながら下降する雑魚
 game.Enemy0 = class extends game.Enemy {
-  static DATA = { shield: 2, sx: 20, sy: 40, hitX1: -5, hitY1: -15, hitX2: 5, hitY2: 15, cy: 0 };
+  static DATA = { shield: 2, sx: 20, sy: 40, hitX1: -5, hitY1: -15, hitX2: 5, hitY2: 15, tex: game.TEX.ENEMY0, texCy: 0 };
 
   updateAI(ctx) {
     let r = 1.5 * this.frm * game.A256;
@@ -102,7 +90,7 @@ game.Enemy0 = class extends game.Enemy {
 
 // ki=1: 螺旋移動する敵
 game.Enemy1 = class extends game.Enemy {
-  static DATA = { shield: 2, sx: 40, sy: 40, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10, cy: 40 };
+  static DATA = { shield: 2, sx: 40, sy: 40, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10, tex: game.TEX.ENEMY1, texCy: 0 };
 
   // tmp[0]: 螺旋移動の角度カウンタ
   updateAI(ctx) {
@@ -130,7 +118,7 @@ game.Enemy1 = class extends game.Enemy {
 
 // ki=2: プレイヤー追尾型
 game.Enemy2 = class extends game.Enemy {
-  static DATA = { shield: 4, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, cy: 80 };
+  static DATA = { shield: 4, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, tex: game.TEX.ENEMY2, texCy: 0 };
 
   // tmp[0]: 追尾方向（ラジアン）, tmp[1]: X速度, tmp[2]: Y速度
   updateAI(ctx) {
@@ -164,7 +152,7 @@ game.Enemy2 = class extends game.Enemy {
 
 // ki=3: 直進しながら弾を撃つ
 game.Enemy3 = class extends game.Enemy {
-  static DATA = { shield: 4, sx: 40, sy: 60, hitX1: -20, hitY1: -20, hitX2: 20, hitY2: 20, cy: 120 };
+  static DATA = { shield: 4, sx: 40, sy: 60, hitX1: -20, hitY1: -20, hitX2: 20, hitY2: 20, tex: game.TEX.ENEMY3, texCy: 0 };
 
   updateAI(ctx) {
     const ply = ctx.player;
@@ -182,7 +170,7 @@ game.Enemy3 = class extends game.Enemy {
 
 // ki=4: 上昇しながら扇状弾を撃つ
 game.Enemy4 = class extends game.Enemy {
-  static DATA = { shield: 40, sx: 120, sy: 60, hitX1: -50, hitY1: -15, hitX2: 50, hitY2: 10, cy: 180 };
+  static DATA = { shield: 40, sx: 120, sy: 60, hitX1: -50, hitY1: -15, hitX2: 50, hitY2: 10, tex: game.TEX.ENEMY4, texCy: 0 };
 
   // tmp[0]: 扇状弾の放射角度オフセット（8ずつ拡大）
   updateAI(ctx) {
@@ -203,7 +191,7 @@ game.Enemy4 = class extends game.Enemy {
 
 // ki=5: 円運動する敵
 game.Enemy5 = class extends game.Enemy {
-  static DATA = { shield: 3, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, cy: 240 };
+  static DATA = { shield: 3, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, tex: game.TEX.ENEMY5, texCy: 0 };
 
   updateAI(ctx) {
     const ply = ctx.player;
@@ -229,7 +217,7 @@ game.Enemy5 = class extends game.Enemy {
 
 // ki=6: 上下に揺れながら弾を撃つ
 game.Enemy6 = class extends game.Enemy {
-  static DATA = { shield: 4, sx: 40, sy: 50, hitX1: -15, hitY1: -10, hitX2: 15, hitY2: 10, cy: 280 };
+  static DATA = { shield: 4, sx: 40, sy: 50, hitX1: -15, hitY1: -10, hitX2: 15, hitY2: 10, tex: game.TEX.ENEMY6, texCy: 0 };
 
   updateAI(ctx) {
     const ply = ctx.player;
@@ -249,7 +237,7 @@ game.Enemy6 = class extends game.Enemy {
 
 // ki=7: 蛇行しながら下降、定期的に弾を撃つ
 game.Enemy7 = class extends game.Enemy {
-  static DATA = { shield: 2, sx: 40, sy: 60, hitX1: -15, hitY1: -25, hitX2: 15, hitY2: 25, cy: 330 };
+  static DATA = { shield: 2, sx: 40, sy: 60, hitX1: -15, hitY1: -25, hitX2: 15, hitY2: 25, tex: game.TEX.ENEMY7, texCy: 0 };
 
   updateAI(ctx) {
     let r = this.frm * 2 * game.A256;
@@ -272,7 +260,7 @@ game.Enemy7 = class extends game.Enemy {
 
 // ki=8: 直進後に分岐する敵
 game.Enemy8 = class extends game.Enemy {
-  static DATA = { shield: 4, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, cy: 390 };
+  static DATA = { shield: 4, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, tex: game.TEX.ENEMY8, texCy: 0 };
 
   // tmp[0]: 分岐方向の角度オフセット
   updateAI(ctx) {
@@ -308,7 +296,7 @@ game.Enemy8 = class extends game.Enemy {
 
 // ki=9: 左右に揺れながら下降、回転弾を撃つ中ボス級
 game.Enemy9 = class extends game.Enemy {
-  static DATA = { shield: 40, sx: 60, sy: 60, hitX1: -25, hitY1: -25, hitX2: 25, hitY2: 25, cy: 430 };
+  static DATA = { shield: 40, sx: 60, sy: 60, hitX1: -25, hitY1: -25, hitX2: 25, hitY2: 25, tex: game.TEX.ENEMY9, texCy: 0 };
 
   // tmp[0]: 左右移動方向（1 or -1）, tmp[1]: 回転弾の放射角度
   initAI() {
@@ -327,7 +315,7 @@ game.Enemy9 = class extends game.Enemy {
       game.spawnEnemyShot(ctx, 1, this.x, this.y + 10, baseAngle + game.DIR_DOWN);
       game.spawnEnemyShot(ctx, 1, this.x, this.y + 10, baseAngle + Math.PI);
       game.spawnEnemyShot(ctx, 1, this.x, this.y + 10, baseAngle + game.DIR_UP);
-      this.tmp[1] += 2;
+      this.tmp[1] -= 2;
     }
     this.cx = (Math.floor(this.frm / 2) & 7) * 60;
     if (this.y < -180) {

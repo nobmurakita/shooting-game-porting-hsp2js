@@ -1,41 +1,26 @@
-//////////プログラムスタート//////////
-game.ProgramStart = async () => {
-  await Promise.all([
-    hsp.preload('img/title.png'),
-    hsp.preload('img/player.png'),
-    hsp.preload('img/effect.png'),
-    hsp.preload('img/enesht.png'),
-    hsp.preload('img/etc.png'),
-    hsp.preload('img/enemy00.png'),
-    hsp.preload('img/enemy01.png'),
-    hsp.preload('img/enemy02.png'),
-    hsp.preload('img/enemy03.png'),
-    hsp.preload('img/enemy04.png'),
-    hsp.preload('img/enemy05.png'),
-    hsp.preload('img/enemy06.png'),
-    hsp.preload('img/enemy07.png'),
-    hsp.preload('img/enemy08.png'),
-    hsp.preload('img/enemy09.png'),
-    hsp.preload('img/boss00.png'),
-    hsp.preload('img/boss01.png'),
-  ]);
+//////////画像ソース（テクスチャインデックス順）//////////
+game.imageSources = [
+  'img/player.png',  'img/effect.png',  'img/enesht.png', 'img/etc.png',
+  'img/enemy00.png', 'img/enemy01.png', 'img/enemy02.png','img/enemy03.png',
+  'img/enemy04.png', 'img/enemy05.png', 'img/enemy06.png','img/enemy07.png',
+  'img/enemy08.png', 'img/enemy09.png',
+  'img/boss00.png',  'img/boss01.png',  'img/title.png',
+];
 
-  // GameContext生成
+//////////ゲーム初期化//////////
+game.gameInit = () => {
+  setCanvasFixedSize(vec2(game.SCREEN_W * 2, game.SCREEN_H * 2));
+  setCanvasPixelated(true);
+  setCameraScale(2);
+  setCameraPos(vec2(0, 0));
+  setDebugKey('');
+  setDebugWatermark(false);
+
   game.ctx = new game.GameContext();
   game.ctx.player = new game.Player();
   game.ctx.boss = new game.Boss();
-
   game.IniCom();
   game.Enemy.initData();
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      game.ctx.nextLoopTime = performance.now();
-    }
-  });
-
-  game.ctx.nextLoopTime = performance.now();
-  game.MainLoop();
 };
 
 //////////残存オブジェクト更新（ショット・レーザー・エフェクト）//////////
@@ -82,13 +67,6 @@ game.renderObjects = (ctx) => {
   // レーザー描画
   for (const l of ctx.lasers) { l.draw(); }
   game.Disp();
-};
-
-//////////フレームバッファ転送//////////
-game.flipBuffer = () => {
-  hsp.gsel(0);
-  hsp.pos(0, 0);
-  hsp.gcopy(1, 0, 0, game.SCREEN_W, game.SCREEN_H);
 };
 
 //////////ゲーム更新//////////
@@ -163,35 +141,23 @@ game.gameUpdate = () => {
 //////////ゲーム描画//////////
 game.gameRender = () => {
   if (game.ctx.gameSta === game.STA_TITLE) {
-    hsp.gsel(0);
-    hsp.picload('img/title.png', 0, 0);
-  } else if (game.ctx.gameSta === game.STA_PLAY) {
-    hsp.gsel(1);
+    drawTile(vec2(0, 0), vec2(300, 300),
+      game.tile(0, 0, 300, 300, game.TEX.TITLE));
+  } else if (game.ctx.gameSta === game.STA_PLAY ||
+             game.ctx.gameSta === game.STA_CLEAR) {
     game.renderObjects(game.ctx);
-    game.flipBuffer();
-  } else if (game.ctx.gameSta === game.STA_CLEAR) {
-    hsp.gsel(1);
-    game.renderObjects(game.ctx);
-    game.flipBuffer();
   } else if (game.ctx.gameSta === game.STA_PAUSE) {
-    hsp.gsel(1);
     game.renderObjects(game.ctx);
-    const pause = game.UI_SPRITES.pauseLabel;
-    hsp.pos(129, 142);
-    hsp.gcopy(game.UI_SPRITES.buf, pause.cx, pause.cy, pause.sx, pause.sy);
-    game.flipBuffer();
+    const p = game.UI_SPRITES.pauseLabel;
+    game.drawUI(129, 142,
+      game.tile(p.cx, p.cy, p.sx, p.sy, game.TEX.UI));
   }
 };
 
-//////////メインループ//////////
-game.MainLoop = () => {
-  game.ctx.nextLoopTime += 1000 / 60;
-  game.gameUpdate();
-  game.gameUpdatePost();
-  game.gameRender();
-  game.inputPostUpdate();
-  let delay = game.ctx.nextLoopTime - performance.now();
-  setTimeout(game.MainLoop, delay);
-};
+game.gameRenderPost = () => {};
 
-game.ProgramStart();
+//////////エンジン起動//////////
+engineInit(
+  game.gameInit, game.gameUpdate, game.gameUpdatePost,
+  game.gameRender, game.gameRenderPost, game.imageSources
+);

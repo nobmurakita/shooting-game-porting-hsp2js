@@ -1,7 +1,5 @@
 //////////ボスパーツクラス//////////
 game.BossPart = class {
-  static BUF = 5;  // 描画バッファ番号
-
   constructor() {
     this.alive = false;
     this.shield = 0;
@@ -20,17 +18,17 @@ game.BossPart = class {
 
 // パーツ0: 本体
 game.BossPart0 = class extends game.BossPart {
-  static DATA = { shield: 500, x: 0, y: 7, sx: 70, sy: 75, hitX1: -25, hitY1: -6, hitX2: 25, hitY2: 30, cy: 0 };
+  static DATA = { shield: 500, x: 0, y: 7, sx: 70, sy: 75, hitX1: -25, hitY1: -6, hitX2: 25, hitY2: 30, tex: game.TEX.BOSS0, texCy: 0 };
 };
 
 // パーツ1: 左翼
 game.BossPart1 = class extends game.BossPart {
-  static DATA = { shield: 200, x: -40, y: 0, sx: 20, sy: 112, hitX1: -10, hitY1: -56, hitX2: 10, hitY2: 56, cy: 75 };
+  static DATA = { shield: 200, x: -40, y: 0, sx: 20, sy: 112, hitX1: -10, hitY1: -56, hitX2: 10, hitY2: 56, tex: game.TEX.BOSS1, texCy: 0 };
 };
 
 // パーツ2: 右翼
 game.BossPart2 = class extends game.BossPart {
-  static DATA = { shield: 200, x: 40, y: 0, sx: 20, sy: 112, hitX1: -10, hitY1: -56, hitX2: 10, hitY2: 56, cy: 75 };
+  static DATA = { shield: 200, x: 40, y: 0, sx: 20, sy: 112, hitX1: -10, hitY1: -56, hitX2: 10, hitY2: 56, tex: game.TEX.BOSS1, texCy: 0 };
 };
 
 //////////ボスクラス//////////
@@ -47,13 +45,8 @@ game.Boss = class {
     this.parts = [new game.BossPart0(), new game.BossPart1(), new game.BossPart2()];
   }
 
-  // ボスパーツ画像初期化（旧IniDatBossPrt）
+  // ボスパーツ画像初期化（LittleJSが画像をロード済み）
   initData() {
-    hsp.buffer(5, 1000, 1000);
-    if (game.ctx.stage === 1) {
-      hsp.picload('img/boss00.png', 0, 0);
-      hsp.picload('img/boss01.png', 0, 75);
-    }
   }
 
   // ボス初期化（旧IniBoss）
@@ -81,12 +74,12 @@ game.Boss = class {
       }
       this.frm++;
       if (this.frm % 6 === 0) {
-        let x = hsp.rnd(50) - 25;
-        let y = hsp.rnd(50) - 25;
+        let x = game.rnd(50) - 25;
+        let y = game.rnd(50) - 25;
         game.spawnEffect(ctx, 0, this.x + x, this.y + y, 0);
       }
-      let x = hsp.rnd(4) - 2;
-      let y = (hsp.rnd(3) - 1) * 0.5;
+      let x = game.rnd(4) - 2;
+      let y = (game.rnd(3) - 1) * 0.5;
       this.x += x * 0.5;
       this.y -= (y + 0.5);
       if (this.frm === 100) {
@@ -155,18 +148,20 @@ game.Boss = class {
   }
 
   // ボス描画（旧DrwBoss）
+  // 描画順: 翼(1,2)→本体(0)。本体を最後に描くことで重なり部分の継ぎ目を隠す
+  static DRAW_ORDER = [1, 2, 0];
+
   draw() {
     if (this.flg === game.BOSS_NONE) return;
 
     if (game.ctx.stage === 1) {
-      for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
+      for (const i of game.Boss.DRAW_ORDER) {
         const prt = this.parts[i];
         const d = prt.constructor.DATA;
-        hsp.pos(
-          game.screenX(this.x + d.x, d.sx),
-          game.screenY(this.y + d.y, d.sy)
+        drawTile(
+          vec2(this.x + d.x, this.y + d.y), vec2(d.sx, d.sy),
+          game.tile(prt.cx, d.texCy, d.sx, d.sy, d.tex)
         );
-        hsp.gcopy(game.BossPart.BUF, prt.cx, d.cy, d.sx, d.sy);
       }
     }
   }

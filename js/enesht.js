@@ -1,6 +1,5 @@
 //////////敵ショット基底クラス//////////
 game.EnemyShot = class {
-  static BUF = 3;           // 描画バッファ番号
   static CLASS_MAP = [];  // ki → サブクラスのマッピング（ファイル末尾で設定）
 
   constructor(x, y, dir) {
@@ -30,8 +29,8 @@ game.EnemyShot = class {
   draw() {
     if (!this.alive) return;
     const d = this.constructor.DATA;
-    hsp.pos(game.screenX(this.x, d.sx), game.screenY(this.y, d.sy));
-    hsp.gcopy(game.EnemyShot.BUF, this.cx, d.cy, d.sx, d.sy);
+    drawTile(vec2(this.x, this.y), vec2(d.sx, d.sy),
+      game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex));
   }
 };
 
@@ -39,7 +38,7 @@ game.EnemyShot = class {
 
 // ki=0: 通常弾（直進）
 game.EnemyShot0 = class extends game.EnemyShot {
-  static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 130 };
+  static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, tex: game.TEX.ENESHT, texCy: 0 };
 
   initAI() {
     this.cx = game.radToSpriteFrameHalf(this.dir, 16, 20);
@@ -56,7 +55,7 @@ game.EnemyShot0 = class extends game.EnemyShot {
 
 // ki=1: 照準弾（直進＋アニメーション）
 game.EnemyShot1 = class extends game.EnemyShot {
-  static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 130 };
+  static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, tex: game.TEX.ENESHT, texCy: 0 };
 
   updateAI(ctx) {
     this.x += Math.cos(this.dir) * 2.5;
@@ -70,7 +69,7 @@ game.EnemyShot1 = class extends game.EnemyShot {
 
 // ki=2: 誘導弾（追尾）
 game.EnemyShot2 = class extends game.EnemyShot {
-  static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, cy: 150 };
+  static DATA = { sx: 20, sy: 20, hitX1: -5, hitY1: -5, hitX2: 5, hitY2: 5, tex: game.TEX.ENESHT, texCy: 20 };
 
   updateAI(ctx) {
     const ply = ctx.player;
@@ -90,8 +89,8 @@ game.EnemyShot2 = class extends game.EnemyShot {
     }
     this.cx = game.radToSpriteFrame(this.dir, 32, 20);
     if (this.frm % 6 === 0) {
-      let x = hsp.rnd(10) - 5;
-      let y = hsp.rnd(10) - 5;
+      let x = game.rnd(10) - 5;
+      let y = game.rnd(10) - 5;
       game.spawnEffect(ctx, 2, -Math.cos(this.dir) * 10 + this.x + x, -Math.sin(this.dir) * 10 + this.y + y, 0);
     }
     if (this.frm > 160) {
