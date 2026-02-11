@@ -87,16 +87,33 @@ game.CollisionSystem = class {
     game.CollisionSystem._checkShotsVsTargets(game.objectsOf(game.EnemyShot2));
   }
 
-  // 全衝突判定を一括実行
+  // レーザー vs ターゲット
+  static checkLasersVsTargets() {
+    for (const lsr of game.objectsOf(game.Laser)) {
+      if (lsr.sta !== game.LSR_TRACKING) continue;
+      if (lsr.trg.alive === false || lsr.trg.destroyed) { lsr.sta = game.LSR_DYING; continue; }
+
+      if (game.CollisionSystem.checkAABB(lsr, lsr.trg)) {
+        game.ctx.score += game.Laser.CONFIG.hitScore;
+        lsr.sta = game.LSR_DYING;
+        game.spawnHitSparks(lsr.pos.x, lsr.pos.y, 2);
+        lsr.trg.onHitByLaser(game.Laser.CONFIG.damage);
+      }
+    }
+  }
+
+  // 全衝突判定を一括実行（プレイヤー攻撃→敵攻撃の順で判定）
   static checkAllCollisions() {
     const ctx = game.ctx;
-    // 通常敵の衝突判定は常に実行（ボス戦突入時に残存敵がいる場合に備える）
+    // プレイヤー攻撃（先に敵を撃破することで被弾を回避できる）
     game.CollisionSystem.checkPlayerShotsVsEnemies();
-    game.CollisionSystem.checkPlayerVsEnemies();
     if (ctx.boss.flg === game.BOSS_BATTLE) {
       game.CollisionSystem.checkPlayerShotsVsBoss();
     }
+    game.CollisionSystem.checkLasersVsTargets();
     game.CollisionSystem.checkPlayerShotsVsEnemyShots();
+    // 敵攻撃
+    game.CollisionSystem.checkPlayerVsEnemies();
     game.CollisionSystem.checkEnemyShotsVsPlayer();
   }
 };

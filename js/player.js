@@ -119,37 +119,22 @@ game.Laser = class extends game.GameObject {
     }
   }
 
-  // 衝突判定 + ダメージ + 方向更新
-  checkHit() {
-    const ctx = game.ctx;
+  // ターゲットへの方向を更新（2フレームに1回）
+  updateDirection() {
     if (this.sta !== game.LSR_TRACKING) return;
-    if (this.trg.alive === false || this.trg.destroyed) { this.sta = game.LSR_DYING; return; }
-
-    const target = this.trg;
-
-    const hit = game.CollisionSystem.checkAABB(this, target);
-
-    if (hit) {
-      ctx.score += game.Laser.CONFIG.hitScore;
-      this.sta = game.LSR_DYING;
-      game.spawnHitSparks(this.pos.x, this.pos.y, 2);
-      target.onHitByLaser(game.Laser.CONFIG.damage);
-    }
-
-    // ターゲットへの方向を更新（2フレームに1回）
     if (this.frm % 2 === 0) {
-      this.dir = game.CollisionSystem.calcDir(this.pos, target.pos);
+      this.dir = game.CollisionSystem.calcDir(this.pos, this.trg.pos);
     }
   }
 
-  // レーザー移動・追跡・衝突判定（旧MovLsr内ループ1回分 + LsrHit）
+  // レーザー移動・追跡（旧MovLsr内ループ1回分）
   update() {
     const ctx = game.ctx;
     if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR) return;
 
     this.updateMovement();
     this.updateTargeting();
-    this.checkHit();
+    this.updateDirection();
 
     // ターゲットなし状態で画面外に出たら消滅開始
     if (this.sta === game.LSR_NO_TARGET) {
