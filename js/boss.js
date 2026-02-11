@@ -44,6 +44,7 @@ game.Boss = class extends game.GameObject {
     this.x = 0;
     this.y = 500;
     this.aprFrm = 4900;
+    this.destroyFrm = 0;  // 破壊演出開始時のfrm（経過フレーム算出用）
     this.parts = [new game.BossPart0(), new game.BossPart1(), new game.BossPart2()];
     for (const prt of this.parts) {
       this.addChild(prt, vec2(prt.constructor.DATA.x, prt.constructor.DATA.y));
@@ -51,18 +52,18 @@ game.Boss = class extends game.GameObject {
   }
 
   // ボス移動（旧MovBoss）
-  // ※frmはBOSS_DESTROY開始時にリセットされるため、super.update()は使わず手動管理
   update() {
     const ctx = game.ctx;
     if (ctx.gameSta !== game.STA_PLAY) return;
 
     // 破壊演出（flg==2）
     if (this.flg === game.BOSS_DESTROY) {
+      super.update(); // frm++（破壊演出は旧コードでfrm先行インクリメントのため先に実行）
+      const elapsed = this.frm - this.destroyFrm;
       for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
         this.parts[i].cx = this.parts[i].constructor.DATA.sx;
       }
-      this.frm++;
-      if (this.frm % 6 === 0) {
+      if (elapsed % 6 === 0) {
         let x = game.rnd(100) - 50;
         let y = game.rnd(100) - 50;
         game.spawnEffect(0, this.x + x, this.y + y, 0);
@@ -71,7 +72,7 @@ game.Boss = class extends game.GameObject {
       let y = game.rnd(256) / 256 - 0.5;
       this.x += x;
       this.y -= (y + 1);
-      if (this.frm === 100) {
+      if (elapsed === 100) {
         for (let i = 0; i < 3; i++) {
           let a = (i + 1) * 50;
           let t = -i * 2;
@@ -81,7 +82,7 @@ game.Boss = class extends game.GameObject {
           }
         }
       }
-      if (this.frm === 120) {
+      if (elapsed === 120) {
         this.flg = game.BOSS_NONE;
         ctx.gameSta = game.STA_CLEAR;
       }
@@ -130,8 +131,8 @@ game.Boss = class extends game.GameObject {
           game.spawnEnemyShot(0, 10 + this.x, this.y - 50, game.DIR_DOWN);
         }
       }
-      this.frm++;
     }
+    super.update(); // frm++
     this.pos.x = this.x;
     this.pos.y = this.y;
   }

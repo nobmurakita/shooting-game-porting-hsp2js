@@ -108,7 +108,7 @@ game.CollisionSystem = class {
           game.spawnHitSpark(s.x, s.y);
           if (boss.shield <= 0) {
             boss.flg = game.BOSS_DESTROY;
-            boss.frm = 0;
+            boss.destroyFrm = boss.frm;
           }
           if (prt.shield <= 0) {
             prt.alive = false;

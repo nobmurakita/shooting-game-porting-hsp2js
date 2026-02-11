@@ -181,7 +181,7 @@ game.Laser = class extends game.GameObject {
         if (boss.shield <= 0) {
           boss.shield = 0;
           boss.flg = game.BOSS_DESTROY;
-          boss.frm = 0;
+          boss.destroyFrm = boss.frm;
         }
 
         // パーツ破壊
