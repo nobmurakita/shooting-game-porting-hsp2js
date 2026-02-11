@@ -227,10 +227,12 @@ game.Laser = class extends game.GameObject {
     const ctx = game.ctx;
     if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
     const d = game.Laser.DRAW;
+    setBlendMode(true);
     for (let j = 0; j < d.segments; j++) {
-      const c = game.color(d.baseR/255, (d.baseG - j*d.fadeG)/255, (d.baseB - j*d.fadeB)/255);
+      const c = game.color(d.baseR/255, (d.baseG - j*d.fadeG)/255, (d.baseB - j*d.fadeB)/255, 0.8);
       drawLine(vec2(this.x[j], this.y[j]), vec2(this.x[j+1], this.y[j+1]), 6, c);
     }
+    setBlendMode();
   }
 };
 
