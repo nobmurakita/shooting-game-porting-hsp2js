@@ -23,12 +23,12 @@ game.LSR_CHARGE_OFF = 0;
 game.LSR_CHARGE_ON  = 1;
 
 // 画面サイズ
-game.SCREEN_W = 300;
-game.SCREEN_H = 300;
+game.SCREEN_W = 600;
+game.SCREEN_H = 600;
 
 // 背景
 game.BG_STAR_COUNT   = 300;
-game.BG_SCROLL_SPEED = 0.5;
+game.BG_SCROLL_SPEED = 1;
 
 // ラジアンからスプライトフレーム番号を計算（全周: 0〜2π）
 // スプライトシートはY↓前提なので角度を反転
@@ -55,8 +55,9 @@ game.TEX = {
 };
 
 //////////タイル生成ヘルパー（ピクセル座標版）//////////
-// tile()はタイルインデックスを受け取るため、ピクセル座標をインデックスに変換
-// 半テクセル内側にインセットし、カメラ拡大時のテクスチャブリーディングを防止
+// テクスチャ座標(pixelX, pixelY, w, h)を受け取りTileInfoを返す。
+// 半テクセル内側にインセットし、テクスチャブリーディングを防止。
+// drawSize: 描画サイズ（drawTileの第2引数用）。
 game.tile = (pixelX, pixelY, w, h, texIndex) => {
   const t = tile(vec2(pixelX / w, pixelY / h), vec2(w, h), texIndex);
   const pad = 0.5;
@@ -64,6 +65,7 @@ game.tile = (pixelX, pixelY, w, h, texIndex) => {
   t.pos.y += pad;
   t.size.x -= pad * 2;
   t.size.y -= pad * 2;
+  t.drawSize = vec2(w, h);
   return t;
 };
 
@@ -73,8 +75,8 @@ game.rnd = (max) => Math.floor(Math.random() * max);
 //////////UI描画ヘルパー//////////
 // スクリーン座標（Y↓左上原点、スプライト左上）→ ワールド座標（Y↑中心原点、スプライト中心）
 game.drawUI = (screenX, screenY, tileInfo) => {
-  const w = tileInfo.size.x;
-  const h = tileInfo.size.y;
+  const w = tileInfo.drawSize.x;
+  const h = tileInfo.drawSize.y;
   const wx = screenX + w / 2 - game.SCREEN_W / 2;
   const wy = game.SCREEN_H / 2 - (screenY + h / 2);
   drawTile(vec2(wx, wy), vec2(w, h), tileInfo);

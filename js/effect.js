@@ -25,8 +25,8 @@ game.Effect = class {
   draw() {
     if (!this.alive || this.frm <= 0) return;
     const d = this.constructor.DATA;
-    drawTile(vec2(this.x, this.y), vec2(d.sx, d.sy),
-      game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex));
+    const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
+    drawTile(vec2(this.x, this.y), ti.drawSize, ti);
   }
 };
 
@@ -34,13 +34,13 @@ game.Effect = class {
 
 // ki=0: 爆発（大）
 game.Effect0 = class extends game.Effect {
-  static DATA = { sx: 40, sy: 40, tex: game.TEX.EFFECT, texCy: 0 };
+  static DATA = { sx: 80, sy: 80, tex: game.TEX.EFFECT, texCy: 0 };
 
   updateAI() {
     if (this.frm >= 16) {
-      this.y -= 3.5;
+      this.y -= 7;
     }
-    this.cx = Math.floor(this.frm / 6) % 6 * 40;
+    this.cx = Math.floor(this.frm / 6) % 6 * 80;
     if (this.frm === 34) {
       this.alive = false;
     }
@@ -49,10 +49,10 @@ game.Effect0 = class extends game.Effect {
 
 // ki=1: 火花
 game.Effect1 = class extends game.Effect {
-  static DATA = { sx: 10, sy: 10, tex: game.TEX.EFFECT, texCy: 40 };
+  static DATA = { sx: 20, sy: 20, tex: game.TEX.EFFECT, texCy: 80 };
 
   updateAI() {
-    this.cx = Math.floor(this.frm / 6) % 6 * 10 + 60;
+    this.cx = Math.floor(this.frm / 6) % 6 * 20 + 120;
     if (this.frm === 34) {
       this.alive = false;
     }
@@ -61,10 +61,10 @@ game.Effect1 = class extends game.Effect {
 
 // ki=2: 煙
 game.Effect2 = class extends game.Effect {
-  static DATA = { sx: 10, sy: 10, tex: game.TEX.EFFECT, texCy: 40 };
+  static DATA = { sx: 20, sy: 20, tex: game.TEX.EFFECT, texCy: 80 };
 
   updateAI() {
-    this.cx = Math.floor(this.frm / 6) % 6 * 10;
+    this.cx = Math.floor(this.frm / 6) % 6 * 20;
     if (this.frm === 34) {
       this.alive = false;
     }
@@ -84,21 +84,22 @@ game.spawnEffect = (ctx, ki, x, y, startFrm) => {
 
 // 火花エフェクト（単発）— ヒット時の小さな火花
 game.spawnHitSpark = (ctx, x, y) => {
-  const ex = game.rnd(10) - 5;
-  const ey = game.rnd(10) - 5;
+  const ex = game.rnd(20) - 10;
+  const ey = game.rnd(20) - 10;
   game.spawnEffect(ctx, 1, x + ex, y + ey, 0);
 };
 
 // 火花エフェクト（複数）— 被弾時の火花散り
 game.spawnHitSparks = (ctx, x, y, count) => {
   for (let j = 0; j < count; j++) {
-    const ex = game.rnd(10) - 5;
-    const ey = game.rnd(10) - 5;
+    const ex = game.rnd(20) - 10;
+    const ey = game.rnd(20) - 10;
     game.spawnEffect(ctx, 1, x + ex, y + ey, -j * 6);
   }
 };
 
 // 爆発エフェクト（複数）— 撃破時の爆発
+// sw/shはscatter範囲サイズ
 game.spawnExplosion = (ctx, x, y, sx, sy, count) => {
   for (let j = 0; j < count; j++) {
     const ex = game.rnd(sx) - Math.floor(sx / 2);

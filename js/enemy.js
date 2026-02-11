@@ -37,8 +37,8 @@ game.Enemy = class {
   draw() {
     if (!this.alive) return;
     const d = this.constructor.DATA;
-    drawTile(vec2(this.x, this.y), vec2(d.sx, d.sy),
-      game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex));
+    const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
+    drawTile(vec2(this.x, this.y), ti.drawSize, ti);
   }
 
   // 画像データ初期化（LittleJSが画像をロード済み）
@@ -70,19 +70,19 @@ game.Enemy = class {
 
 // ki=0: 蛇行しながら下降する雑魚
 game.Enemy0 = class extends game.Enemy {
-  static DATA = { shield: 2, sx: 20, sy: 40, hitX1: -5, hitY1: -15, hitX2: 5, hitY2: 15, tex: game.TEX.ENEMY0, texCy: 0 };
+  static DATA = { shield: 2, sx: 40, sy: 80, hitX1: -10, hitY1: -30, hitX2: 10, hitY2: 30, tex: game.TEX.ENEMY0, texCy: 0 };
 
   updateAI(ctx) {
     let r = 1.5 * this.frm * game.A256;
     if (this.mv === 0) {
-      this.x = 40 * Math.sin(r) + this.x0;
+      this.x = 80 * Math.sin(r) + this.x0;
     }
     if (this.mv === 1) {
-      this.x = -40 * Math.sin(r) + this.x0;
+      this.x = -80 * Math.sin(r) + this.x0;
     }
-    this.y -= 1;
-    this.cx = Math.floor(this.frm / 2) % 6 * 20;
-    if (this.y < -170) {
+    this.y -= 2;
+    this.cx = Math.floor(this.frm / 2) % 6 * 40;
+    if (this.y < -340) {
       this.alive = false;
     }
   }
@@ -90,7 +90,7 @@ game.Enemy0 = class extends game.Enemy {
 
 // ki=1: 螺旋移動する敵
 game.Enemy1 = class extends game.Enemy {
-  static DATA = { shield: 2, sx: 40, sy: 40, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10, tex: game.TEX.ENEMY1, texCy: 0 };
+  static DATA = { shield: 2, sx: 80, sy: 80, hitX1: -20, hitY1: -20, hitX2: 20, hitY2: 20, tex: game.TEX.ENEMY1, texCy: 0 };
 
   // tmp[0]: 螺旋移動の角度カウンタ
   updateAI(ctx) {
@@ -104,13 +104,13 @@ game.Enemy1 = class extends game.Enemy {
     if (this.mv === 1) {
       r = game.DIR_DOWN + this.tmp[0] * game.A256;
     }
-    this.x += Math.cos(r) * 2;
-    this.y += Math.sin(r) * 2;
-    this.cx = Math.floor(Math.cos(r) * 3) + 120;
+    this.x += Math.cos(r) * 4;
+    this.y += Math.sin(r) * 4;
+    this.cx = Math.floor(Math.cos(r) * 6) + 240;
     if (this.frm === 64) {
-      game.spawnEnemyShot(ctx, 0, this.x, this.y - 20, game.DIR_DOWN);
+      game.spawnEnemyShot(ctx, 0, this.x, this.y - 40, game.DIR_DOWN);
     }
-    if ((this.x < -170) || (170 < this.x)) {
+    if ((this.x < -340) || (340 < this.x)) {
       this.alive = false;
     }
   }
@@ -118,7 +118,7 @@ game.Enemy1 = class extends game.Enemy {
 
 // ki=2: プレイヤー追尾型
 game.Enemy2 = class extends game.Enemy {
-  static DATA = { shield: 4, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, tex: game.TEX.ENEMY2, texCy: 0 };
+  static DATA = { shield: 4, sx: 80, sy: 80, hitX1: -30, hitY1: -30, hitX2: 30, hitY2: 30, tex: game.TEX.ENEMY2, texCy: 0 };
 
   // tmp[0]: 追尾方向（ラジアン）, tmp[1]: X速度, tmp[2]: Y速度
   updateAI(ctx) {
@@ -129,8 +129,8 @@ game.Enemy2 = class extends game.Enemy {
         r = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
         this.tmp[0] = r;
       }
-      this.tmp[1] += Math.cos(r) * 0.25;
-      this.tmp[2] += Math.sin(r) * 0.25;
+      this.tmp[1] += Math.cos(r) * 0.5;
+      this.tmp[2] += Math.sin(r) * 0.5;
     }
     this.x += this.tmp[1];
     this.y += this.tmp[2];
@@ -139,11 +139,11 @@ game.Enemy2 = class extends game.Enemy {
       this.tmp[2] = this.tmp[2] * 19 / 20;
     }
     if (this.frm !== 0 && this.frm % 60 === 0) {
-      game.spawnEnemyShot(ctx, 0, Math.cos(r) * 20 + this.x, Math.sin(r) * 20 + this.y, r);
+      game.spawnEnemyShot(ctx, 0, Math.cos(r) * 40 + this.x, Math.sin(r) * 40 + this.y, r);
     }
-    this.cx = game.radToSpriteFrame(r, 32, 40);
+    this.cx = game.radToSpriteFrame(r, 32, 80);
     if (this.frm > 160) {
-      if (this.x < -170 || this.x > 170 || this.y < -170 || this.y > 170) {
+      if (this.x < -340 || this.x > 340 || this.y < -340 || this.y > 340) {
         this.alive = false;
       }
     }
@@ -152,17 +152,17 @@ game.Enemy2 = class extends game.Enemy {
 
 // ki=3: 直進しながら弾を撃つ
 game.Enemy3 = class extends game.Enemy {
-  static DATA = { shield: 4, sx: 40, sy: 60, hitX1: -20, hitY1: -20, hitX2: 20, hitY2: 20, tex: game.TEX.ENEMY3, texCy: 0 };
+  static DATA = { shield: 4, sx: 80, sy: 120, hitX1: -40, hitY1: -40, hitX2: 40, hitY2: 40, tex: game.TEX.ENEMY3, texCy: 0 };
 
   updateAI(ctx) {
     const ply = ctx.player;
-    this.y -= 2;
+    this.y -= 4;
     if (this.frm === 40 || this.frm === 80 || this.frm === 120 || this.frm === 160) {
       const dir = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
-      game.spawnEnemyShot(ctx, 1, this.x, this.y - 30, dir);
+      game.spawnEnemyShot(ctx, 1, this.x, this.y - 60, dir);
     }
     this.cx = 0;
-    if (this.y < -180) {
+    if (this.y < -360) {
       this.alive = false;
     }
   }
@@ -170,20 +170,20 @@ game.Enemy3 = class extends game.Enemy {
 
 // ki=4: 上昇しながら扇状弾を撃つ
 game.Enemy4 = class extends game.Enemy {
-  static DATA = { shield: 40, sx: 120, sy: 60, hitX1: -50, hitY1: -15, hitX2: 50, hitY2: 10, tex: game.TEX.ENEMY4, texCy: 0 };
+  static DATA = { shield: 40, sx: 240, sy: 120, hitX1: -100, hitY1: -30, hitX2: 100, hitY2: 20, tex: game.TEX.ENEMY4, texCy: 0 };
 
   // tmp[0]: 扇状弾の放射角度オフセット（8ずつ拡大）
   updateAI(ctx) {
     let r = this.frm * 0.5 * game.A256;
-    this.y += 0.5;
-    this.x = Math.sin(r) * 8 + this.x0;
+    this.y += 1;
+    this.x = Math.sin(r) * 16 + this.x0;
     if (this.frm > 100 && this.frm % 16 === 0) {
-      game.spawnEnemyShot(ctx, 1, this.x + 10, this.y + 2, game.DIR_DOWN + this.tmp[0] * game.A256);
-      game.spawnEnemyShot(ctx, 1, this.x - 10, this.y + 2, game.DIR_DOWN - this.tmp[0] * game.A256);
+      game.spawnEnemyShot(ctx, 1, this.x + 20, this.y + 4, game.DIR_DOWN + this.tmp[0] * game.A256);
+      game.spawnEnemyShot(ctx, 1, this.x - 20, this.y + 4, game.DIR_DOWN - this.tmp[0] * game.A256);
       this.tmp[0] += 4;
     }
     this.cx = 0;
-    if (this.y > 180) {
+    if (this.y > 360) {
       this.alive = false;
     }
   }
@@ -191,7 +191,7 @@ game.Enemy4 = class extends game.Enemy {
 
 // ki=5: 円運動する敵
 game.Enemy5 = class extends game.Enemy {
-  static DATA = { shield: 3, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, tex: game.TEX.ENEMY5, texCy: 0 };
+  static DATA = { shield: 3, sx: 80, sy: 80, hitX1: -30, hitY1: -30, hitX2: 30, hitY2: 30, tex: game.TEX.ENEMY5, texCy: 0 };
 
   updateAI(ctx) {
     const ply = ctx.player;
@@ -201,14 +201,14 @@ game.Enemy5 = class extends game.Enemy {
     } else {
       r = (-this.frm + 128) * game.A256;
     }
-    this.x = Math.cos(r) * 150;
-    this.y = -Math.sin(r) * 150 + 150;
+    this.x = Math.cos(r) * 300;
+    this.y = -Math.sin(r) * 300 + 300;
     // プレイヤー方向に上書き
     r = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
     if (this.frm === 32 || this.frm === 96) {
-      game.spawnEnemyShot(ctx, 0, Math.cos(r) * 20 + this.x, Math.sin(r) * 20 + this.y, r);
+      game.spawnEnemyShot(ctx, 0, Math.cos(r) * 40 + this.x, Math.sin(r) * 40 + this.y, r);
     }
-    this.cx = game.radToSpriteFrame(r, 32, 40);
+    this.cx = game.radToSpriteFrame(r, 32, 80);
     if (this.frm === 128) {
       this.alive = false;
     }
@@ -217,17 +217,17 @@ game.Enemy5 = class extends game.Enemy {
 
 // ki=6: 上下に揺れながら弾を撃つ
 game.Enemy6 = class extends game.Enemy {
-  static DATA = { shield: 4, sx: 40, sy: 50, hitX1: -15, hitY1: -10, hitX2: 15, hitY2: 10, tex: game.TEX.ENEMY6, texCy: 0 };
+  static DATA = { shield: 4, sx: 80, sy: 100, hitX1: -30, hitY1: -20, hitX2: 30, hitY2: 20, tex: game.TEX.ENEMY6, texCy: 0 };
 
   updateAI(ctx) {
     const ply = ctx.player;
     let r = this.frm * game.A256;
-    this.y -= Math.cos(r) * 3;
-    this.cx = (Math.floor(-Math.cos(r) * 4) + 4) * 40;
+    this.y -= Math.cos(r) * 6;
+    this.cx = (Math.floor(-Math.cos(r) * 4) + 4) * 80;
     if (this.frm === 50) {
       const dir = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
-      game.spawnEnemyShot(ctx, 2, this.x + 10, this.y - 25, dir);
-      game.spawnEnemyShot(ctx, 2, this.x - 10, this.y - 25, dir);
+      game.spawnEnemyShot(ctx, 2, this.x + 20, this.y - 50, dir);
+      game.spawnEnemyShot(ctx, 2, this.x - 20, this.y - 50, dir);
     }
     if (this.frm >= 256) {
       this.alive = false;
@@ -237,22 +237,22 @@ game.Enemy6 = class extends game.Enemy {
 
 // ki=7: 蛇行しながら下降、定期的に弾を撃つ
 game.Enemy7 = class extends game.Enemy {
-  static DATA = { shield: 2, sx: 40, sy: 60, hitX1: -15, hitY1: -25, hitX2: 15, hitY2: 25, tex: game.TEX.ENEMY7, texCy: 0 };
+  static DATA = { shield: 2, sx: 80, sy: 120, hitX1: -30, hitY1: -50, hitX2: 30, hitY2: 50, tex: game.TEX.ENEMY7, texCy: 0 };
 
   updateAI(ctx) {
     let r = this.frm * 2 * game.A256;
     if (this.mv === 0) {
-      this.x = 40 * Math.sin(r) + this.x0;
+      this.x = 80 * Math.sin(r) + this.x0;
     }
     if (this.mv === 1) {
-      this.x = -40 * Math.sin(r) + this.x0;
+      this.x = -80 * Math.sin(r) + this.x0;
     }
-    this.y -= 1;
+    this.y -= 2;
     if (this.frm % 32 === 0) {
-      game.spawnEnemyShot(ctx, 0, this.x, this.y - 30, game.DIR_DOWN);
+      game.spawnEnemyShot(ctx, 0, this.x, this.y - 60, game.DIR_DOWN);
     }
-    this.cx = (Math.floor(this.frm / 4) & 7) * 40;
-    if (this.y < -180) {
+    this.cx = (Math.floor(this.frm / 4) & 7) * 80;
+    if (this.y < -360) {
       this.alive = false;
     }
   }
@@ -260,7 +260,7 @@ game.Enemy7 = class extends game.Enemy {
 
 // ki=8: 直進後に分岐する敵
 game.Enemy8 = class extends game.Enemy {
-  static DATA = { shield: 4, sx: 40, sy: 40, hitX1: -15, hitY1: -15, hitX2: 15, hitY2: 15, tex: game.TEX.ENEMY8, texCy: 0 };
+  static DATA = { shield: 4, sx: 80, sy: 80, hitX1: -30, hitY1: -30, hitX2: 30, hitY2: 30, tex: game.TEX.ENEMY8, texCy: 0 };
 
   // tmp[0]: 分岐方向の角度オフセット
   updateAI(ctx) {
@@ -279,16 +279,16 @@ game.Enemy8 = class extends game.Enemy {
         r = game.DIR_UP + this.tmp[0] * game.A256;
       }
     }
-    this.x += Math.cos(r) * 2.5;
-    this.y += Math.sin(r) * 2.5;
-    this.cx = (Math.floor(Math.cos(r) * 3) + 3) * 40;
+    this.x += Math.cos(r) * 5;
+    this.y += Math.sin(r) * 5;
+    this.cx = (Math.floor(Math.cos(r) * 3) + 3) * 80;
     if (this.frm === 60) {
       const dir = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
       game.spawnEnemyShot(ctx, 0, this.x, this.y, dir);
       game.spawnEnemyShot(ctx, 0, this.x, this.y, dir + Math.PI / 8);
       game.spawnEnemyShot(ctx, 0, this.x, this.y, dir - Math.PI / 8);
     }
-    if (this.x < -170 || 170 < this.x) {
+    if (this.x < -340 || 340 < this.x) {
       this.alive = false;
     }
   }
@@ -296,7 +296,7 @@ game.Enemy8 = class extends game.Enemy {
 
 // ki=9: 左右に揺れながら下降、回転弾を撃つ中ボス級
 game.Enemy9 = class extends game.Enemy {
-  static DATA = { shield: 40, sx: 60, sy: 60, hitX1: -25, hitY1: -25, hitX2: 25, hitY2: 25, tex: game.TEX.ENEMY9, texCy: 0 };
+  static DATA = { shield: 40, sx: 120, sy: 120, hitX1: -50, hitY1: -50, hitX2: 50, hitY2: 50, tex: game.TEX.ENEMY9, texCy: 0 };
 
   // tmp[0]: 左右移動方向（1 or -1）, tmp[1]: 回転弾の放射角度
   initAI() {
@@ -307,18 +307,18 @@ game.Enemy9 = class extends game.Enemy {
     if (this.frm % 100 === 0) {
       this.tmp[0] = -this.tmp[0];
     }
-    this.x += this.tmp[0] * 0.5;
-    this.y -= 0.5;
+    this.x += this.tmp[0] * 1;
+    this.y -= 1;
     if (this.frm > 100 && this.frm < 592 && this.frm % 8 === 0) {
       const baseAngle = this.tmp[1] * game.A256;
-      game.spawnEnemyShot(ctx, 1, this.x, this.y + 10, baseAngle);
-      game.spawnEnemyShot(ctx, 1, this.x, this.y + 10, baseAngle + game.DIR_DOWN);
-      game.spawnEnemyShot(ctx, 1, this.x, this.y + 10, baseAngle + Math.PI);
-      game.spawnEnemyShot(ctx, 1, this.x, this.y + 10, baseAngle + game.DIR_UP);
+      game.spawnEnemyShot(ctx, 1, this.x, this.y + 20, baseAngle);
+      game.spawnEnemyShot(ctx, 1, this.x, this.y + 20, baseAngle + game.DIR_DOWN);
+      game.spawnEnemyShot(ctx, 1, this.x, this.y + 20, baseAngle + Math.PI);
+      game.spawnEnemyShot(ctx, 1, this.x, this.y + 20, baseAngle + game.DIR_UP);
       this.tmp[1] -= 2;
     }
-    this.cx = (Math.floor(this.frm / 2) & 7) * 60;
-    if (this.y < -180) {
+    this.cx = (Math.floor(this.frm / 2) & 7) * 120;
+    if (this.y < -360) {
       this.alive = false;
     }
   }

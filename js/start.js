@@ -9,9 +9,9 @@ game.imageSources = [
 
 //////////ゲーム初期化//////////
 game.gameInit = () => {
-  setCanvasFixedSize(vec2(game.SCREEN_W * 2, game.SCREEN_H * 2));
+  setCanvasFixedSize(vec2(game.SCREEN_W, game.SCREEN_H));
   setCanvasPixelated(true);
-  setCameraScale(2);
+  setCameraScale(1);
   setCameraPos(vec2(0, 0));
   setDebugKey('');
   setDebugWatermark(false);
@@ -118,8 +118,8 @@ game.gameUpdate = () => {
     if (game.keyWasPressed(game.KEY_ESC)) {
       game.ctx.gameSta = game.STA_OPENING;
     }
-    if (game.ctx.player.y < 170) {
-      game.ctx.player.y += 3.5;
+    if (game.ctx.player.y < 340) {
+      game.ctx.player.y += 7;
     } else {
       game.ctx.gameSta = game.STA_INIT;
     }
@@ -141,15 +141,15 @@ game.gameUpdate = () => {
 //////////ゲーム描画//////////
 game.gameRender = () => {
   if (game.ctx.gameSta === game.STA_TITLE) {
-    drawTile(vec2(0, 0), vec2(300, 300),
-      game.tile(0, 0, 300, 300, game.TEX.TITLE));
+    const ti = game.tile(0, 0, 600, 600, game.TEX.TITLE);
+    drawTile(vec2(0, 0), ti.drawSize, ti);
   } else if (game.ctx.gameSta === game.STA_PLAY ||
              game.ctx.gameSta === game.STA_CLEAR) {
     game.renderObjects(game.ctx);
   } else if (game.ctx.gameSta === game.STA_PAUSE) {
     game.renderObjects(game.ctx);
     const p = game.UI_SPRITES.pauseLabel;
-    game.drawUI(129, 142,
+    game.drawUI(258, 284,
       game.tile(p.cx, p.cy, p.sx, p.sy, game.TEX.UI));
   }
 };

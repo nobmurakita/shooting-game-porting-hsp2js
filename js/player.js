@@ -1,9 +1,9 @@
 //////////プレーヤーショットクラス//////////
 game.PlayerShot = class {
   // 当たり判定の半幅・半高（中心からの距離）
-  static HITBOX = { hw: 5, hh: 10 };
-  static CONFIG = { speed: 8, offscreenY: 170 };
-  static DATA = { sx: 10, sy: 20, cx: 280, cy: 0, tex: game.TEX.PLAYER };
+  static HITBOX = { hw: 10, hh: 20 };
+  static CONFIG = { speed: 16, offscreenY: 340 };
+  static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: game.TEX.PLAYER };
 
   constructor(x, y, dir) {
     this.alive = true;
@@ -31,14 +31,14 @@ game.PlayerShot = class {
   draw() {
     if (!this.alive) return;
     const d = game.PlayerShot.DATA;
-    drawTile(vec2(this.x, this.y), vec2(d.sx, d.sy),
-      game.tile(d.cx, d.cy, d.sx, d.sy, d.tex));
+    const ti = game.tile(d.cx, d.cy, d.sx, d.sy, d.tex);
+    drawTile(vec2(this.x, this.y), ti.drawSize, ti);
   }
 };
 
 //////////レーザークラス//////////
 game.Laser = class {
-  static CONFIG = { accel: 2.5, damping: 0.8, damage: 5, hitScore: 100 };
+  static CONFIG = { accel: 5.0, damping: 0.8, damage: 5, hitScore: 100 };
   static DRAW = {
     segments: 7,
     baseR: 50, baseG: 255, baseB: 160,
@@ -200,7 +200,7 @@ game.Laser = class {
 
     // ターゲットなし状態で画面外に出たら消滅開始
     if (this.sta === game.LSR_NO_TARGET) {
-      if (this.x[0] < -150 || 150 < this.x[0] || this.y[0] < -150 || 150 < this.y[0]) {
+      if (this.x[0] < -300 || 300 < this.x[0] || this.y[0] < -300 || 300 < this.y[0]) {
         this.sta = game.LSR_DYING;
       }
     }
@@ -219,7 +219,7 @@ game.Laser = class {
     const d = game.Laser.DRAW;
     for (let j = 0; j < d.segments; j++) {
       const c = new Color(d.baseR/255, (d.baseG - j*d.fadeG)/255, (d.baseB - j*d.fadeB)/255);
-      drawLine(vec2(this.x[j], this.y[j]), vec2(this.x[j+1], this.y[j+1]), 3, c);
+      drawLine(vec2(this.x[j], this.y[j]), vec2(this.x[j+1], this.y[j+1]), 6, c);
     }
   }
 };
@@ -227,12 +227,12 @@ game.Laser = class {
 //////////プレーヤークラス//////////
 game.Player = class {
   // 当たり判定の半幅・半高（中心からの距離）
-  static HITBOX = { hw: 5, hh: 5 };
+  static HITBOX = { hw: 10, hh: 10 };
   // 移動制限（画面端からのマージン）
-  static MOVE_MIN = -130;
-  static MOVE_MAX = 130;
+  static MOVE_MIN = -260;
+  static MOVE_MAX = 260;
   static CONFIG = {
-    moveSpeed: 2.75,
+    moveSpeed: 5.5,
     shotInterval: 6,
     laserChargeShot: 0.5,
     laserChargeIdle: 1.5,
@@ -241,10 +241,10 @@ game.Player = class {
     laserThreshold: 40,
     initShield: 5,
     initX: 0,
-    initY: -110,
+    initY: -220,
     hitInvincible: 100,
   };
-  static DATA = { sx: 40, sy: 40, baseX: 120, normalY: 0, hitY: 40, tex: game.TEX.PLAYER };
+  static DATA = { sx: 80, sy: 80, baseX: 240, normalY: 0, hitY: 80, tex: game.TEX.PLAYER };
   // ショット発射方向テーブル（ラジアン、旧DatShtDir）
   static SHT_DIR = [192, 192, 191, 193, 190, 194, 184, 200, 174, 210, 166, 218].map(a => -a * Math.PI / 128);
   // レーザー発射方向テーブル（ラジアン、旧DatLsrDir）
@@ -310,8 +310,8 @@ game.Player = class {
         this.shtCnt = game.Player.CONFIG.shotInterval;
         for (let i = 0; i < this.shtLV * 2; i++) {
           const posRad = game.Player.SHT_DIR[i + 6];
-          const x = Math.cos(posRad) * 20 + this.x;
-          const y = Math.sin(posRad) * 20 + this.y;
+          const x = Math.cos(posRad) * 40 + this.x;
+          const y = Math.sin(posRad) * 40 + this.y;
           const dir = game.Player.SHT_DIR[i];
           ctx.playerShots.push(new game.PlayerShot(x, y, dir));
         }
@@ -327,9 +327,9 @@ game.Player = class {
             const trg = this.searchTarget(ctx);
             if (trg !== null) { trg.lckOn++; }
             const rad = game.Player.LSR_DIR[i];
-            const vx = Math.cos(rad) * 8;
-            const vy = Math.sin(rad) * 8;
-            ctx.lasers.push(new game.Laser(this.x, this.y + 20, vx, vy, trg));
+            const vx = Math.cos(rad) * 16;
+            const vy = Math.sin(rad) * 16;
+            ctx.lasers.push(new game.Laser(this.x, this.y + 40, vx, vy, trg));
           }
         }
       } else {
@@ -429,8 +429,8 @@ game.Player = class {
     const d = game.Player.DATA;
     const frameX = (this.gra >> 1) * d.sx + d.baseX;
     const frameY = (Math.floor(this.hitCnt / 6) % 2 === 0) ? d.normalY : d.hitY;
-    drawTile(vec2(this.x, this.y), vec2(d.sx, d.sy),
-      game.tile(frameX, frameY, d.sx, d.sy, d.tex));
+    const ti = game.tile(frameX, frameY, d.sx, d.sy, d.tex);
+    drawTile(vec2(this.x, this.y), ti.drawSize, ti);
   }
 
 };

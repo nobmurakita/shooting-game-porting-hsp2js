@@ -18,17 +18,17 @@ game.BossPart = class {
 
 // パーツ0: 本体
 game.BossPart0 = class extends game.BossPart {
-  static DATA = { shield: 500, x: 0, y: 7, sx: 70, sy: 75, hitX1: -25, hitY1: -6, hitX2: 25, hitY2: 30, tex: game.TEX.BOSS0, texCy: 0 };
+  static DATA = { shield: 500, x: 0, y: 14, sx: 140, sy: 150, hitX1: -50, hitY1: -12, hitX2: 50, hitY2: 60, tex: game.TEX.BOSS0, texCy: 0 };
 };
 
 // パーツ1: 左翼
 game.BossPart1 = class extends game.BossPart {
-  static DATA = { shield: 200, x: -40, y: 0, sx: 20, sy: 112, hitX1: -10, hitY1: -56, hitX2: 10, hitY2: 56, tex: game.TEX.BOSS1, texCy: 0 };
+  static DATA = { shield: 200, x: -80, y: 0, sx: 40, sy: 224, hitX1: -20, hitY1: -112, hitX2: 20, hitY2: 112, tex: game.TEX.BOSS1, texCy: 0 };
 };
 
 // パーツ2: 右翼
 game.BossPart2 = class extends game.BossPart {
-  static DATA = { shield: 200, x: 40, y: 0, sx: 20, sy: 112, hitX1: -10, hitY1: -56, hitX2: 10, hitY2: 56, tex: game.TEX.BOSS1, texCy: 0 };
+  static DATA = { shield: 200, x: 80, y: 0, sx: 40, sy: 224, hitX1: -20, hitY1: -112, hitX2: 20, hitY2: 112, tex: game.TEX.BOSS1, texCy: 0 };
 };
 
 //////////ボスクラス//////////
@@ -55,7 +55,7 @@ game.Boss = class {
       this.flg = game.BOSS_NONE;
       this.shield = 500;
       this.x = 0;
-      this.y = 250;
+      this.y = 500;
       this.frm = 0;
       this.aprFrm = 4900;
 
@@ -74,17 +74,17 @@ game.Boss = class {
       }
       this.frm++;
       if (this.frm % 6 === 0) {
-        let x = game.rnd(50) - 25;
-        let y = game.rnd(50) - 25;
+        let x = game.rnd(100) - 50;
+        let y = game.rnd(100) - 50;
         game.spawnEffect(ctx, 0, this.x + x, this.y + y, 0);
       }
       let x = game.rnd(4) - 2;
       let y = (game.rnd(3) - 1) * 0.5;
-      this.x += x * 0.5;
-      this.y -= (y + 0.5);
+      this.x += x * 1;
+      this.y -= (y + 0.5) * 2;
       if (this.frm === 100) {
         for (let i = 0; i < 3; i++) {
-          let a = (i + 1) * 25;
+          let a = (i + 1) * 50;
           let t = -i * 2;
           for (let j = 0; j < 16; j++) {
             let r = j * Math.PI / 8;
@@ -105,40 +105,40 @@ game.Boss = class {
     // ステージ1のボスAI
     if (game.ctx.stage === 1) {
       if (this.frm < 400) {
-        this.y -= 0.5;
+        this.y -= 1;
       } else {
         let a = Math.floor((this.frm - 400) / 256) % 4;
 
         if (a === 0 || a === 3) {
-          this.x -= 0.5;
+          this.x -= 1;
         } else {
-          this.x += 0.5;
+          this.x += 1;
         }
 
         let r = this.frm * 0.5 * game.A256;
-        this.y -= Math.sin(r) * 0.5;
+        this.y -= Math.sin(r) * 1;
 
         // 誘導弾発射（パーツ1,2）
         if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 16 === 0) {
           if (this.parts[1].alive) {
-            game.spawnEnemyShot(ctx, 2, -40 + this.x, this.y, r);
+            game.spawnEnemyShot(ctx, 2, -80 + this.x, this.y, r);
           }
           if (this.parts[2].alive) {
-            game.spawnEnemyShot(ctx, 2, 40 + this.x, this.y, r);
+            game.spawnEnemyShot(ctx, 2, 80 + this.x, this.y, r);
           }
         }
         // 照準弾発射
         if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 8 === 0) {
           if (this.flg === game.BOSS_BATTLE) {
             let dir = game.CollisionSystem.calcDir(this.x, this.y, ctx.player.x, ctx.player.y);
-            game.spawnEnemyShot(ctx, 1, this.x, this.y + 20, dir);
+            game.spawnEnemyShot(ctx, 1, this.x, this.y + 40, dir);
           }
         }
         // 通常弾発射
         if ((this.frm - 400) % 64 === 63) {
           if (this.flg === game.BOSS_BATTLE) {
-            game.spawnEnemyShot(ctx, 0, -5 + this.x, this.y - 25, game.DIR_DOWN);
-            game.spawnEnemyShot(ctx, 0, 5 + this.x, this.y - 25, game.DIR_DOWN);
+            game.spawnEnemyShot(ctx, 0, -10 + this.x, this.y - 50, game.DIR_DOWN);
+            game.spawnEnemyShot(ctx, 0, 10 + this.x, this.y - 50, game.DIR_DOWN);
           }
         }
       }
@@ -158,10 +158,8 @@ game.Boss = class {
       for (const i of game.Boss.DRAW_ORDER) {
         const prt = this.parts[i];
         const d = prt.constructor.DATA;
-        drawTile(
-          vec2(this.x + d.x, this.y + d.y), vec2(d.sx, d.sy),
-          game.tile(prt.cx, d.texCy, d.sx, d.sy, d.tex)
-        );
+        const ti = game.tile(prt.cx, d.texCy, d.sx, d.sy, d.tex);
+        drawTile(vec2(this.x + d.x, this.y + d.y), ti.drawSize, ti);
       }
     }
   }
