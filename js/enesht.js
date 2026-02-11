@@ -96,7 +96,7 @@ game.EnemyShot2 = class extends game.EnemyShot {
     if (this.frm % 6 === 0) {
       let ox = game.rnd(20) - 10;
       let oy = game.rnd(20) - 10;
-      game.spawnEffect(game.ctx, 2, -Math.cos(this.dir) * 20 + this.x + ox, -Math.sin(this.dir) * 20 + this.y + oy, 0);
+      game.spawnEffect(2, -Math.cos(this.dir) * 20 + this.x + ox, -Math.sin(this.dir) * 20 + this.y + oy, 0);
     }
     if (this.frm > 160) {
       if (game.isOutOfBounds(this.x, this.y, game.BOUNDS.SHOT)) {

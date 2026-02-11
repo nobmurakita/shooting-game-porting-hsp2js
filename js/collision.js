@@ -39,10 +39,10 @@ game.CollisionSystem = class {
           ctx.score += game.SCORE_SHOT_HIT;
           s.alive = false;
           e.shield--;
-          game.spawnHitSpark(ctx, s.x, s.y);
+          game.spawnHitSpark(s.x, s.y);
           if (e.shield <= 0) {
             e.alive = false;
-            game.spawnExplosion(ctx, e.x, e.y, d.sx, d.sy, 5);
+            game.spawnExplosion(e.x, e.y, d.sx, d.sy, 5);
             break;
           }
         }
@@ -66,15 +66,15 @@ game.CollisionSystem = class {
       )) {
         e.alive = false;
         // 敵の爆発エフェクト（小）
-        game.spawnHitSparks(ctx, e.x, e.y, 2);
+        game.spawnHitSparks(e.x, e.y, 2);
         // 敵の爆発エフェクト（大）
-        game.spawnExplosion(ctx, e.x, e.y, d.sx, d.sy, 3);
+        game.spawnExplosion(e.x, e.y, d.sx, d.sy, 3);
         // プレイヤーにダメージ
         ply.hitCnt = game.Player.CONFIG.hitInvincible;
         ply.shield--;
         if (ply.shield <= 0) {
           ply.alive = false;
-          game.spawnExplosion(ctx, ply.x, ply.y, pd.sx, pd.sy, 5);
+          game.spawnExplosion(ply.x, ply.y, pd.sx, pd.sy, 5);
         }
         break;
       }
@@ -105,7 +105,7 @@ game.CollisionSystem = class {
           s.alive = false;
           boss.shield--;
           prt.shield--;
-          game.spawnHitSpark(ctx, s.x, s.y);
+          game.spawnHitSpark(s.x, s.y);
           if (boss.shield <= 0) {
             boss.flg = game.BOSS_DESTROY;
             boss.frm = 0;
@@ -113,7 +113,7 @@ game.CollisionSystem = class {
           if (prt.shield <= 0) {
             prt.alive = false;
             prt.cx = d.sx;
-            game.spawnExplosion(ctx, d.x + boss.x, d.y + boss.y, d.sx, d.sy, 5);
+            game.spawnExplosion(d.x + boss.x, d.y + boss.y, d.sx, d.sy, 5);
             break;
           }
         }
@@ -138,10 +138,10 @@ game.CollisionSystem = class {
         es.destroy();
         ply.shield--;
         ply.hitCnt = game.Player.CONFIG.hitInvincible;
-        game.spawnHitSparks(ctx, es.x, es.y, 2);
+        game.spawnHitSparks(es.x, es.y, 2);
         if (ply.shield <= 0) {
           ply.alive = false;
-          game.spawnExplosion(ctx, ply.x, ply.y, pd.sx, pd.sy, 3);
+          game.spawnExplosion(ply.x, ply.y, pd.sx, pd.sy, 3);
         }
         break;
       }
@@ -164,8 +164,8 @@ game.CollisionSystem = class {
           ctx.score += game.SCORE_SHOT_HIT;
           ps.alive = false;
           es.destroy();
-          game.spawnHitSpark(ctx, ps.x, ps.y);
-          game.spawnExplosion(ctx, es.x, es.y, d.sx, d.sy, 2);
+          game.spawnHitSpark(ps.x, ps.y);
+          game.spawnExplosion(es.x, es.y, d.sx, d.sy, 2);
           break;
         }
       }

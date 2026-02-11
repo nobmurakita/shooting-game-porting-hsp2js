@@ -1,9 +1,9 @@
 //////////エフェクト基底クラス//////////
-game.Effect = class {
+game.Effect = class extends game.GameObject {
   static CLASS_MAP = [];  // ki → サブクラスのマッピング（ファイル末尾で設定）
 
   constructor(x, y, startFrm) {
-    this.alive = true;
+    super(vec2(x, y), 30);  // renderOrder=30
     this.x = x;
     this.y = y;
     this.frm = startFrm;
@@ -14,7 +14,8 @@ game.Effect = class {
   updateAI() {}
 
   update() {
-    if (!this.alive) return;
+    const ctx = game.ctx;
+    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR) return;
 
     this.frm++;
     if (this.frm <= 0) return;
@@ -22,8 +23,10 @@ game.Effect = class {
     this.updateAI();
   }
 
-  draw() {
-    if (!this.alive || this.frm <= 0) return;
+  render() {
+    const ctx = game.ctx;
+    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
+    if (this.frm <= 0) return;
     const d = this.constructor.DATA;
     const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
     drawTile(vec2(this.x, this.y), ti.drawSize, ti);
@@ -42,7 +45,7 @@ game.Effect0 = class extends game.Effect {
     }
     this.cx = Math.floor(this.frm / 6) % 6 * 80;
     if (this.frm === 34) {
-      this.alive = false;
+      this.destroy();
     }
   }
 };
@@ -54,7 +57,7 @@ game.Effect1 = class extends game.Effect {
   updateAI() {
     this.cx = Math.floor(this.frm / 6) % 6 * 20 + 120;
     if (this.frm === 34) {
-      this.alive = false;
+      this.destroy();
     }
   }
 };
@@ -66,7 +69,7 @@ game.Effect2 = class extends game.Effect {
   updateAI() {
     this.cx = Math.floor(this.frm / 6) % 6 * 20;
     if (this.frm === 34) {
-      this.alive = false;
+      this.destroy();
     }
   }
 };
@@ -77,34 +80,34 @@ game.Effect.CLASS_MAP = [
 ];
 
 // エフェクト生成ヘルパー
-game.spawnEffect = (ctx, ki, x, y, startFrm) => {
+game.spawnEffect = (ki, x, y, startFrm) => {
   const EffectClass = game.Effect.CLASS_MAP[ki];
   if (!EffectClass) return;
-  ctx.effects.push(new EffectClass(x, y, startFrm));
+  new EffectClass(x, y, startFrm);
 };
 
 // 火花エフェクト（単発）— ヒット時の小さな火花
-game.spawnHitSpark = (ctx, x, y) => {
+game.spawnHitSpark = (x, y) => {
   const ex = game.rnd(20) - 10;
   const ey = game.rnd(20) - 10;
-  game.spawnEffect(ctx, 1, x + ex, y + ey, 0);
+  game.spawnEffect(1, x + ex, y + ey, 0);
 };
 
 // 火花エフェクト（複数）— 被弾時の火花散り
-game.spawnHitSparks = (ctx, x, y, count) => {
+game.spawnHitSparks = (x, y, count) => {
   for (let j = 0; j < count; j++) {
     const ex = game.rnd(20) - 10;
     const ey = game.rnd(20) - 10;
-    game.spawnEffect(ctx, 1, x + ex, y + ey, -j * 6);
+    game.spawnEffect(1, x + ex, y + ey, -j * 6);
   }
 };
 
 // 爆発エフェクト（複数）— 撃破時の爆発
 // sw/shはscatter範囲サイズ
-game.spawnExplosion = (ctx, x, y, sx, sy, count) => {
+game.spawnExplosion = (x, y, sx, sy, count) => {
   for (let j = 0; j < count; j++) {
     const ex = game.rnd(sx) - Math.floor(sx / 2);
     const ey = game.rnd(sy) - Math.floor(sy / 2);
-    game.spawnEffect(ctx, 0, x + ex, y + ey, -j * 6);
+    game.spawnEffect(0, x + ex, y + ey, -j * 6);
   }
 };

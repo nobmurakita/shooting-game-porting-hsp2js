@@ -134,12 +134,12 @@ game.Laser = class extends game.GameObject {
         this.sta = game.LSR_DYING;
 
         // ヒットエフェクト
-        game.spawnHitSparks(ctx, this.x[0], this.y[0], 2);
+        game.spawnHitSparks(this.x[0], this.y[0], 2);
 
         // 敵撃破
         if (e.shield <= 0) {
           e.alive = false;
-          game.spawnExplosion(ctx, e.x, e.y, d.sx, d.sy, 3);
+          game.spawnExplosion(e.x, e.y, d.sx, d.sy, 3);
         }
       }
 
@@ -170,7 +170,7 @@ game.Laser = class extends game.GameObject {
         this.sta = game.LSR_DYING;
 
         // ヒットエフェクト
-        game.spawnHitSparks(ctx, this.x[0], this.y[0], 2);
+        game.spawnHitSparks(this.x[0], this.y[0], 2);
 
         // ボス撃破判定
         if (boss.shield <= 0) {
@@ -183,7 +183,7 @@ game.Laser = class extends game.GameObject {
         if (p.shield <= 0) {
           p.alive = false;
           p.cx = pd.sx;
-          game.spawnExplosion(ctx, pd.x + boss.x, pd.y + boss.y, pd.sx, pd.sy, 3);
+          game.spawnExplosion(pd.x + boss.x, pd.y + boss.y, pd.sx, pd.sy, 3);
         }
       }
 

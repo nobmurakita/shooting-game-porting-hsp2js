@@ -32,16 +32,10 @@ game.updatePlayerShots = (ctx) => {
   }
 };
 
-//////////エフェクト更新//////////
-game.updateProjectiles = (ctx) => {
-  for (const e of ctx.effects) { e.update(); }
-};
-
 //////////死亡要素の除去//////////
 game.filterDead = (ctx) => {
   ctx.playerShots = ctx.playerShots.filter(s => s.alive);
   ctx.enemies = ctx.enemies.filter(e => e.alive);
-  ctx.effects = ctx.effects.filter(e => e.alive);
 };
 
 //////////ゲーム更新後処理（衝突判定・死亡除去）//////////
@@ -65,7 +59,6 @@ game.renderObjects = (ctx) => {
   for (let i = ctx.playerShots.length - 1; i >= 0; i--) { ctx.playerShots[i].draw(); }
   // プレーヤー描画
   ctx.player.draw();
-  for (let i = ctx.effects.length - 1; i >= 0; i--) { ctx.effects[i].draw(); }
   game.drawStatusUI();
 };
 
@@ -105,7 +98,7 @@ game.gameUpdate = () => {
         game.ctx.boss.update(game.ctx);
       }
       for (const e of game.ctx.enemies) { e.update(game.ctx); }
-      game.updateProjectiles(game.ctx);
+
       game.updateBackground(game.ctx);
       game.ctx.frame++;
       if (game.keyWasPressed(game.KEY_SHIFT)) {
@@ -123,7 +116,6 @@ game.gameUpdate = () => {
     }
     game.updateBackground(game.ctx);
     game.updatePlayerShots(game.ctx);
-    game.updateProjectiles(game.ctx);
   } else if (game.ctx.gameSta === game.STA_ENDING) {
     game.ctx.gameSta = game.STA_OPENING;
   } else if (game.ctx.gameSta === game.STA_PAUSE) {

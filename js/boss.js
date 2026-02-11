@@ -48,7 +48,7 @@ game.Boss = class {
       if (this.frm % 6 === 0) {
         let x = game.rnd(100) - 50;
         let y = game.rnd(100) - 50;
-        game.spawnEffect(ctx, 0, this.x + x, this.y + y, 0);
+        game.spawnEffect(0, this.x + x, this.y + y, 0);
       }
       let x = game.rnd(1024) / 256 - 2;
       let y = game.rnd(256) / 256 - 0.5;
@@ -60,7 +60,7 @@ game.Boss = class {
           let t = -i * 2;
           for (let j = 0; j < 16; j++) {
             let r = j * Math.PI / 8;
-            game.spawnEffect(ctx, 0, a * Math.cos(r) + this.x, a * Math.sin(r) + this.y, t);
+            game.spawnEffect(0, a * Math.cos(r) + this.x, a * Math.sin(r) + this.y, t);
           }
         }
       }

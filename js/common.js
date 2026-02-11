@@ -46,7 +46,6 @@ game.GameContext = class {
     this.frame = 0;
 
     this.bg1 = 0;
-    this.effects = [];
     this.player = null;
     this.playerShots = [];
     this.enemies = [];
@@ -56,7 +55,6 @@ game.GameContext = class {
   // ステージ初期化
   initStage(stageNum) {
     this.stage = stageNum;
-    this.effects = [];
     this.player.init();
     this.playerShots = [];
     [...engineObjects].forEach(o => o.destroy());
