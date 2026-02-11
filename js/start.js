@@ -16,11 +16,7 @@ game.gameInit = () => {
   setDebugKey('');
   setDebugWatermark(false);
 
-  game.ctx = new game.GameContext();
-  game.ctx.player = new game.Player();
-  game.ctx.boss = new game.Boss();
-  game.IniCom();
-  game.Enemy.initData();
+  game.initCommon();
 };
 
 //////////プレイヤーショット更新 + レーザー充填判定//////////
@@ -55,7 +51,7 @@ game.gameUpdatePost = () => {
 
 //////////ゲーム要素描画//////////
 game.renderObjects = (ctx) => {
-  game.BackGround();
+  game.drawBackground();
   if (ctx.boss.flg === game.BOSS_NONE) {
     for (const e of ctx.enemies) { e.draw(); }
   } else {
@@ -69,7 +65,7 @@ game.renderObjects = (ctx) => {
   for (const s of ctx.enemyShots) { s.draw(); }
   // レーザー描画
   for (const l of ctx.lasers) { l.draw(); }
-  game.Disp();
+  game.drawStatusUI();
 };
 
 //////////ゲーム更新//////////
@@ -84,7 +80,7 @@ game.gameUpdate = () => {
     }
   } else if (game.ctx.gameSta === game.STA_INIT) {
     game.ctx.stage++;
-    if (game.ctx.stage <= game.MaxStage) {
+    if (game.ctx.stage <= game.MAX_STAGE) {
       game.ctx.initStage(game.ctx.stage);
       game.ctx.gameSta = game.STA_PLAY;
     } else {

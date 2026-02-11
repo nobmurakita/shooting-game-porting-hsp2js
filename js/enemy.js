@@ -40,10 +40,6 @@ game.Enemy = class {
     drawTile(vec2(this.x, this.y), ti.drawSize, ti);
   }
 
-  // 画像データ初期化（LittleJSが画像をロード済み）
-  static initData() {
-  }
-
   // 敵出現処理（旧AprEne）
   static appear(ctx) {
     while (true) {

@@ -1,14 +1,6 @@
 //////////ボスパーツクラス//////////
 game.BossPart = class {
   constructor() {
-    this.alive = false;
-    this.shield = 0;
-    this.cx = 0;
-    this.lckOn = 0;
-  }
-
-  // パーツ初期化（ステージ開始時にBoss.init()から呼ばれる）
-  init() {
     this.alive = true;
     this.shield = this.constructor.DATA.shield;
     this.cx = 0;
@@ -37,32 +29,12 @@ game.Boss = class {
 
   constructor() {
     this.flg = game.BOSS_NONE;
-    this.shield = 0;
+    this.shield = 500;
     this.x = 0;
-    this.y = 0;
+    this.y = 500;
     this.frm = 0;
-    this.aprFrm = 0;
+    this.aprFrm = 4900;
     this.parts = [new game.BossPart0(), new game.BossPart1(), new game.BossPart2()];
-  }
-
-  // ボスパーツ画像初期化（LittleJSが画像をロード済み）
-  initData() {
-  }
-
-  // ボス初期化（旧IniBoss）
-  init() {
-    if (game.ctx.stage === 1) {
-      this.flg = game.BOSS_NONE;
-      this.shield = 500;
-      this.x = 0;
-      this.y = 500;
-      this.frm = 0;
-      this.aprFrm = 4900;
-
-      for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
-        this.parts[i].init();
-      }
-    }
   }
 
   // ボス移動（旧MovBoss）

@@ -6,7 +6,7 @@ game.STA_CLEAR =   4;  // ゲームクリア
 game.STA_ENDING =  5;  // エンディング
 game.STA_PAUSE =   6;  // ポーズ
 
-game.MaxStage = 1;
+game.MAX_STAGE = 1;
 
 //////////キーコード定数（LittleJS v1.18: KeyboardEvent.code文字列）//////////
 game.KEY_LEFT  = 'ArrowLeft';
@@ -30,7 +30,7 @@ game.GameContext = class {
     this.score = 0;
     this.hiScore = 0;
     this.frame = 0;
-    this.nextLoopTime = 0;
+
     this.bg1 = 0;
     this.bg2 = 0;
     this.effects = [];
@@ -53,18 +53,15 @@ game.GameContext = class {
     this.enemies = [];
     game.Enemy.table = game.Stages[stageNum];
     game.Enemy.tableIndex = 0;
-    this.boss.initData();
-    this.boss.init();
+    this.boss = new game.Boss();
     this.frame = 0;
   }
 };
 
 //////////初期設定//////////
-game.IniCom = () => {
-  game.ctx.gameSta = game.STA_OPENING;
-  game.ctx.stage = 0;
-  game.ctx.score = 0;
-  game.ctx.hiScore = 0;
+game.initCommon = () => {
+  game.ctx = new game.GameContext();
+  game.ctx.player = new game.Player();
 
   // 背景星データ生成（描画時にdrawRectで描画）
   game.bgStars = [];
@@ -91,7 +88,7 @@ game.updateBackground = (ctx) => {
   }
 };
 
-game.BackGround = () => {
+game.drawBackground = () => {
   const bg1 = game.ctx.bg1;
   // 背景色（暗い黄色）
   drawRect(vec2(0, 0), vec2(game.SCREEN_W, game.SCREEN_H), game.color(20/255, 20/255, 0));
@@ -142,7 +139,7 @@ game.drawNumber = (value, x, y) => {
 };
 
 //////////ステータス表示//////////
-game.Disp = () => {
+game.drawStatusUI = () => {
   const ui = game.UI_SPRITES;
   const tex = ui.tex;
 
