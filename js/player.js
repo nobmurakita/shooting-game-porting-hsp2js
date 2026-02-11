@@ -34,17 +34,17 @@ game.PlayerShot = class {
 game.Laser = class {
   static CONFIG = { accel: 5.0, damping: 0.8, damage: 5, hitScore: 100 };
   static DRAW = {
-    segments: 7,
+    segments: 14,
     baseR: 50, baseG: 255, baseB: 160,
-    fadeG: 20, fadeB: 20,
+    fadeG: 10, fadeB: 10,
   };
 
   constructor(px, py, vx, vy, trg) {
     this.alive = true;
     this.trg = trg;
     this.sta = game.LSR_TRACKING;
-    this.x = [px, px, px, px, px, px, px, px];
-    this.y = [py, py, py, py, py, py, py, py];
+    this.x = [px, px, px, px, px, px, px, px, px, px, px, px, px, px, px];
+    this.y = [py, py, py, py, py, py, py, py, py, py, py, py, py, py, py];
     this.vx = vx;
     this.vy = vy;
     this.dir = game.DIR_UP;
@@ -53,29 +53,32 @@ game.Laser = class {
 
   // 節シフト + 加速・減衰 + 消滅収束
   updateMovement() {
-    // 節の位置を後方にシフト
-    for (let j = 0; j < 7; j++) {
-      const a = 7 - j;
+    // 節の位置を後方にシフト（14節 × 60fps = 7節 × 30fps と同じ実時間の軌跡）
+    for (let j = 0; j < 14; j++) {
+      const a = 14 - j;
       const b = a - 1;
       this.x[a] = this.x[b];
       this.y[a] = this.y[b];
     }
 
     if (this.sta !== game.LSR_DYING) {
-      // 追跡中 or ターゲットなし: 加速・減衰は偶数フレームのみ、移動は毎フレーム
+      // HSP版1フレーム(加速→移動→減衰)を半ステップ分割:
+      // 偶数フレーム: 加速→半移動、奇数フレーム: 半移動→減衰
       const dir = this.dir;
       if (this.frm % 2 === 0) {
         this.vx += Math.cos(dir) * game.Laser.CONFIG.accel;
         this.vy += Math.sin(dir) * game.Laser.CONFIG.accel;
-        this.vx = this.vx * game.Laser.CONFIG.damping;
-        this.vy = this.vy * game.Laser.CONFIG.damping;
       }
       this.x[0] += this.vx;
       this.y[0] += this.vy;
+      if (this.frm % 2 !== 0) {
+        this.vx = this.vx * game.Laser.CONFIG.damping;
+        this.vy = this.vy * game.Laser.CONFIG.damping;
+      }
     } else {
       // 消滅途中: 全節が同一座標に収束したら消滅
       let moving = false;
-      for (let j = 0; j < 7; j++) {
+      for (let j = 0; j < 14; j++) {
         if (this.x[j] !== this.x[j + 1] || this.y[j] !== this.y[j + 1]) {
           moving = true;
           break;
