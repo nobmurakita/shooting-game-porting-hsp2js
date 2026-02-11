@@ -23,7 +23,7 @@ game.gameInit = () => {
 game.updatePlayerShots = (ctx) => {
   for (const s of ctx.playerShots) { s.update(); }
   // レーザー充填判定を一元管理
-  if (ctx.lasers.some(l => l.alive)) {
+  if (engineObjects.some(o => o instanceof game.Laser && !o.destroyed)) {
     // レーザー生存中は充填不可
     ctx.player.lsrF = game.LSR_CHARGE_OFF;
   } else if (ctx.player.lsrPow <= 0) {
@@ -35,14 +35,12 @@ game.updatePlayerShots = (ctx) => {
 //////////敵ショット・レーザー・エフェクト更新//////////
 game.updateProjectiles = (ctx) => {
   for (const s of ctx.enemyShots) { s.update(ctx); }
-  for (const l of ctx.lasers) { l.update(ctx); }
   for (const e of ctx.effects) { e.update(); }
 };
 
 //////////死亡要素の除去//////////
 game.filterDead = (ctx) => {
   ctx.playerShots = ctx.playerShots.filter(s => s.alive);
-  ctx.lasers = ctx.lasers.filter(l => l.alive);
   ctx.enemies = ctx.enemies.filter(e => e.alive);
   ctx.enemyShots = ctx.enemyShots.filter(s => s.alive);
   ctx.effects = ctx.effects.filter(e => e.alive);
@@ -71,14 +69,13 @@ game.renderObjects = (ctx) => {
   ctx.player.draw();
   for (let i = ctx.effects.length - 1; i >= 0; i--) { ctx.effects[i].draw(); }
   for (const s of ctx.enemyShots) { s.draw(); }
-  // レーザー描画
-  for (const l of ctx.lasers) { l.draw(); }
   game.drawStatusUI();
 };
 
 //////////ゲーム更新//////////
 game.gameUpdate = () => {
   if (game.ctx.gameSta === game.STA_OPENING) {
+    [...engineObjects].forEach(o => o.destroy());
     game.ctx.stage = 0;
     game.ctx.score = 0;
     game.ctx.gameSta = game.STA_TITLE;

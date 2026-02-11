@@ -22,6 +22,20 @@ game.KEY_ESC   = 'Escape';
 game.keyIsDown = (keyCode) => keyIsDown(keyCode);
 game.keyWasPressed = (keyCode) => keyWasPressed(keyCode);
 
+//////////ゲームオブジェクトベースクラス（EngineObject継承）//////////
+game.GameObject = class extends EngineObject {
+  constructor(pos = vec2(), renderOrder = 0) {
+    super(pos, vec2(1, 1), undefined, 0, game.color(1, 1, 1), renderOrder);
+    this.mass = 0;
+    this.gravityScale = 0;
+    this.frm = 0;
+  }
+  update() {
+    this.frm++;
+  }
+  render() {}
+};
+
 //////////ゲーム共有状態//////////
 game.GameContext = class {
   constructor() {
@@ -35,7 +49,6 @@ game.GameContext = class {
     this.effects = [];
     this.player = null;
     this.playerShots = [];
-    this.lasers = [];
     this.enemies = [];
     this.enemyShots = [];
     this.boss = null;
@@ -48,7 +61,7 @@ game.GameContext = class {
     this.enemyShots = [];
     this.player.init();
     this.playerShots = [];
-    this.lasers = [];
+    [...engineObjects].forEach(o => o.destroy());
     this.enemies = [];
     this.enemyTable = game.Stages[stageNum];
     this.enemyTableIndex = 0;

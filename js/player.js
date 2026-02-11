@@ -31,7 +31,7 @@ game.PlayerShot = class {
 };
 
 //////////レーザークラス//////////
-game.Laser = class {
+game.Laser = class extends game.GameObject {
   static CONFIG = { accel: 5.0, damping: 0.8, damage: 5, hitScore: 100 };
   static DRAW = {
     segments: 14,
@@ -40,7 +40,7 @@ game.Laser = class {
   };
 
   constructor(px, py, vx, vy, trg) {
-    this.alive = true;
+    super(vec2(px, py), 50); // renderOrder=50（最前面）
     this.trg = trg;
     this.sta = game.LSR_TRACKING;
     this.x = [px, px, px, px, px, px, px, px, px, px, px, px, px, px, px];
@@ -48,7 +48,6 @@ game.Laser = class {
     this.vx = vx;
     this.vy = vy;
     this.dir = game.DIR_UP;
-    this.frm = 0;
   }
 
   // 節シフト + 加速・減衰 + 消滅収束
@@ -85,13 +84,14 @@ game.Laser = class {
         }
       }
       if (!moving) {
-        this.alive = false;
+        this.destroy();
       }
     }
   }
 
   // ターゲット喪失検知 + 再検索
-  updateTargeting(ctx) {
+  updateTargeting() {
+    const ctx = game.ctx;
     if (this.sta === game.LSR_TRACKING && (this.trg === null || !this.trg.alive)) {
       // ターゲット喪失時にlckOnをデクリメント（発射時の++と対応）
       if (this.trg !== null) {
@@ -110,7 +110,8 @@ game.Laser = class {
   }
 
   // 衝突判定 + ダメージ + 撃破 + 方向更新
-  checkHit(ctx) {
+  checkHit() {
+    const ctx = game.ctx;
     if (this.sta !== game.LSR_TRACKING) return;
     if (!this.trg.alive) { this.sta = game.LSR_DYING; return; }
 
@@ -198,12 +199,13 @@ game.Laser = class {
   }
 
   // レーザー移動・追跡・衝突判定（旧MovLsr内ループ1回分 + LsrHit）
-  update(ctx) {
-    if (!this.alive) return;
+  update() {
+    const ctx = game.ctx;
+    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR) return;
 
     this.updateMovement();
-    this.updateTargeting(ctx);
-    this.checkHit(ctx);
+    this.updateTargeting();
+    this.checkHit();
 
     // ターゲットなし状態で画面外に出たら消滅開始
     if (this.sta === game.LSR_NO_TARGET) {
@@ -212,12 +214,13 @@ game.Laser = class {
       }
     }
 
-    this.frm++;
+    super.update(); // frm++
   }
 
   // レーザー描画（旧DrwLsr内ループ1回分）
-  draw() {
-    if (!this.alive) return;
+  render() {
+    const ctx = game.ctx;
+    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
     const d = game.Laser.DRAW;
     for (let j = 0; j < d.segments; j++) {
       const c = game.color(d.baseR/255, (d.baseG - j*d.fadeG)/255, (d.baseB - j*d.fadeB)/255);
@@ -327,7 +330,7 @@ game.Player = class {
             const rad = game.Player.LSR_DIR[i];
             const vx = Math.cos(rad) * 16;
             const vy = Math.sin(rad) * 16;
-            ctx.lasers.push(new game.Laser(this.x, this.y + 40, vx, vy, trg));
+            new game.Laser(this.x, this.y + 40, vx, vy, trg);
           }
           this.lsrPow = 0;
         }
