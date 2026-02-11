@@ -271,7 +271,7 @@ game.Enemy8 = class extends game.Enemy {
       r = game.DIR_UP;
     } else {
       if (this.frm < 92) {
-        this.angleStep = (this.frm - 60);
+        this.angleStep = Math.floor((this.frm - 60) / 2) * 2;
       }
       if (this.mv === 0) {
         r = game.DIR_UP - this.angleStep * game.A256;

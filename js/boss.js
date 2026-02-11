@@ -50,10 +50,10 @@ game.Boss = class {
         let y = game.rnd(100) - 50;
         game.spawnEffect(ctx, 0, this.x + x, this.y + y, 0);
       }
-      let x = game.rnd(4) - 2;
-      let y = (game.rnd(3) - 1) * 0.5;
-      this.x += x * 1;
-      this.y -= (y + 0.5) * 2;
+      let x = game.rnd(1024) / 256 - 2;
+      let y = game.rnd(256) / 256 - 0.5;
+      this.x += x;
+      this.y -= (y + 1);
       if (this.frm === 100) {
         for (let i = 0; i < 3; i++) {
           let a = (i + 1) * 50;
