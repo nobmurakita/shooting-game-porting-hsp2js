@@ -148,14 +148,11 @@ game.Boss = class {
   }
 
   // ボス描画（旧DrwBoss）
-  // 描画順: 翼(1,2)→本体(0)。本体を最後に描くことで重なり部分の継ぎ目を隠す
-  static DRAW_ORDER = [1, 2, 0];
-
   draw() {
     if (this.flg === game.BOSS_NONE) return;
 
     if (game.ctx.stage === 1) {
-      for (const i of game.Boss.DRAW_ORDER) {
+      for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
         const prt = this.parts[i];
         const d = prt.constructor.DATA;
         const ti = game.tile(prt.cx, d.texCy, d.sx, d.sy, d.tex);
