@@ -175,10 +175,10 @@ game.CollisionSystem = class {
 
   // 全衝突判定を一括実行
   static checkAllCollisions(ctx) {
-    if (ctx.boss.flg !== game.BOSS_BATTLE) {
-      game.CollisionSystem.checkPlayerShotsVsEnemies(ctx);
-      game.CollisionSystem.checkPlayerVsEnemies(ctx);
-    } else {
+    // 通常敵の衝突判定は常に実行（ボス戦突入時に残存敵がいる場合に備える）
+    game.CollisionSystem.checkPlayerShotsVsEnemies(ctx);
+    game.CollisionSystem.checkPlayerVsEnemies(ctx);
+    if (ctx.boss.flg === game.BOSS_BATTLE) {
       game.CollisionSystem.checkPlayerShotsVsBoss(ctx);
     }
     game.CollisionSystem.checkPlayerShotsVsEnemyShots(ctx);

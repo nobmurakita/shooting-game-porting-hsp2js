@@ -91,6 +91,10 @@ game.Laser = class {
   // ターゲット喪失検知 + 再検索
   updateTargeting(ctx) {
     if (this.sta === game.LSR_TRACKING && (this.trg === null || !this.trg.alive)) {
+      // ターゲット喪失時にlckOnをデクリメント（発射時の++と対応）
+      if (this.trg !== null) {
+        this.trg.lckOn--;
+      }
       this.sta = game.LSR_NO_TARGET;
     }
     if (this.sta === game.LSR_NO_TARGET) {
@@ -207,11 +211,6 @@ game.Laser = class {
     }
 
     this.frm++;
-
-    // レーザーが1本でも生存していればlsrFをオフに（充填不可）
-    if (this.alive) {
-      ctx.player.lsrF = game.LSR_CHARGE_OFF;
-    }
   }
 
   // レーザー描画（旧DrwLsr内ループ1回分）

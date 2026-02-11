@@ -39,11 +39,9 @@ game.Enemy = class {
   }
 
   // 敵出現処理（旧AprEne）
+  // ※ボス出現判定は start.js 側で実行
   static appear(ctx) {
     while (true) {
-      if (ctx.boss.aprFrm === ctx.frame) {
-        ctx.boss.flg = game.BOSS_BATTLE;
-      }
       if (ctx.enemyTableIndex === ctx.enemyTable.length) {
         return;
       }

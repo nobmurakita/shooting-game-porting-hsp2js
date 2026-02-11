@@ -22,7 +22,14 @@ game.gameInit = () => {
 //////////プレイヤーショット更新 + レーザー充填判定//////////
 game.updatePlayerShots = (ctx) => {
   for (const s of ctx.playerShots) { s.update(); }
-  if (ctx.player.lsrPow === 0) { ctx.player.lsrF = game.LSR_CHARGE_ON; }
+  // レーザー充填判定を一元管理
+  if (ctx.lasers.some(l => l.alive)) {
+    // レーザー生存中は充填不可
+    ctx.player.lsrF = game.LSR_CHARGE_OFF;
+  } else if (ctx.player.lsrPow <= 0) {
+    // 全レーザー消滅かつパワー0で充填再開
+    ctx.player.lsrF = game.LSR_CHARGE_ON;
+  }
 };
 
 //////////敵ショット・レーザー・エフェクト更新//////////
@@ -93,6 +100,10 @@ game.gameUpdate = () => {
     } else {
       game.ctx.player.update(game.ctx);
       game.updatePlayerShots(game.ctx);
+      // ボス出現判定（Enemy.appear()の外で常に判定）
+      if (game.ctx.boss.flg === game.BOSS_NONE && game.ctx.boss.aprFrm === game.ctx.frame) {
+        game.ctx.boss.flg = game.BOSS_BATTLE;
+      }
       // 敵/ボス更新
       if (game.ctx.boss.flg === game.BOSS_NONE) {
         game.Enemy.appear(game.ctx);
