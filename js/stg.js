@@ -67,19 +67,36 @@ game.TEX = {
   BOSS0: 14, BOSS1: 15, TITLE: 16,
 };
 
-//////////タイル生成ヘルパー（ピクセル座標版）//////////
+//////////タイル生成ヘルパー（ピクセル座標版・キャッシュ付き）//////////
 // テクスチャ座標(pixelX, pixelY, w, h)を受け取りTileInfoを返す。
 // 半テクセル内側にインセットし、テクスチャブリーディングを防止。
 // drawSize: 描画サイズ（drawTileの第2引数用）。
+// 同一パラメータのTileInfoはキャッシュから返す。
+game._tileCache = new Map();
 game.tile = (pixelX, pixelY, w, h, texIndex) => {
-  const t = tile(vec2(pixelX / w, pixelY / h), vec2(w, h), texIndex);
+  const key = pixelX + ',' + pixelY + ',' + w + ',' + h + ',' + texIndex;
+  let t = game._tileCache.get(key);
+  if (t) return t;
+  t = tile(vec2(pixelX / w, pixelY / h), vec2(w, h), texIndex);
   const pad = 0.5;
   t.pos.x += pad;
   t.pos.y += pad;
   t.size.x -= pad * 2;
   t.size.y -= pad * 2;
   t.drawSize = vec2(w, h);
+  game._tileCache.set(key, t);
   return t;
+};
+
+//////////Color生成ヘルパー（キャッシュ付き）//////////
+game._colorCache = new Map();
+game.color = (r, g, b, a = 1) => {
+  const key = r + ',' + g + ',' + b + ',' + a;
+  let c = game._colorCache.get(key);
+  if (c) return c;
+  c = new Color(r, g, b, a);
+  game._colorCache.set(key, c);
+  return c;
 };
 
 //////////乱数ヘルパー（hsp.rnd置き換え）//////////

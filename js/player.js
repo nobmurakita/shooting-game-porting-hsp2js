@@ -219,7 +219,7 @@ game.Laser = class {
     if (!this.alive) return;
     const d = game.Laser.DRAW;
     for (let j = 0; j < d.segments; j++) {
-      const c = new Color(d.baseR/255, (d.baseG - j*d.fadeG)/255, (d.baseB - j*d.fadeB)/255);
+      const c = game.color(d.baseR/255, (d.baseG - j*d.fadeG)/255, (d.baseB - j*d.fadeB)/255);
       drawLine(vec2(this.x[j], this.y[j]), vec2(this.x[j+1], this.y[j+1]), 6, c);
     }
   }

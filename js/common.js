@@ -72,7 +72,7 @@ game.IniCom = () => {
     game.bgStars.push({
       x: game.rnd(game.SCREEN_W),
       y: game.rnd(game.SCREEN_H),
-      color: new Color(
+      color: game.color(
         (255 - game.rnd(100)) / 255,
         (255 - game.rnd(100)) / 255,
         (255 - game.rnd(100)) / 255
@@ -94,7 +94,7 @@ game.updateBackground = (ctx) => {
 game.BackGround = () => {
   const bg1 = game.ctx.bg1;
   // 背景色（暗い黄色）
-  drawRect(vec2(0, 0), vec2(game.SCREEN_W, game.SCREEN_H), new Color(20/255, 20/255, 0));
+  drawRect(vec2(0, 0), vec2(game.SCREEN_W, game.SCREEN_H), game.color(20/255, 20/255, 0));
 
   // スクロールする星
   const H = game.SCREEN_H;
