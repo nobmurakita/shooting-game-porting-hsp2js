@@ -9,7 +9,6 @@ game.EnemyShot = class {
     this.dir = dir;
     this.frm = 0;
     this.cx = 0;
-    this.tmp = [0, 0, 0, 0];
     this.initAI();
   }
 
@@ -47,7 +46,7 @@ game.EnemyShot0 = class extends game.EnemyShot {
   updateAI(ctx) {
     this.x += Math.cos(this.dir) * 7;
     this.y += Math.sin(this.dir) * 7;
-    if (this.x < -320 || this.x > 320 || this.y < -320 || this.y > 320) {
+    if (this.x < -game.BOUNDS.SHOT || this.x > game.BOUNDS.SHOT || this.y < -game.BOUNDS.SHOT || this.y > game.BOUNDS.SHOT) {
       this.alive = false;
     }
   }
@@ -61,7 +60,7 @@ game.EnemyShot1 = class extends game.EnemyShot {
     this.x += Math.cos(this.dir) * 5;
     this.y += Math.sin(this.dir) * 5;
     this.cx = (Math.floor(this.frm / 2) % 16) * 40 + 640;
-    if (this.x < -320 || this.x > 320 || this.y < -320 || this.y > 320) {
+    if (this.x < -game.BOUNDS.SHOT || this.x > game.BOUNDS.SHOT || this.y < -game.BOUNDS.SHOT || this.y > game.BOUNDS.SHOT) {
       this.alive = false;
     }
   }
@@ -71,6 +70,11 @@ game.EnemyShot1 = class extends game.EnemyShot {
 game.EnemyShot2 = class extends game.EnemyShot {
   static DATA = { sx: 40, sy: 40, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10, tex: game.TEX.ENESHT, texCy: 40 };
 
+  initAI() {
+    this.vx = 0;
+    this.vy = 0;
+  }
+
   updateAI(ctx) {
     const ply = ctx.player;
 
@@ -78,14 +82,14 @@ game.EnemyShot2 = class extends game.EnemyShot {
       if ((this.frm < 160 && ply.alive) || this.frm === 0) {
         this.dir = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
       }
-      this.tmp[0] += Math.cos(this.dir) * 2 / 3;
-      this.tmp[1] += Math.sin(this.dir) * 2 / 3;
+      this.vx += Math.cos(this.dir) * 2 / 3;
+      this.vy += Math.sin(this.dir) * 2 / 3;
     }
-    this.x += this.tmp[0];
-    this.y += this.tmp[1];
+    this.x += this.vx;
+    this.y += this.vy;
     if (this.frm % 2 === 0) {
-      this.tmp[0] = this.tmp[0] * 14 / 15;
-      this.tmp[1] = this.tmp[1] * 14 / 15;
+      this.vx = this.vx * 14 / 15;
+      this.vy = this.vy * 14 / 15;
     }
     this.cx = game.radToSpriteFrame(this.dir, 32, 40);
     if (this.frm % 6 === 0) {
@@ -94,7 +98,7 @@ game.EnemyShot2 = class extends game.EnemyShot {
       game.spawnEffect(ctx, 2, -Math.cos(this.dir) * 20 + this.x + x, -Math.sin(this.dir) * 20 + this.y + y, 0);
     }
     if (this.frm > 160) {
-      if (this.x < -320 || this.x > 320 || this.y < -320 || this.y > 320) {
+      if (this.x < -game.BOUNDS.SHOT || this.x > game.BOUNDS.SHOT || this.y < -game.BOUNDS.SHOT || this.y > game.BOUNDS.SHOT) {
         this.alive = false;
       }
     }

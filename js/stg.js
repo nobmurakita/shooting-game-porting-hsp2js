@@ -26,6 +26,15 @@ game.LSR_CHARGE_ON  = 1;
 game.SCREEN_W = 600;
 game.SCREEN_H = 600;
 
+// 画面境界
+game.BOUNDS = {
+  PLAYER: 260,    // プレイヤー移動制限（画面端-40）
+  ENEMY: 340,     // 敵消滅判定（画面端+40）
+  ENEMY_FAR: 360, // 一部敵の消滅判定（画面端+60）
+  SHOT: 320,      // 敵ショット消滅判定（画面端+20）
+  LASER: 300,     // レーザー消滅判定（画面端ちょうど）
+};
+
 // 背景
 game.BG_STAR_COUNT   = 300;
 game.BG_SCROLL_SPEED = 1;

@@ -200,7 +200,7 @@ game.Laser = class {
 
     // ターゲットなし状態で画面外に出たら消滅開始
     if (this.sta === game.LSR_NO_TARGET) {
-      if (this.x[0] < -300 || 300 < this.x[0] || this.y[0] < -300 || 300 < this.y[0]) {
+      if (this.x[0] < -game.BOUNDS.LASER || game.BOUNDS.LASER < this.x[0] || this.y[0] < -game.BOUNDS.LASER || game.BOUNDS.LASER < this.y[0]) {
         this.sta = game.LSR_DYING;
       }
     }
@@ -228,9 +228,6 @@ game.Laser = class {
 game.Player = class {
   // 当たり判定の半幅・半高（中心からの距離）
   static HITBOX = { hw: 10, hh: 10 };
-  // 移動制限（画面端からのマージン）
-  static MOVE_MIN = -260;
-  static MOVE_MAX = 260;
   static CONFIG = {
     moveSpeed: 5.5,
     shotInterval: 6,
@@ -297,10 +294,10 @@ game.Player = class {
     }
 
     // はみ出し制限
-    if (this.x < game.Player.MOVE_MIN) { this.x = game.Player.MOVE_MIN; }
-    if (this.y < game.Player.MOVE_MIN) { this.y = game.Player.MOVE_MIN; }
-    if (this.x > game.Player.MOVE_MAX) { this.x = game.Player.MOVE_MAX; }
-    if (this.y > game.Player.MOVE_MAX) { this.y = game.Player.MOVE_MAX; }
+    if (this.x < -game.BOUNDS.PLAYER) { this.x = -game.BOUNDS.PLAYER; }
+    if (this.y < -game.BOUNDS.PLAYER) { this.y = -game.BOUNDS.PLAYER; }
+    if (this.x > game.BOUNDS.PLAYER) { this.x = game.BOUNDS.PLAYER; }
+    if (this.y > game.BOUNDS.PLAYER) { this.y = game.BOUNDS.PLAYER; }
 
     // ショット発射
     if (this.shtCnt !== 0) {
