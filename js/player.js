@@ -263,12 +263,14 @@ game.Player = class {
     this.shtLV = 1;
     this.lsrF = game.LSR_CHARGE_OFF;
     this.lsrPow = 0;
+    this.lsrPowDisplay = 0;
   }
 
   // プレーヤー移動（旧MovPly）
   update(ctx) {
     if (!this.alive) {
       this.lsrPow = 0;
+      this.lsrPowDisplay = Math.max(0, this.lsrPowDisplay - game.Player.CONFIG.laserDecay);
       return;
     }
 
@@ -326,6 +328,7 @@ game.Player = class {
             const vy = Math.sin(rad) * 16;
             ctx.lasers.push(new game.Laser(this.x, this.y + 40, vx, vy, trg));
           }
+          this.lsrPow = 0;
         }
       } else {
         this.lsrPow += (game.keyIsDown(game.KEY_SHOT) ? game.Player.CONFIG.laserChargeShot : game.Player.CONFIG.laserChargeIdle);
@@ -339,6 +342,9 @@ game.Player = class {
         this.lsrPow = 0;
       }
     }
+
+    // レーザーバー表示用（実パワーに追従しつつ、ゆっくり減少）
+    this.lsrPowDisplay = Math.max(this.lsrPow, this.lsrPowDisplay - game.Player.CONFIG.laserDecay);
 
     // 被弾カウンタ減少
     if (this.hitCnt !== 0) {

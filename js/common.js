@@ -154,7 +154,7 @@ game.drawStatusUI = () => {
   // レーザー
   game.drawUI(-260, -284, game.tile(ui.laserLabel.cx, ui.laserLabel.cy, ui.laserLabel.sx, ui.laserLabel.sy, tex));
   game.drawUI(-140, -288, game.tile(ui.laserBarBg.cx, ui.laserBarBg.cy, ui.laserBarBg.sx, ui.laserBarBg.sy, tex));
-  const barW = Math.floor(game.ctx.player.lsrPow / 2);
+  const barW = Math.floor(game.ctx.player.lsrPowDisplay / 2);
   if (barW > 0) {
     game.drawUI(barW / 2 - 220, -288, game.tile(ui.laserBarFg.cx, ui.laserBarFg.cy, barW, ui.laserBarFg.sy, tex));
   }
