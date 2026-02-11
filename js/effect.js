@@ -29,7 +29,9 @@ game.Effect = class extends game.GameObject {
     if (this.frm <= 0) return;
     const d = this.constructor.DATA;
     const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
-    drawTile(vec2(this.x, this.y), ti.drawSize, ti);
+    setBlendMode(true);
+    drawTile(vec2(this.x, this.y), ti.drawSize, ti, game.color(1, 1, 1, 0.8));
+    setBlendMode();
   }
 };
 
