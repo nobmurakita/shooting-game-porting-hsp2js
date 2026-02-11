@@ -23,12 +23,15 @@ game.gameInit = () => {
   game.Enemy.initData();
 };
 
-//////////残存オブジェクト更新（ショット・レーザー・エフェクト）//////////
-game.updateRemaining = (ctx) => {
+//////////プレイヤーショット更新 + レーザー充填判定//////////
+game.updatePlayerShots = (ctx) => {
   for (const s of ctx.playerShots) { s.update(); }
-  for (const s of ctx.enemyShots) { s.update(ctx); }
-  // レーザーのLsrF初期化（全レーザーが非生存ならLsrF=1にする）
   if (ctx.player.lsrPow === 0) { ctx.player.lsrF = game.LSR_CHARGE_ON; }
+};
+
+//////////敵ショット・レーザー・エフェクト更新//////////
+game.updateProjectiles = (ctx) => {
+  for (const s of ctx.enemyShots) { s.update(ctx); }
   for (const l of ctx.lasers) { l.update(ctx); }
   for (const e of ctx.effects) { e.update(); }
 };
@@ -91,12 +94,8 @@ game.gameUpdate = () => {
     if (game.keyWasPressed(game.KEY_ESC)) {
       game.ctx.gameSta = game.STA_OPENING;
     } else {
-      // プレーヤー更新
       game.ctx.player.update(game.ctx);
-      // プレーヤーショット更新
-      for (const s of game.ctx.playerShots) { s.update(); }
-      // レーザーのLsrF初期化（全レーザーが非生存ならLsrF=1にする）
-      if (game.ctx.player.lsrPow === 0) { game.ctx.player.lsrF = game.LSR_CHARGE_ON; }
+      game.updatePlayerShots(game.ctx);
       // 敵/ボス更新
       if (game.ctx.boss.flg === game.BOSS_NONE) {
         game.Enemy.appear(game.ctx);
@@ -104,10 +103,7 @@ game.gameUpdate = () => {
       } else {
         game.ctx.boss.update(game.ctx);
       }
-      // 敵ショット・レーザー・エフェクト更新
-      for (const s of game.ctx.enemyShots) { s.update(game.ctx); }
-      for (const l of game.ctx.lasers) { l.update(game.ctx); }
-      for (const e of game.ctx.effects) { e.update(); }
+      game.updateProjectiles(game.ctx);
       game.updateBackground(game.ctx);
       game.ctx.frame++;
       if (game.keyWasPressed(game.KEY_SHIFT)) {
@@ -124,7 +120,8 @@ game.gameUpdate = () => {
       game.ctx.gameSta = game.STA_INIT;
     }
     game.updateBackground(game.ctx);
-    game.updateRemaining(game.ctx);
+    game.updatePlayerShots(game.ctx);
+    game.updateProjectiles(game.ctx);
   } else if (game.ctx.gameSta === game.STA_ENDING) {
     game.ctx.gameSta = game.STA_OPENING;
   } else if (game.ctx.gameSta === game.STA_PAUSE) {
