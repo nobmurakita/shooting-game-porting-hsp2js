@@ -150,7 +150,7 @@ game.Enemy2 = class extends game.Enemy {
     }
     this.cx = game.radToSpriteFrame(r, 32, 80);
     if (this.frm > 160) {
-      if (this.x < -game.BOUNDS.ENEMY || this.x > game.BOUNDS.ENEMY || this.y < -game.BOUNDS.ENEMY || this.y > game.BOUNDS.ENEMY) {
+      if (game.isOutOfBounds(this.x, this.y, game.BOUNDS.ENEMY)) {
         this.alive = false;
       }
     }

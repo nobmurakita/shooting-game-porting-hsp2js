@@ -35,6 +35,10 @@ game.BOUNDS = {
   LASER: 300,     // レーザー消滅判定（画面端ちょうど）
 };
 
+// 画面外判定ユーティリティ（XY全方向）
+game.isOutOfBounds = (x, y, bound) =>
+  x < -bound || x > bound || y < -bound || y > bound;
+
 // 背景
 game.BG_STAR_COUNT   = 300;
 game.BG_SCROLL_SPEED = 1;

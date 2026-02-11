@@ -23,7 +23,7 @@ game.CollisionSystem = class {
 
   // プレイヤーショット vs 敵
   static checkPlayerShotsVsEnemies(ctx) {
-    const sh = game.PlayerShot.HITBOX;
+    const sd = game.PlayerShot.DATA;
     for (const e of ctx.enemies) {
       if (!e.alive) continue;
       const d = e.constructor.DATA;
@@ -32,7 +32,7 @@ game.CollisionSystem = class {
         if (!s.alive) continue;
         if (game.CollisionSystem.checkAABB(
           d.hitX1 + e.x, d.hitY1 + e.y, d.hitX2 + e.x, d.hitY2 + e.y,
-          s.x - sh.hw, s.y - sh.hh, s.x + sh.hw, s.y + sh.hh
+          sd.hitX1 + s.x, sd.hitY1 + s.y, sd.hitX2 + s.x, sd.hitY2 + s.y
         )) {
           ctx.score += 10;
           s.alive = false;
@@ -52,7 +52,7 @@ game.CollisionSystem = class {
   static checkPlayerVsEnemies(ctx) {
     const ply = ctx.player;
     if (ply.hitCnt !== 0) return;
-    const ph = game.Player.HITBOX;
+    const pd = game.Player.DATA;
 
     for (const e of ctx.enemies) {
       if (!e.alive) continue;
@@ -60,7 +60,7 @@ game.CollisionSystem = class {
 
       if (game.CollisionSystem.checkAABB(
         d.hitX1 + e.x, d.hitY1 + e.y, d.hitX2 + e.x, d.hitY2 + e.y,
-        ply.x - ph.hw, ply.y - ph.hh, ply.x + ph.hw, ply.y + ph.hh
+        pd.hitX1 + ply.x, pd.hitY1 + ply.y, pd.hitX2 + ply.x, pd.hitY2 + ply.y
       )) {
         e.alive = false;
         // 敵の爆発エフェクト（小）
@@ -85,7 +85,7 @@ game.CollisionSystem = class {
   static checkPlayerShotsVsBoss(ctx) {
     const boss = ctx.boss;
     if (boss.flg !== game.BOSS_BATTLE) return;
-    const sh = game.PlayerShot.HITBOX;
+    const sd = game.PlayerShot.DATA;
 
     for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
       const prt = boss.parts[i];
@@ -98,8 +98,8 @@ game.CollisionSystem = class {
         if (game.CollisionSystem.checkAABB(
           boss.x + d.x + d.hitX1, boss.y + d.y + d.hitY1,
           boss.x + d.x + d.hitX2, boss.y + d.y + d.hitY2,
-          s.x - sh.hw, s.y - sh.hh,
-          s.x + sh.hw, s.y + sh.hh
+          sd.hitX1 + s.x, sd.hitY1 + s.y,
+          sd.hitX2 + s.x, sd.hitY2 + s.y
         )) {
           ctx.score += 10;
           s.alive = false;
@@ -125,7 +125,7 @@ game.CollisionSystem = class {
   static checkEnemyShotsVsPlayer(ctx) {
     const ply = ctx.player;
     if (ply.hitCnt !== 0) return;
-    const ph = game.Player.HITBOX;
+    const pd = game.Player.DATA;
 
     for (const es of ctx.enemyShots) {
       if (!es.alive) continue;
@@ -133,7 +133,7 @@ game.CollisionSystem = class {
 
       if (game.CollisionSystem.checkAABB(
         d.hitX1 + es.x, d.hitY1 + es.y, d.hitX2 + es.x, d.hitY2 + es.y,
-        ply.x - ph.hw, ply.y - ph.hh, ply.x + ph.hw, ply.y + ph.hh
+        pd.hitX1 + ply.x, pd.hitY1 + ply.y, pd.hitX2 + ply.x, pd.hitY2 + ply.y
       )) {
         es.alive = false;
         ply.shield--;
@@ -151,7 +151,7 @@ game.CollisionSystem = class {
 
   // プレイヤーショット vs 誘導弾（EnemyShot2）
   static checkPlayerShotsVsEnemyShots(ctx) {
-    const sh = game.PlayerShot.HITBOX;
+    const sd = game.PlayerShot.DATA;
     for (const es of ctx.enemyShots) {
       if (!es.alive) continue;
       if (!(es instanceof game.EnemyShot2)) continue;
@@ -161,7 +161,7 @@ game.CollisionSystem = class {
         if (!ps.alive) continue;
         if (game.CollisionSystem.checkAABB(
           d.hitX1 + es.x, d.hitY1 + es.y, d.hitX2 + es.x, d.hitY2 + es.y,
-          ps.x - sh.hw, ps.y - sh.hh, ps.x + sh.hw, ps.y + sh.hh
+          sd.hitX1 + ps.x, sd.hitY1 + ps.y, sd.hitX2 + ps.x, sd.hitY2 + ps.y
         )) {
           ctx.score += 10;
           ps.alive = false;

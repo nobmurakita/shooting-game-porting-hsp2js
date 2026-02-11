@@ -1,9 +1,7 @@
 //////////プレーヤーショットクラス//////////
 game.PlayerShot = class {
-  // 当たり判定の半幅・半高（中心からの距離）
-  static HITBOX = { hw: 10, hh: 20 };
   static CONFIG = { speed: 16, offscreenY: 340 };
-  static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: game.TEX.PLAYER };
+  static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: game.TEX.PLAYER, hitX1: -10, hitY1: -20, hitX2: 10, hitY2: 20 };
 
   constructor(x, y, dir) {
     this.alive = true;
@@ -57,10 +55,8 @@ game.Laser = class {
     this.frm = 0;
   }
 
-  // レーザー移動・追跡・衝突判定（旧MovLsr内ループ1回分 + LsrHit）
-  update(ctx) {
-    if (!this.alive) return;
-
+  // 節シフト + 加速・減衰 + 消滅収束
+  updateMovement() {
     // 節の位置を後方にシフト
     for (let j = 0; j < 7; j++) {
       const a = 7 - j;
@@ -69,10 +65,9 @@ game.Laser = class {
       this.y[a] = this.y[b];
     }
 
-    const dir = this.dir;
-
     if (this.sta !== game.LSR_DYING) {
       // 追跡中 or ターゲットなし: 加速・減衰は偶数フレームのみ、移動は毎フレーム
+      const dir = this.dir;
       if (this.frm % 2 === 0) {
         this.vx += Math.cos(dir) * game.Laser.CONFIG.accel;
         this.vy += Math.sin(dir) * game.Laser.CONFIG.accel;
@@ -94,8 +89,10 @@ game.Laser = class {
         this.alive = false;
       }
     }
+  }
 
-    // --- ターゲットが消滅、またはターゲットなし状態なら再検索 ---
+  // ターゲット喪失検知 + 再検索
+  updateTargeting(ctx) {
     if (this.sta === game.LSR_TRACKING && (this.trg === null || !this.trg.alive)) {
       if (this.trg !== null) { this.trg.lckOn--; }
       this.sta = game.LSR_NO_TARGET;
@@ -108,99 +105,106 @@ game.Laser = class {
         newTrg.lckOn++;
       }
     }
+  }
 
-    // --- 敵モード ---
+  // 衝突判定 + ダメージ + 撃破 + 方向更新
+  checkHit(ctx) {
+    if (this.sta !== game.LSR_TRACKING) return;
+
     if (ctx.boss.flg !== game.BOSS_BATTLE) {
-      // ターゲット追跡中: 衝突判定と方向更新
-      if (this.sta === game.LSR_TRACKING) {
-        const e = this.trg;
-        const d = e.constructor.DATA;
+      // --- 敵モード ---
+      const e = this.trg;
+      const d = e.constructor.DATA;
 
-        // 衝突判定（点 vs 矩形）
-        const hit = game.CollisionSystem.checkAABB(
-          this.x[0], this.y[0], this.x[0], this.y[0],
-          d.hitX1 + e.x, d.hitY1 + e.y,
-          d.hitX2 + e.x, d.hitY2 + e.y
+      // 衝突判定（点 vs 矩形）
+      const hit = game.CollisionSystem.checkAABB(
+        this.x[0], this.y[0], this.x[0], this.y[0],
+        d.hitX1 + e.x, d.hitY1 + e.y,
+        d.hitX2 + e.x, d.hitY2 + e.y
+      );
+
+      if (hit) {
+        ctx.score += game.Laser.CONFIG.hitScore;
+        e.shield -= game.Laser.CONFIG.damage;
+        e.lckOn--;
+        this.sta = game.LSR_DYING;
+
+        // ヒットエフェクト
+        game.spawnHitSparks(ctx, this.x[0], this.y[0], 2);
+
+        // 敵撃破
+        if (e.shield <= 0) {
+          e.alive = false;
+          game.spawnExplosion(ctx, e.x, e.y, d.sx, d.sy, 3);
+        }
+      }
+
+      // ターゲットへの方向を更新（2フレームに1回）
+      if (this.frm % 2 === 0) {
+        this.dir = game.CollisionSystem.calcDir(
+          this.x[0], this.y[0], e.x, e.y
         );
-
-        if (hit) {
-          ctx.score += game.Laser.CONFIG.hitScore;
-          e.shield -= game.Laser.CONFIG.damage;
-          e.lckOn--;
-          this.sta = game.LSR_DYING;
-
-          // ヒットエフェクト
-          game.spawnHitSparks(ctx, this.x[0], this.y[0], 2);
-
-          // 敵撃破
-          if (e.shield <= 0) {
-            e.alive = false;
-            game.spawnExplosion(ctx, e.x, e.y, d.sx, d.sy, 3);
-          }
-        }
-
-        // ターゲットへの方向を更新（2フレームに1回）
-        if (this.frm % 2 === 0) {
-          this.dir = game.CollisionSystem.calcDir(
-            this.x[0], this.y[0], e.x, e.y
-          );
-        }
       }
     } else {
       // --- ボスモード ---
       const boss = ctx.boss;
+      const p = this.trg;
+      const pd = p.constructor.DATA;
 
-      // ターゲット追跡中: 衝突判定と方向更新
-      if (this.sta === game.LSR_TRACKING) {
-        const p = this.trg;
-        const pd = p.constructor.DATA;
+      // 衝突判定（点 vs 矩形）
+      const hit = game.CollisionSystem.checkAABB(
+        this.x[0], this.y[0], this.x[0], this.y[0],
+        (pd.x + pd.hitX1) + boss.x, (pd.y + pd.hitY1) + boss.y,
+        (pd.x + pd.hitX2) + boss.x, (pd.y + pd.hitY2) + boss.y
+      );
 
-        // 衝突判定（点 vs 矩形）
-        const hit = game.CollisionSystem.checkAABB(
-          this.x[0], this.y[0], this.x[0], this.y[0],
-          (pd.x + pd.hitX1) + boss.x, (pd.y + pd.hitY1) + boss.y,
-          (pd.x + pd.hitX2) + boss.x, (pd.y + pd.hitY2) + boss.y
-        );
+      if (hit) {
+        ctx.score += game.Laser.CONFIG.hitScore;
+        boss.shield -= game.Laser.CONFIG.damage;
+        p.shield -= game.Laser.CONFIG.damage;
+        p.lckOn--;
+        this.sta = game.LSR_DYING;
 
-        if (hit) {
-          ctx.score += game.Laser.CONFIG.hitScore;
-          boss.shield -= game.Laser.CONFIG.damage;
-          p.shield -= game.Laser.CONFIG.damage;
-          p.lckOn--;
-          this.sta = game.LSR_DYING;
+        // ヒットエフェクト
+        game.spawnHitSparks(ctx, this.x[0], this.y[0], 2);
 
-          // ヒットエフェクト
-          game.spawnHitSparks(ctx, this.x[0], this.y[0], 2);
-
-          // ボス撃破判定
-          if (boss.shield <= 0) {
-            boss.shield = 0;
-            boss.flg = game.BOSS_DESTROY;
-            boss.frm = 0;
-          }
-
-          // パーツ破壊
-          if (p.shield <= 0) {
-            p.alive = false;
-            p.cx = pd.sx;
-            game.spawnExplosion(ctx, pd.x + boss.x, pd.y + boss.y, pd.sx, pd.sy, 3);
-          }
+        // ボス撃破判定
+        if (boss.shield <= 0) {
+          boss.shield = 0;
+          boss.flg = game.BOSS_DESTROY;
+          boss.frm = 0;
         }
 
-        // ターゲットパーツへの方向を更新（2フレームに1回）
-        if (this.frm % 2 === 0) {
-          this.dir = game.CollisionSystem.calcDir(
-            this.x[0], this.y[0],
-            pd.x + boss.x,
-            pd.y + boss.y
-          );
+        // パーツ破壊
+        if (p.shield <= 0) {
+          p.alive = false;
+          p.cx = pd.sx;
+          game.spawnExplosion(ctx, pd.x + boss.x, pd.y + boss.y, pd.sx, pd.sy, 3);
         }
       }
+
+      // ターゲットパーツへの方向を更新（2フレームに1回）
+      if (this.frm % 2 === 0) {
+        this.dir = game.CollisionSystem.calcDir(
+          this.x[0], this.y[0],
+          pd.x + boss.x,
+          pd.y + boss.y
+        );
+      }
     }
+  }
+
+  // レーザー移動・追跡・衝突判定（旧MovLsr内ループ1回分 + LsrHit）
+  update(ctx) {
+    if (!this.alive) return;
+
+    this.updateMovement();
+    this.updateTargeting(ctx);
+    this.checkHit(ctx);
 
     // ターゲットなし状態で画面外に出たら消滅開始
     if (this.sta === game.LSR_NO_TARGET) {
-      if (this.x[0] < -game.BOUNDS.LASER || game.BOUNDS.LASER < this.x[0] || this.y[0] < -game.BOUNDS.LASER || game.BOUNDS.LASER < this.y[0]) {
+      if (game.isOutOfBounds(this.x[0], this.y[0], game.BOUNDS.LASER)) {
         this.sta = game.LSR_DYING;
       }
     }
@@ -226,8 +230,6 @@ game.Laser = class {
 
 //////////プレーヤークラス//////////
 game.Player = class {
-  // 当たり判定の半幅・半高（中心からの距離）
-  static HITBOX = { hw: 10, hh: 10 };
   static CONFIG = {
     moveSpeed: 5.5,
     shotInterval: 6,
@@ -241,7 +243,7 @@ game.Player = class {
     initY: -220,
     hitInvincible: 100,
   };
-  static DATA = { sx: 80, sy: 80, baseX: 240, normalY: 0, hitY: 80, tex: game.TEX.PLAYER };
+  static DATA = { sx: 80, sy: 80, baseX: 240, normalY: 0, hitY: 80, tex: game.TEX.PLAYER, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10 };
   // ショット発射方向テーブル（ラジアン、旧DatShtDir）
   static SHT_DIR = [192, 192, 191, 193, 190, 194, 184, 200, 174, 210, 166, 218].map(a => -a * Math.PI / 128);
   // レーザー発射方向テーブル（ラジアン、旧DatLsrDir）

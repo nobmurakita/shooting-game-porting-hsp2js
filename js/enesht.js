@@ -46,7 +46,7 @@ game.EnemyShot0 = class extends game.EnemyShot {
   updateAI(ctx) {
     this.x += Math.cos(this.dir) * 7;
     this.y += Math.sin(this.dir) * 7;
-    if (this.x < -game.BOUNDS.SHOT || this.x > game.BOUNDS.SHOT || this.y < -game.BOUNDS.SHOT || this.y > game.BOUNDS.SHOT) {
+    if (game.isOutOfBounds(this.x, this.y, game.BOUNDS.SHOT)) {
       this.alive = false;
     }
   }
@@ -60,7 +60,7 @@ game.EnemyShot1 = class extends game.EnemyShot {
     this.x += Math.cos(this.dir) * 5;
     this.y += Math.sin(this.dir) * 5;
     this.cx = (Math.floor(this.frm / 2) % 16) * 40 + 640;
-    if (this.x < -game.BOUNDS.SHOT || this.x > game.BOUNDS.SHOT || this.y < -game.BOUNDS.SHOT || this.y > game.BOUNDS.SHOT) {
+    if (game.isOutOfBounds(this.x, this.y, game.BOUNDS.SHOT)) {
       this.alive = false;
     }
   }
@@ -98,7 +98,7 @@ game.EnemyShot2 = class extends game.EnemyShot {
       game.spawnEffect(ctx, 2, -Math.cos(this.dir) * 20 + this.x + x, -Math.sin(this.dir) * 20 + this.y + y, 0);
     }
     if (this.frm > 160) {
-      if (this.x < -game.BOUNDS.SHOT || this.x > game.BOUNDS.SHOT || this.y < -game.BOUNDS.SHOT || this.y > game.BOUNDS.SHOT) {
+      if (game.isOutOfBounds(this.x, this.y, game.BOUNDS.SHOT)) {
         this.alive = false;
       }
     }
