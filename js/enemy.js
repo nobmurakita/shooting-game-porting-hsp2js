@@ -91,7 +91,8 @@ game.Enemy = class extends game.GameObject {
 
 // ki=0: 蛇行しながら下降する雑魚
 game.Enemy0 = class extends game.Enemy {
-  static DATA = { shield: 2, sx: 40, sy: 80, hitX1: -10, hitY1: -30, hitX2: 10, hitY2: 30, tex: game.TEX.ENEMY0, texCy: 0 };
+  static DATA = { shield: 2, sx: 40, sy: 80, tex: game.TEX.ENEMY0, texCy: 0 };
+  static HIT = { x1: -10, y1: -30, x2: 10, y2: 30 };
 
   updateAI() {
     let r = 1.5 * this.frm * game.A256;
@@ -110,7 +111,8 @@ game.Enemy0 = class extends game.Enemy {
 
 // ki=1: 螺旋移動する敵
 game.Enemy1 = class extends game.Enemy {
-  static DATA = { shield: 2, sx: 80, sy: 80, hitX1: -20, hitY1: -20, hitX2: 20, hitY2: 20, tex: game.TEX.ENEMY1, texCy: 0 };
+  static DATA = { shield: 2, sx: 80, sy: 80, tex: game.TEX.ENEMY1, texCy: 0 };
+  static HIT = { x1: -20, y1: -20, x2: 20, y2: 20 };
 
   initAI() {
     this.angleStep = 0;
@@ -140,7 +142,8 @@ game.Enemy1 = class extends game.Enemy {
 
 // ki=2: プレイヤー追尾型
 game.Enemy2 = class extends game.Enemy {
-  static DATA = { shield: 4, sx: 80, sy: 80, hitX1: -30, hitY1: -30, hitX2: 30, hitY2: 30, tex: game.TEX.ENEMY2, texCy: 0 };
+  static DATA = { shield: 4, sx: 80, sy: 80, tex: game.TEX.ENEMY2, texCy: 0 };
+  static HIT = { x1: -30, y1: -30, x2: 30, y2: 30 };
 
   initAI() {
     this.trackDir = 0;
@@ -153,7 +156,7 @@ game.Enemy2 = class extends game.Enemy {
     let r = this.trackDir;
     if (this.frm % 2 === 0) {
       if ((this.frm <= 160 && ply.alive) || this.frm === 0) {
-        r = game.CollisionSystem.calcDir(this.pos.x, this.pos.y, ply.pos.x, ply.pos.y);
+        r = game.CollisionSystem.calcDir(this.pos, ply.pos);
         this.trackDir = r;
       }
       this.vx += Math.cos(r) * 0.5;
@@ -179,13 +182,14 @@ game.Enemy2 = class extends game.Enemy {
 
 // ki=3: 直進しながら弾を撃つ
 game.Enemy3 = class extends game.Enemy {
-  static DATA = { shield: 4, sx: 80, sy: 120, hitX1: -40, hitY1: -40, hitX2: 40, hitY2: 40, tex: game.TEX.ENEMY3, texCy: 0 };
+  static DATA = { shield: 4, sx: 80, sy: 120, tex: game.TEX.ENEMY3, texCy: 0 };
+  static HIT = { x1: -40, y1: -40, x2: 40, y2: 40 };
 
   updateAI() {
     const ply = game.ctx.player;
     this.pos.y -= 4;
     if (this.frm === 40 || this.frm === 80 || this.frm === 120 || this.frm === 160) {
-      const dir = game.CollisionSystem.calcDir(this.pos.x, this.pos.y, ply.pos.x, ply.pos.y);
+      const dir = game.CollisionSystem.calcDir(this.pos, ply.pos);
       game.spawnEnemyShot(1, this.pos.x, this.pos.y - 60, dir);
     }
     this.cx = 0;
@@ -197,7 +201,8 @@ game.Enemy3 = class extends game.Enemy {
 
 // ki=4: 上昇しながら扇状弾を撃つ
 game.Enemy4 = class extends game.Enemy {
-  static DATA = { shield: 40, sx: 240, sy: 120, hitX1: -100, hitY1: -30, hitX2: 100, hitY2: 20, tex: game.TEX.ENEMY4, texCy: 0 };
+  static DATA = { shield: 40, sx: 240, sy: 120, tex: game.TEX.ENEMY4, texCy: 0 };
+  static HIT = { x1: -100, y1: -30, x2: 100, y2: 20 };
 
   initAI() {
     this.fanAngle = 0;
@@ -221,7 +226,8 @@ game.Enemy4 = class extends game.Enemy {
 
 // ki=5: 円運動する敵
 game.Enemy5 = class extends game.Enemy {
-  static DATA = { shield: 3, sx: 80, sy: 80, hitX1: -30, hitY1: -30, hitX2: 30, hitY2: 30, tex: game.TEX.ENEMY5, texCy: 0 };
+  static DATA = { shield: 3, sx: 80, sy: 80, tex: game.TEX.ENEMY5, texCy: 0 };
+  static HIT = { x1: -30, y1: -30, x2: 30, y2: 30 };
 
   updateAI() {
     const ply = game.ctx.player;
@@ -234,7 +240,7 @@ game.Enemy5 = class extends game.Enemy {
     this.pos.x = Math.cos(r) * 300;
     this.pos.y = -Math.sin(r) * 300 + 300;
     // プレイヤー方向に上書き
-    r = game.CollisionSystem.calcDir(this.pos.x, this.pos.y, ply.pos.x, ply.pos.y);
+    r = game.CollisionSystem.calcDir(this.pos, ply.pos);
     if (this.frm === 32 || this.frm === 96) {
       game.spawnEnemyShot(0, Math.cos(r) * 40 + this.pos.x, Math.sin(r) * 40 + this.pos.y, r);
     }
@@ -247,7 +253,8 @@ game.Enemy5 = class extends game.Enemy {
 
 // ki=6: 上下に揺れながら弾を撃つ
 game.Enemy6 = class extends game.Enemy {
-  static DATA = { shield: 4, sx: 80, sy: 100, hitX1: -30, hitY1: -20, hitX2: 30, hitY2: 20, tex: game.TEX.ENEMY6, texCy: 0 };
+  static DATA = { shield: 4, sx: 80, sy: 100, tex: game.TEX.ENEMY6, texCy: 0 };
+  static HIT = { x1: -30, y1: -20, x2: 30, y2: 20 };
 
   updateAI() {
     const ply = game.ctx.player;
@@ -255,7 +262,7 @@ game.Enemy6 = class extends game.Enemy {
     this.pos.y -= Math.cos(r) * 6;
     this.cx = (Math.floor(-Math.cos(r) * 4) + 4) * 80;
     if (this.frm === 50) {
-      const dir = game.CollisionSystem.calcDir(this.pos.x, this.pos.y, ply.pos.x, ply.pos.y);
+      const dir = game.CollisionSystem.calcDir(this.pos, ply.pos);
       game.spawnEnemyShot(2, this.pos.x + 20, this.pos.y - 50, dir);
       game.spawnEnemyShot(2, this.pos.x - 20, this.pos.y - 50, dir);
     }
@@ -267,7 +274,8 @@ game.Enemy6 = class extends game.Enemy {
 
 // ki=7: 蛇行しながら下降、定期的に弾を撃つ
 game.Enemy7 = class extends game.Enemy {
-  static DATA = { shield: 2, sx: 80, sy: 120, hitX1: -30, hitY1: -50, hitX2: 30, hitY2: 50, tex: game.TEX.ENEMY7, texCy: 0 };
+  static DATA = { shield: 2, sx: 80, sy: 120, tex: game.TEX.ENEMY7, texCy: 0 };
+  static HIT = { x1: -30, y1: -50, x2: 30, y2: 50 };
 
   updateAI() {
     let r = this.frm * 2 * game.A256;
@@ -289,7 +297,8 @@ game.Enemy7 = class extends game.Enemy {
 
 // ki=8: 直進後に分岐する敵
 game.Enemy8 = class extends game.Enemy {
-  static DATA = { shield: 4, sx: 80, sy: 80, hitX1: -30, hitY1: -30, hitX2: 30, hitY2: 30, tex: game.TEX.ENEMY8, texCy: 0 };
+  static DATA = { shield: 4, sx: 80, sy: 80, tex: game.TEX.ENEMY8, texCy: 0 };
+  static HIT = { x1: -30, y1: -30, x2: 30, y2: 30 };
 
   initAI() {
     this.angleStep = 0;
@@ -314,7 +323,7 @@ game.Enemy8 = class extends game.Enemy {
     this.pos.y += Math.sin(r) * 5;
     this.cx = (Math.floor(Math.cos(r) * 3) + 3) * 80;
     if (this.frm === 60) {
-      const dir = game.CollisionSystem.calcDir(this.pos.x, this.pos.y, ply.pos.x, ply.pos.y);
+      const dir = game.CollisionSystem.calcDir(this.pos, ply.pos);
       game.spawnEnemyShot(0, this.pos.x, this.pos.y, dir);
       game.spawnEnemyShot(0, this.pos.x, this.pos.y, dir + Math.PI / 8);
       game.spawnEnemyShot(0, this.pos.x, this.pos.y, dir - Math.PI / 8);
@@ -327,7 +336,8 @@ game.Enemy8 = class extends game.Enemy {
 
 // ki=9: 左右に揺れながら下降、回転弾を撃つ中ボス級
 game.Enemy9 = class extends game.Enemy {
-  static DATA = { shield: 40, sx: 120, sy: 120, hitX1: -50, hitY1: -50, hitX2: 50, hitY2: 50, tex: game.TEX.ENEMY9, texCy: 0 };
+  static DATA = { shield: 40, sx: 120, sy: 120, tex: game.TEX.ENEMY9, texCy: 0 };
+  static HIT = { x1: -50, y1: -50, x2: 50, y2: 50 };
 
   // moveDir: 左右移動方向（1 or -1）, bulletAngle: 回転弾の放射角度
   initAI() {

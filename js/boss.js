@@ -58,17 +58,20 @@ game.BossPart = class extends game.GameObject {
 
 // パーツ0: 本体
 game.BossPart0 = class extends game.BossPart {
-  static DATA = { shield: 500, x: 0, y: 14, sx: 140, sy: 150, hitX1: -50, hitY1: -12, hitX2: 50, hitY2: 60, tex: game.TEX.BOSS0, texCy: 0 };
+  static DATA = { shield: 500, x: 0, y: 14, sx: 140, sy: 150, tex: game.TEX.BOSS0, texCy: 0 };
+  static HIT = { x1: -50, y1: -12, x2: 50, y2: 60 };
 };
 
 // パーツ1: 左翼
 game.BossPart1 = class extends game.BossPart {
-  static DATA = { shield: 200, x: -80, y: 0, sx: 40, sy: 224, hitX1: -20, hitY1: -112, hitX2: 20, hitY2: 112, tex: game.TEX.BOSS1, texCy: 0 };
+  static DATA = { shield: 200, x: -80, y: 0, sx: 40, sy: 224, tex: game.TEX.BOSS1, texCy: 0 };
+  static HIT = { x1: -20, y1: -112, x2: 20, y2: 112 };
 };
 
 // パーツ2: 右翼
 game.BossPart2 = class extends game.BossPart {
-  static DATA = { shield: 200, x: 80, y: 0, sx: 40, sy: 224, hitX1: -20, hitY1: -112, hitX2: 20, hitY2: 112, tex: game.TEX.BOSS1, texCy: 0 };
+  static DATA = { shield: 200, x: 80, y: 0, sx: 40, sy: 224, tex: game.TEX.BOSS1, texCy: 0 };
+  static HIT = { x1: -20, y1: -112, x2: 20, y2: 112 };
 };
 
 //////////ボスクラス//////////
@@ -175,7 +178,7 @@ game.Boss = class extends game.GameObject {
     }
     // 照準弾発射
     if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 8 === 0) {
-      let dir = game.CollisionSystem.calcDir(this.pos.x, this.pos.y, ctx.player.pos.x, ctx.player.pos.y);
+      let dir = game.CollisionSystem.calcDir(this.pos, ctx.player.pos);
       game.spawnEnemyShot(1, this.pos.x, this.pos.y + 40, dir);
     }
     // 通常弾発射

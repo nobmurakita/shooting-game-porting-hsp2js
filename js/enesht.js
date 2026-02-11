@@ -36,7 +36,8 @@ game.EnemyShot = class extends game.GameObject {
 
 // ki=0: 通常弾（直進）
 game.EnemyShot0 = class extends game.EnemyShot {
-  static DATA = { sx: 40, sy: 40, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10, tex: game.TEX.ENESHT, texCy: 0 };
+  static DATA = { sx: 40, sy: 40, tex: game.TEX.ENESHT, texCy: 0 };
+  static HIT = { x1: -10, y1: -10, x2: 10, y2: 10 };
 
   initAI() {
     this.cx = game.radToSpriteFrameHalf(this.dir, 16, 40);
@@ -53,7 +54,8 @@ game.EnemyShot0 = class extends game.EnemyShot {
 
 // ki=1: 照準弾（直進＋アニメーション）
 game.EnemyShot1 = class extends game.EnemyShot {
-  static DATA = { sx: 40, sy: 40, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10, tex: game.TEX.ENESHT, texCy: 0 };
+  static DATA = { sx: 40, sy: 40, tex: game.TEX.ENESHT, texCy: 0 };
+  static HIT = { x1: -10, y1: -10, x2: 10, y2: 10 };
 
   updateAI() {
     this.pos.x += Math.cos(this.dir) * 5;
@@ -67,7 +69,8 @@ game.EnemyShot1 = class extends game.EnemyShot {
 
 // ki=2: 誘導弾（追尾）
 game.EnemyShot2 = class extends game.EnemyShot {
-  static DATA = { sx: 40, sy: 40, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10, tex: game.TEX.ENESHT, texCy: 40 };
+  static DATA = { sx: 40, sy: 40, tex: game.TEX.ENESHT, texCy: 40 };
+  static HIT = { x1: -10, y1: -10, x2: 10, y2: 10 };
 
   initAI() {
     this.vx = 0;
@@ -79,7 +82,7 @@ game.EnemyShot2 = class extends game.EnemyShot {
 
     if (this.frm % 2 === 0) {
       if ((this.frm < 160 && ply.alive) || this.frm === 0) {
-        this.dir = game.CollisionSystem.calcDir(this.pos.x, this.pos.y, ply.pos.x, ply.pos.y);
+        this.dir = game.CollisionSystem.calcDir(this.pos, ply.pos);
       }
       this.vx += Math.cos(this.dir) * 2 / 3;
       this.vy += Math.sin(this.dir) * 2 / 3;

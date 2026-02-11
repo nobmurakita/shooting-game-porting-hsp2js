@@ -1,7 +1,8 @@
 //////////プレーヤーショットクラス//////////
 game.PlayerShot = class extends game.GameObject {
   static CONFIG = { speed: 16, offscreenY: 340 };
-  static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: game.TEX.PLAYER, hitX1: -10, hitY1: -20, hitX2: 10, hitY2: 20 };
+  static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: game.TEX.PLAYER };
+  static HIT = { x1: -10, y1: -20, x2: 10, y2: 20 };
 
   constructor(x, y) {
     super(vec2(x, y), 10);  // renderOrder=10
@@ -46,21 +47,23 @@ game.Laser = class extends game.GameObject {
     super(vec2(px, py), 50); // renderOrder=50（最前面）
     this.trg = trg;
     this.sta = game.LSR_TRACKING;
-    this.x = [px, px, px, px, px, px, px, px, px, px, px, px, px, px, px];
-    this.y = [py, py, py, py, py, py, py, py, py, py, py, py, py, py, py];
+    this.trail = Array.from({length: 15}, () => vec2(px, py));
     this.vx = vx;
     this.vy = vy;
     this.dir = game.DIR_UP;
   }
 
+  hitBox() {
+    return [this.pos.x, this.pos.y, this.pos.x, this.pos.y];
+  }
+
   // 節シフト + 加速・減衰 + 消滅収束
   updateMovement() {
-    // 節の位置を後方にシフト（14節 × 60fps = 7節 × 30fps と同じ実時間の軌跡）
-    for (let j = 0; j < 14; j++) {
-      const a = 14 - j;
-      const b = a - 1;
-      this.x[a] = this.x[b];
-      this.y[a] = this.y[b];
+    const t = this.trail;
+    // 軌跡を後方にシフト（14セグメント × 60fps = 7セグメント × 30fps と同じ実時間の軌跡）
+    for (let j = t.length - 1; j > 0; j--) {
+      t[j].x = t[j - 1].x;
+      t[j].y = t[j - 1].y;
     }
 
     if (this.sta !== game.LSR_DYING) {
@@ -71,8 +74,8 @@ game.Laser = class extends game.GameObject {
         this.vx += Math.cos(dir) * game.Laser.CONFIG.accel;
         this.vy += Math.sin(dir) * game.Laser.CONFIG.accel;
       }
-      this.x[0] += this.vx;
-      this.y[0] += this.vy;
+      this.pos.x += this.vx;
+      this.pos.y += this.vy;
       if (this.frm % 2 !== 0) {
         this.vx = this.vx * game.Laser.CONFIG.damping;
         this.vy = this.vy * game.Laser.CONFIG.damping;
@@ -80,8 +83,8 @@ game.Laser = class extends game.GameObject {
     } else {
       // 消滅途中: 全節が同一座標に収束したら消滅
       let moving = false;
-      for (let j = 0; j < 14; j++) {
-        if (this.x[j] !== this.x[j + 1] || this.y[j] !== this.y[j + 1]) {
+      for (let j = 0; j < t.length - 1; j++) {
+        if (t[j].x !== t[j + 1].x || t[j].y !== t[j + 1].y) {
           moving = true;
           break;
         }
@@ -90,6 +93,10 @@ game.Laser = class extends game.GameObject {
         this.destroy();
       }
     }
+
+    // 先頭ノードをposに同期
+    t[0].x = this.pos.x;
+    t[0].y = this.pos.y;
   }
 
   // ターゲット喪失検知 + 再検索
@@ -119,24 +126,19 @@ game.Laser = class extends game.GameObject {
     if (this.trg.alive === false || this.trg.destroyed) { this.sta = game.LSR_DYING; return; }
 
     const target = this.trg;
-    const d = target.constructor.DATA;
-    const pos = target.pos;
 
-    const hit = game.CollisionSystem.checkAABB(
-      this.x[0], this.y[0], this.x[0], this.y[0],
-      d.hitX1 + pos.x, d.hitY1 + pos.y, d.hitX2 + pos.x, d.hitY2 + pos.y
-    );
+    const hit = game.CollisionSystem.checkAABB(this, target);
 
     if (hit) {
       ctx.score += game.Laser.CONFIG.hitScore;
       this.sta = game.LSR_DYING;
-      game.spawnHitSparks(this.x[0], this.y[0], 2);
+      game.spawnHitSparks(this.pos.x, this.pos.y, 2);
       target.onHitByLaser(game.Laser.CONFIG.damage);
     }
 
     // ターゲットへの方向を更新（2フレームに1回）
     if (this.frm % 2 === 0) {
-      this.dir = game.CollisionSystem.calcDir(this.x[0], this.y[0], pos.x, pos.y);
+      this.dir = game.CollisionSystem.calcDir(this.pos, target.pos);
     }
   }
 
@@ -151,7 +153,7 @@ game.Laser = class extends game.GameObject {
 
     // ターゲットなし状態で画面外に出たら消滅開始
     if (this.sta === game.LSR_NO_TARGET) {
-      if (game.isOutOfBounds(this.x[0], this.y[0], game.BOUNDS.LASER)) {
+      if (game.isOutOfBounds(this.pos.x, this.pos.y, game.BOUNDS.LASER)) {
         this.sta = game.LSR_DYING;
       }
     }
@@ -164,10 +166,11 @@ game.Laser = class extends game.GameObject {
     const ctx = game.ctx;
     if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
     const d = game.Laser.DRAW;
+    const t = this.trail;
     setBlendMode(true);
     for (let j = 0; j < d.segments; j++) {
       const c = game.color(d.baseR/255, (d.baseG - j*d.fadeG)/255, (d.baseB - j*d.fadeB)/255, 0.8);
-      drawLine(vec2(this.x[j], this.y[j]), vec2(this.x[j+1], this.y[j+1]), 6, c);
+      drawLine(t[j], t[j+1], 6, c);
     }
     setBlendMode();
   }
@@ -188,7 +191,8 @@ game.Player = class extends game.GameObject {
     initY: -220,
     hitInvincible: 100,
   };
-  static DATA = { sx: 80, sy: 80, baseX: 240, normalY: 0, hitY: 80, tex: game.TEX.PLAYER, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10 };
+  static DATA = { sx: 80, sy: 80, baseX: 240, normalY: 0, hitY: 80, tex: game.TEX.PLAYER };
+  static HIT = { x1: -10, y1: -10, x2: 10, y2: 10 };
   // ショット発射位置テーブル（ラジアン、旧DatShtDir後半6要素）
   static SHT_POS = [184, 200, 174, 210, 166, 218].map(a => -a * Math.PI / 128);
   // レーザー発射方向テーブル（ラジアン、旧DatLsrDir）
@@ -241,7 +245,7 @@ game.Player = class extends game.GameObject {
     const dy = game.keyIsDown(game.KEY_UP) - game.keyIsDown(game.KEY_DOWN);
 
     if (dx || dy) {
-      const r = game.CollisionSystem.calcDir(0, 0, dx, dy);
+      const r = Math.atan2(dy, dx);
       this.pos.x += Math.cos(r) * game.Player.CONFIG.moveSpeed;
       this.pos.y += Math.sin(r) * game.Player.CONFIG.moveSpeed;
     }

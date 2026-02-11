@@ -30,6 +30,10 @@ game.GameObject = class extends EngineObject {
     this.gravityScale = 0;
     this.frm = 0;
   }
+  hitBox() {
+    const h = this.constructor.HIT;
+    return [h.x1 + this.pos.x, h.y1 + this.pos.y, h.x2 + this.pos.x, h.y2 + this.pos.y];
+  }
   update() {
     this.frm++;
   }
