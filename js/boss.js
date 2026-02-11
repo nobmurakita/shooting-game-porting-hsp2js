@@ -59,82 +59,98 @@ game.Boss = class extends game.GameObject {
     // 破壊演出（flg==2）
     if (this.flg === game.BOSS_DESTROY) {
       super.update(); // frm++（破壊演出は旧コードでfrm先行インクリメントのため先に実行）
-      const elapsed = this.frm - this.destroyFrm;
-      for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
-        this.parts[i].cx = this.parts[i].constructor.DATA.sx;
-      }
-      if (elapsed % 6 === 0) {
-        let x = game.rnd(100) - 50;
-        let y = game.rnd(100) - 50;
-        game.spawnEffect(0, this.x + x, this.y + y, 0);
-      }
-      let x = game.rnd(1024) / 256 - 2;
-      let y = game.rnd(256) / 256 - 0.5;
-      this.x += x;
-      this.y -= (y + 1);
-      if (elapsed === 100) {
-        for (let i = 0; i < 3; i++) {
-          let a = (i + 1) * 50;
-          let t = -i * 2;
-          for (let j = 0; j < 16; j++) {
-            let r = j * Math.PI / 8;
-            game.spawnEffect(0, a * Math.cos(r) + this.x, a * Math.sin(r) + this.y, t);
-          }
-        }
-      }
-      if (elapsed === 120) {
-        this.flg = game.BOSS_NONE;
-        ctx.gameSta = game.STA_CLEAR;
-      }
+      this.updateDestroy();
       this.pos.x = this.x;
       this.pos.y = this.y;
       return;
     }
 
-    if (this.flg !== game.BOSS_BATTLE) {
-      return;
-    }
+    if (this.flg !== game.BOSS_BATTLE) return;
 
     // ステージ1のボスAI
-    if (ctx.stage === 1) {
+    if (game.ctx.stage === 1) {
       if (this.frm < 400) {
-        this.y -= 1;
+        this.updateApproach();
       } else {
-        let a = Math.floor((this.frm - 400) / 256) % 4;
-
-        if (a === 0 || a === 3) {
-          this.x -= 1;
-        } else {
-          this.x += 1;
-        }
-
-        let r = this.frm * 0.5 * game.A256;
-        this.y -= Math.sin(r) * 1;
-
-        // 誘導弾発射（パーツ1,2）
-        if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 16 === 0) {
-          if (this.parts[1].alive) {
-            game.spawnEnemyShot(2, -80 + this.x, this.y, r);
-          }
-          if (this.parts[2].alive) {
-            game.spawnEnemyShot(2, 80 + this.x, this.y, r);
-          }
-        }
-        // 照準弾発射
-        if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 8 === 0) {
-          let dir = game.CollisionSystem.calcDir(this.x, this.y, ctx.player.x, ctx.player.y);
-          game.spawnEnemyShot(1, this.x, this.y + 40, dir);
-        }
-        // 通常弾発射
-        if ((this.frm - 400) % 64 === 63) {
-          game.spawnEnemyShot(0, -10 + this.x, this.y - 50, game.DIR_DOWN);
-          game.spawnEnemyShot(0, 10 + this.x, this.y - 50, game.DIR_DOWN);
-        }
+        this.updateBattle();
       }
     }
+
     super.update(); // frm++
     this.pos.x = this.x;
     this.pos.y = this.y;
+  }
+
+  // 破壊演出（爆発・揺れ・クリア遷移）
+  updateDestroy() {
+    const ctx = game.ctx;
+    const elapsed = this.frm - this.destroyFrm;
+    for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
+      this.parts[i].cx = this.parts[i].constructor.DATA.sx;
+    }
+    if (elapsed % 6 === 0) {
+      let x = game.rnd(100) - 50;
+      let y = game.rnd(100) - 50;
+      game.spawnEffect(0, this.x + x, this.y + y, 0);
+    }
+    let x = game.rnd(1024) / 256 - 2;
+    let y = game.rnd(256) / 256 - 0.5;
+    this.x += x;
+    this.y -= (y + 1);
+    if (elapsed === 100) {
+      for (let i = 0; i < 3; i++) {
+        let a = (i + 1) * 50;
+        let t = -i * 2;
+        for (let j = 0; j < 16; j++) {
+          let r = j * Math.PI / 8;
+          game.spawnEffect(0, a * Math.cos(r) + this.x, a * Math.sin(r) + this.y, t);
+        }
+      }
+    }
+    if (elapsed === 120) {
+      this.flg = game.BOSS_NONE;
+      ctx.gameSta = game.STA_CLEAR;
+    }
+  }
+
+  // 初期降下
+  updateApproach() {
+    this.y -= 1;
+  }
+
+  // 移動パターン＆攻撃パターン
+  updateBattle() {
+    const ctx = game.ctx;
+    let a = Math.floor((this.frm - 400) / 256) % 4;
+
+    if (a === 0 || a === 3) {
+      this.x -= 1;
+    } else {
+      this.x += 1;
+    }
+
+    let r = this.frm * 0.5 * game.A256;
+    this.y -= Math.sin(r) * 1;
+
+    // 誘導弾発射（パーツ1,2）
+    if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 16 === 0) {
+      if (this.parts[1].alive) {
+        game.spawnEnemyShot(2, -80 + this.x, this.y, r);
+      }
+      if (this.parts[2].alive) {
+        game.spawnEnemyShot(2, 80 + this.x, this.y, r);
+      }
+    }
+    // 照準弾発射
+    if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 8 === 0) {
+      let dir = game.CollisionSystem.calcDir(this.x, this.y, ctx.player.x, ctx.player.y);
+      game.spawnEnemyShot(1, this.x, this.y + 40, dir);
+    }
+    // 通常弾発射
+    if ((this.frm - 400) % 64 === 63) {
+      game.spawnEnemyShot(0, -10 + this.x, this.y - 50, game.DIR_DOWN);
+      game.spawnEnemyShot(0, 10 + this.x, this.y - 50, game.DIR_DOWN);
+    }
   }
 
   // パーツは子EngineObjectとして自動描画

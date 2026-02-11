@@ -120,86 +120,54 @@ game.Laser = class extends game.GameObject {
     if (this.sta !== game.LSR_TRACKING) return;
     if (this.trg.alive === false || this.trg.destroyed) { this.sta = game.LSR_DYING; return; }
 
-    if (ctx.boss.flg !== game.BOSS_BATTLE) {
-      // --- 敵モード ---
-      const e = this.trg;
-      const d = e.constructor.DATA;
+    const isBossMode = (ctx.boss.flg === game.BOSS_BATTLE);
+    const target = this.trg;
+    const d = target.constructor.DATA;
 
-      // 衝突判定（点 vs 矩形）
-      const hit = game.CollisionSystem.checkAABB(
-        this.x[0], this.y[0], this.x[0], this.y[0],
-        d.hitX1 + e.x, d.hitY1 + e.y,
-        d.hitX2 + e.x, d.hitY2 + e.y
-      );
+    // 座標取得（敵: target.x/y、ボスパーツ: target.pos.x/y）
+    const tx = isBossMode ? target.pos.x : target.x;
+    const ty = isBossMode ? target.pos.y : target.y;
 
-      if (hit) {
-        ctx.score += game.Laser.CONFIG.hitScore;
-        e.shield -= game.Laser.CONFIG.damage;
-        e.lckOn--;
-        this.sta = game.LSR_DYING;
+    // 衝突判定（点 vs 矩形）
+    const hit = game.CollisionSystem.checkAABB(
+      this.x[0], this.y[0], this.x[0], this.y[0],
+      d.hitX1 + tx, d.hitY1 + ty, d.hitX2 + tx, d.hitY2 + ty
+    );
 
-        // ヒットエフェクト
-        game.spawnHitSparks(this.x[0], this.y[0], 2);
+    if (hit) {
+      ctx.score += game.Laser.CONFIG.hitScore;
+      target.shield -= game.Laser.CONFIG.damage;
+      target.lckOn--;
+      this.sta = game.LSR_DYING;
+      game.spawnHitSparks(this.x[0], this.y[0], 2);
 
-        // 敵撃破
-        if (e.shield <= 0) {
-          e.destroy();
-          game.spawnExplosion(e.x, e.y, d.sx, d.sy, 3);
-        }
-      }
-
-      // ターゲットへの方向を更新（2フレームに1回）
-      if (this.frm % 2 === 0) {
-        this.dir = game.CollisionSystem.calcDir(
-          this.x[0], this.y[0], e.x, e.y
-        );
-      }
-    } else {
-      // --- ボスモード ---
-      const boss = ctx.boss;
-      const p = this.trg;
-      const pd = p.constructor.DATA;
-
-      // 衝突判定（点 vs 矩形）
-      const hit = game.CollisionSystem.checkAABB(
-        this.x[0], this.y[0], this.x[0], this.y[0],
-        pd.hitX1 + p.pos.x, pd.hitY1 + p.pos.y,
-        pd.hitX2 + p.pos.x, pd.hitY2 + p.pos.y
-      );
-
-      if (hit) {
-        ctx.score += game.Laser.CONFIG.hitScore;
+      if (isBossMode) {
+        // ボス本体シールド減算＆撃破判定
+        const boss = ctx.boss;
         boss.shield -= game.Laser.CONFIG.damage;
-        p.shield -= game.Laser.CONFIG.damage;
-        p.lckOn--;
-        this.sta = game.LSR_DYING;
-
-        // ヒットエフェクト
-        game.spawnHitSparks(this.x[0], this.y[0], 2);
-
-        // ボス撃破判定
         if (boss.shield <= 0) {
           boss.shield = 0;
           boss.flg = game.BOSS_DESTROY;
           boss.destroyFrm = boss.frm;
         }
-
         // パーツ破壊
-        if (p.shield <= 0) {
-          p.alive = false;
-          p.cx = pd.sx;
-          game.spawnExplosion(p.pos.x, p.pos.y, pd.sx, pd.sy, 3);
+        if (target.shield <= 0) {
+          target.alive = false;
+          target.cx = d.sx;
+          game.spawnExplosion(tx, ty, d.sx, d.sy, 3);
+        }
+      } else {
+        // 敵撃破
+        if (target.shield <= 0) {
+          target.destroy();
+          game.spawnExplosion(tx, ty, d.sx, d.sy, 3);
         }
       }
+    }
 
-      // ターゲットパーツへの方向を更新（2フレームに1回）
-      if (this.frm % 2 === 0) {
-        this.dir = game.CollisionSystem.calcDir(
-          this.x[0], this.y[0],
-          p.pos.x,
-          p.pos.y
-        );
-      }
+    // ターゲットへの方向を更新（2フレームに1回）
+    if (this.frm % 2 === 0) {
+      this.dir = game.CollisionSystem.calcDir(this.x[0], this.y[0], tx, ty);
     }
   }
 
@@ -285,11 +253,21 @@ game.Player = class extends game.GameObject {
 
     if (!this.alive) {
       this.lsrPow = 0;
-      this.lsrPowDisplay = Math.max(0, this.lsrPowDisplay - game.Player.CONFIG.laserDecay);
+      this.updateLaserDisplay();
       return;
     }
 
-    // 移動量＆傾き決定
+    this.updateMovement();
+    this.updateShot();
+    this.updateLaser();
+    this.updateLaserDisplay();
+    this.updateHitCounter();
+
+    this.frm++;
+  }
+
+  // 入力→移動→傾き→境界制限
+  updateMovement() {
     const dx = game.keyIsDown(game.KEY_RIGHT) - game.keyIsDown(game.KEY_LEFT);
     const dy = game.keyIsDown(game.KEY_UP) - game.keyIsDown(game.KEY_DOWN);
 
@@ -314,8 +292,10 @@ game.Player = class extends game.GameObject {
     if (this.y < -game.BOUNDS.PLAYER) { this.y = -game.BOUNDS.PLAYER; }
     if (this.x > game.BOUNDS.PLAYER) { this.x = game.BOUNDS.PLAYER; }
     if (this.y > game.BOUNDS.PLAYER) { this.y = game.BOUNDS.PLAYER; }
+  }
 
-    // ショット発射
+  // ショット発射カウンタ＆生成
+  updateShot() {
     if (this.shtCnt !== 0) {
       this.shtCnt--;
     } else {
@@ -329,8 +309,10 @@ game.Player = class extends game.GameObject {
         }
       }
     }
+  }
 
-    // レーザー発射
+  // レーザーチャージ＆発射
+  updateLaser() {
     if (this.lsrF === game.LSR_CHARGE_ON) {
       if (game.keyIsDown(game.KEY_LASER)) {
         if (this.lsrPow >= game.Player.CONFIG.laserThreshold) {
@@ -357,16 +339,18 @@ game.Player = class extends game.GameObject {
         this.lsrPow = 0;
       }
     }
+  }
 
-    // レーザーバー表示用（実パワーに追従しつつ、ゆっくり減少）
+  // レーザーバー表示値の追従
+  updateLaserDisplay() {
     this.lsrPowDisplay = Math.max(this.lsrPow, this.lsrPowDisplay - game.Player.CONFIG.laserDecay);
+  }
 
-    // 被弾カウンタ減少
+  // 被弾無敵カウンタ
+  updateHitCounter() {
     if (this.hitCnt !== 0) {
       this.hitCnt--;
     }
-
-    this.frm++;
   }
 
   // ロックオンする敵をサーチ（旧SearchTrget）

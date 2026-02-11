@@ -23,33 +23,46 @@ game.CollisionSystem = class {
     return 0;
   }
 
-  // プレイヤーショット vs 敵
-  static checkPlayerShotsVsEnemies() {
-    const ctx = game.ctx;
+  // ショット vs ターゲット群の共通処理
+  // targets: 対象リスト
+  // getPos: target → {x, y} 座標取得
+  // onHit: (target, data) → boolean ヒット時処理（trueでbreak）
+  static _checkShotsVsTargets(targets, getPos, onHit) {
     const sd = game.PlayerShot.DATA;
-    const enemies = game.objectsOf(game.Enemy);
     const shots = game.objectsOf(game.PlayerShot);
-    for (const e of enemies) {
-      const d = e.constructor.DATA;
-
+    for (const target of targets) {
+      const d = target.constructor.DATA;
+      const pos = getPos(target);
       for (const s of shots) {
         if (s.destroyed) continue;
         if (game.CollisionSystem.checkAABB(
-          d.hitX1 + e.x, d.hitY1 + e.y, d.hitX2 + e.x, d.hitY2 + e.y,
+          d.hitX1 + pos.x, d.hitY1 + pos.y, d.hitX2 + pos.x, d.hitY2 + pos.y,
           sd.hitX1 + s.x, sd.hitY1 + s.y, sd.hitX2 + s.x, sd.hitY2 + s.y
         )) {
-          ctx.score += game.SCORE_SHOT_HIT;
+          game.ctx.score += game.SCORE_SHOT_HIT;
           s.destroy();
-          e.shield--;
           game.spawnHitSpark(s.x, s.y);
-          if (e.shield <= 0) {
-            e.destroy();
-            game.spawnExplosion(e.x, e.y, d.sx, d.sy, 5);
-            break;
-          }
+          if (onHit(target, d)) break;
         }
       }
     }
+  }
+
+  // プレイヤーショット vs 敵
+  static checkPlayerShotsVsEnemies() {
+    game.CollisionSystem._checkShotsVsTargets(
+      game.objectsOf(game.Enemy),
+      e => e,  // enemy自体が{x, y}を持つ
+      (e, d) => {
+        e.shield--;
+        if (e.shield <= 0) {
+          e.destroy();
+          game.spawnExplosion(e.x, e.y, d.sx, d.sy, 5);
+          return true;
+        }
+        return false;
+      }
+    );
   }
 
   // プレイヤー vs 敵（接触ダメージ）
@@ -85,44 +98,27 @@ game.CollisionSystem = class {
 
   // プレイヤーショット vs ボスパーツ
   static checkPlayerShotsVsBoss() {
-    const ctx = game.ctx;
-    const boss = ctx.boss;
+    const boss = game.ctx.boss;
     if (boss.flg !== game.BOSS_BATTLE) return;
-    const sd = game.PlayerShot.DATA;
-    const shots = game.objectsOf(game.PlayerShot);
-
-    for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
-      const prt = boss.parts[i];
-      if (!prt.alive) continue;
-      const d = prt.constructor.DATA;
-
-      for (const s of shots) {
-        if (s.destroyed) continue;
-
-        if (game.CollisionSystem.checkAABB(
-          prt.pos.x + d.hitX1, prt.pos.y + d.hitY1,
-          prt.pos.x + d.hitX2, prt.pos.y + d.hitY2,
-          sd.hitX1 + s.x, sd.hitY1 + s.y,
-          sd.hitX2 + s.x, sd.hitY2 + s.y
-        )) {
-          ctx.score += game.SCORE_SHOT_HIT;
-          s.destroy();
-          boss.shield--;
-          prt.shield--;
-          game.spawnHitSpark(s.x, s.y);
-          if (boss.shield <= 0) {
-            boss.flg = game.BOSS_DESTROY;
-            boss.destroyFrm = boss.frm;
-          }
-          if (prt.shield <= 0) {
-            prt.alive = false;
-            prt.cx = d.sx;
-            game.spawnExplosion(prt.pos.x, prt.pos.y, d.sx, d.sy, 5);
-            break;
-          }
+    game.CollisionSystem._checkShotsVsTargets(
+      boss.parts.filter(p => p.alive),
+      p => p.pos,  // パーツはpos.x/pos.yで参照
+      (p, d) => {
+        boss.shield--;
+        p.shield--;
+        if (boss.shield <= 0) {
+          boss.flg = game.BOSS_DESTROY;
+          boss.destroyFrm = boss.frm;
         }
+        if (p.shield <= 0) {
+          p.alive = false;
+          p.cx = d.sx;
+          game.spawnExplosion(p.pos.x, p.pos.y, d.sx, d.sy, 5);
+          return true;
+        }
+        return false;
       }
-    }
+    );
   }
 
   // 敵ショット vs プレイヤー
