@@ -319,7 +319,7 @@ game.Player = class {
     if (this.lsrF === game.LSR_CHARGE_ON) {
       if (game.keyIsDown(game.KEY_LASER)) {
         if (this.lsrPow >= game.Player.CONFIG.laserThreshold) {
-          const count = Math.floor(this.lsrPow / game.Player.CONFIG.laserThreshold);
+          const count = Math.min(Math.floor(this.lsrPow / game.Player.CONFIG.laserThreshold), game.Player.LSR_DIR.length);
           for (let i = 0; i < count; i++) {
             const trg = this.searchTarget(ctx);
             if (trg !== null) { trg.lckOn++; }
@@ -428,7 +428,7 @@ game.Player = class {
   draw() {
     if (!this.alive) return;
     const d = game.Player.DATA;
-    const frameX = (this.gra >> 1) * d.sx + d.baseX;
+    const frameX = Math.floor(this.gra / 2) * d.sx + d.baseX;
     const frameY = (Math.floor(this.hitCnt / 6) % 2 === 0) ? d.normalY : d.hitY;
     const ti = game.tile(frameX, frameY, d.sx, d.sy, d.tex);
     drawTile(vec2(this.x, this.y), ti.drawSize, ti);

@@ -46,7 +46,9 @@ game.gameUpdatePost = () => {
   if (game.ctx.gameSta === game.STA_PLAY) {
     game.CollisionSystem.checkAllCollisions(game.ctx);
   }
-  game.filterDead(game.ctx);
+  if (game.ctx.gameSta === game.STA_PLAY || game.ctx.gameSta === game.STA_CLEAR) {
+    game.filterDead(game.ctx);
+  }
 };
 
 //////////ゲーム要素描画//////////
@@ -74,7 +76,7 @@ game.gameUpdate = () => {
     game.ctx.score = 0;
     game.ctx.gameSta = game.STA_TITLE;
   } else if (game.ctx.gameSta === game.STA_TITLE) {
-    if (game.keyIsDown(game.KEY_LASER) || game.keyIsDown(game.KEY_SHOT) || game.keyWasPressed(game.KEY_SHIFT)) {
+    if (game.keyWasPressed(game.KEY_LASER) || game.keyWasPressed(game.KEY_SHOT) || game.keyWasPressed(game.KEY_SHIFT)) {
       game.ctx.gameSta = game.STA_INIT;
     }
   } else if (game.ctx.gameSta === game.STA_INIT) {

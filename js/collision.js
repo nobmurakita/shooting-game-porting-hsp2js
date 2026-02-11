@@ -1,3 +1,5 @@
+game.SCORE_SHOT_HIT = 10;
+
 //////////衝突判定システム//////////
 game.CollisionSystem = class {
   // AABB衝突判定（旧 stg_clash）
@@ -34,11 +36,11 @@ game.CollisionSystem = class {
           d.hitX1 + e.x, d.hitY1 + e.y, d.hitX2 + e.x, d.hitY2 + e.y,
           sd.hitX1 + s.x, sd.hitY1 + s.y, sd.hitX2 + s.x, sd.hitY2 + s.y
         )) {
-          ctx.score += 10;
+          ctx.score += game.SCORE_SHOT_HIT;
           s.alive = false;
           e.shield--;
           game.spawnHitSpark(ctx, s.x, s.y);
-          if (e.shield === 0) {
+          if (e.shield <= 0) {
             e.alive = false;
             game.spawnExplosion(ctx, e.x, e.y, d.sx, d.sy, 5);
             break;
@@ -70,7 +72,7 @@ game.CollisionSystem = class {
         // プレイヤーにダメージ
         ply.hitCnt = game.Player.CONFIG.hitInvincible;
         ply.shield--;
-        if (ply.shield === 0) {
+        if (ply.shield <= 0) {
           ply.alive = false;
           game.spawnExplosion(ctx, ply.x, ply.y, pd.sx, pd.sy, 5);
         }
@@ -99,16 +101,16 @@ game.CollisionSystem = class {
           sd.hitX1 + s.x, sd.hitY1 + s.y,
           sd.hitX2 + s.x, sd.hitY2 + s.y
         )) {
-          ctx.score += 10;
+          ctx.score += game.SCORE_SHOT_HIT;
           s.alive = false;
           boss.shield--;
           prt.shield--;
           game.spawnHitSpark(ctx, s.x, s.y);
-          if (boss.shield === 0) {
+          if (boss.shield <= 0) {
             boss.flg = game.BOSS_DESTROY;
             boss.frm = 0;
           }
-          if (prt.shield === 0) {
+          if (prt.shield <= 0) {
             prt.alive = false;
             prt.cx = d.sx;
             game.spawnExplosion(ctx, d.x + boss.x, d.y + boss.y, d.sx, d.sy, 5);
@@ -137,7 +139,7 @@ game.CollisionSystem = class {
         ply.shield--;
         ply.hitCnt = game.Player.CONFIG.hitInvincible;
         game.spawnHitSparks(ctx, es.x, es.y, 2);
-        if (ply.shield === 0) {
+        if (ply.shield <= 0) {
           ply.alive = false;
           game.spawnExplosion(ctx, ply.x, ply.y, pd.sx, pd.sy, 3);
         }
@@ -160,7 +162,7 @@ game.CollisionSystem = class {
           d.hitX1 + es.x, d.hitY1 + es.y, d.hitX2 + es.x, d.hitY2 + es.y,
           sd.hitX1 + ps.x, sd.hitY1 + ps.y, sd.hitX2 + ps.x, sd.hitY2 + ps.y
         )) {
-          ctx.score += 10;
+          ctx.score += game.SCORE_SHOT_HIT;
           ps.alive = false;
           es.alive = false;
           game.spawnHitSpark(ctx, ps.x, ps.y);

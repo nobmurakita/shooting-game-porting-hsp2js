@@ -93,9 +93,9 @@ game.EnemyShot2 = class extends game.EnemyShot {
     }
     this.cx = game.radToSpriteFrame(this.dir, 32, 40);
     if (this.frm % 6 === 0) {
-      let x = game.rnd(20) - 10;
-      let y = game.rnd(20) - 10;
-      game.spawnEffect(ctx, 2, -Math.cos(this.dir) * 20 + this.x + x, -Math.sin(this.dir) * 20 + this.y + y, 0);
+      let ox = game.rnd(20) - 10;
+      let oy = game.rnd(20) - 10;
+      game.spawnEffect(ctx, 2, -Math.cos(this.dir) * 20 + this.x + ox, -Math.sin(this.dir) * 20 + this.y + oy, 0);
     }
     if (this.frm > 160) {
       if (game.isOutOfBounds(this.x, this.y, game.BOUNDS.SHOT)) {
@@ -113,5 +113,6 @@ game.EnemyShot.CLASS_MAP = [
 // 敵ショット生成ヘルパー
 game.spawnEnemyShot = (ctx, ki, x, y, dir) => {
   const ShotClass = game.EnemyShot.CLASS_MAP[ki];
+  if (!ShotClass) return;
   ctx.enemyShots.push(new ShotClass(x, y, dir));
 };

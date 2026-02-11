@@ -68,6 +68,7 @@ game.Boss = class {
         this.flg = game.BOSS_NONE;
         ctx.gameSta = game.STA_CLEAR;
       }
+      return;
     }
 
     if (this.flg !== game.BOSS_BATTLE) {

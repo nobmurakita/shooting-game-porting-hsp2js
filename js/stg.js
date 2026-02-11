@@ -84,6 +84,7 @@ game.tile = (pixelX, pixelY, w, h, texIndex) => {
   t.size.x -= pad * 2;
   t.size.y -= pad * 2;
   t.drawSize = vec2(w, h);
+  Object.freeze(t);
   game._tileCache.set(key, t);
   return t;
 };

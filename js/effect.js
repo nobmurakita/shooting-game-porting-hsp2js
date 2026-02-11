@@ -79,6 +79,7 @@ game.Effect.CLASS_MAP = [
 // エフェクト生成ヘルパー
 game.spawnEffect = (ctx, ki, x, y, startFrm) => {
   const EffectClass = game.Effect.CLASS_MAP[ki];
+  if (!EffectClass) return;
   ctx.effects.push(new EffectClass(x, y, startFrm));
 };
 

@@ -1,7 +1,5 @@
 //////////敵基底クラス//////////
 game.Enemy = class {
-  static table = null;      // 出現テーブル
-  static tableIndex = 0;    // 出現テーブルインデックス
   static CLASS_MAP = [];    // ki → サブクラスのマッピング（ファイル末尾で設定）
 
   constructor(mv, x, y) {
@@ -46,14 +44,14 @@ game.Enemy = class {
       if (ctx.boss.aprFrm === ctx.frame) {
         ctx.boss.flg = game.BOSS_BATTLE;
       }
-      if (game.Enemy.tableIndex === game.Enemy.table.length) {
+      if (ctx.enemyTableIndex === ctx.enemyTable.length) {
         return;
       }
-      if (game.Enemy.table[game.Enemy.tableIndex][0] === ctx.frame) {
-        const entry = game.Enemy.table[game.Enemy.tableIndex];
+      if (ctx.enemyTable[ctx.enemyTableIndex][0] === ctx.frame) {
+        const entry = ctx.enemyTable[ctx.enemyTableIndex];
         const EnemyClass = game.Enemy.CLASS_MAP[entry[1]];
         ctx.enemies.push(new EnemyClass(entry[2], entry[3], entry[4]));
-        game.Enemy.tableIndex++;
+        ctx.enemyTableIndex++;
       } else {
         return;
       }
