@@ -47,7 +47,6 @@ game.GameContext = class {
 
     this.bg1 = 0;
     this.player = null;
-    this.enemies = [];
     this.boss = null;
   }
 
@@ -56,7 +55,6 @@ game.GameContext = class {
     this.stage = stageNum;
     [...engineObjects].forEach(o => o.destroy());
     this.player = new game.Player();
-    this.enemies = [];
     this.enemyTable = game.Stages[stageNum];
     this.enemyTableIndex = 0;
     this.boss = new game.Boss();

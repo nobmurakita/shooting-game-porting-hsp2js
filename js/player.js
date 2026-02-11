@@ -97,7 +97,7 @@ game.Laser = class extends game.GameObject {
   // ターゲット喪失検知 + 再検索
   updateTargeting() {
     const ctx = game.ctx;
-    if (this.sta === game.LSR_TRACKING && (this.trg === null || !this.trg.alive)) {
+    if (this.sta === game.LSR_TRACKING && (this.trg === null || this.trg.alive === false || this.trg.destroyed)) {
       // ターゲット喪失時にlckOnをデクリメント（発射時の++と対応）
       if (this.trg !== null) {
         this.trg.lckOn--;
@@ -118,7 +118,7 @@ game.Laser = class extends game.GameObject {
   checkHit() {
     const ctx = game.ctx;
     if (this.sta !== game.LSR_TRACKING) return;
-    if (!this.trg.alive) { this.sta = game.LSR_DYING; return; }
+    if (this.trg.alive === false || this.trg.destroyed) { this.sta = game.LSR_DYING; return; }
 
     if (ctx.boss.flg !== game.BOSS_BATTLE) {
       // --- 敵モード ---
@@ -143,7 +143,7 @@ game.Laser = class extends game.GameObject {
 
         // 敵撃破
         if (e.shield <= 0) {
-          e.alive = false;
+          e.destroy();
           game.spawnExplosion(e.x, e.y, d.sx, d.sy, 3);
         }
       }
@@ -375,8 +375,8 @@ game.Player = class extends game.GameObject {
 
     if (ctx.boss.flg !== game.BOSS_BATTLE) {
       // 敵モード
-      for (const e of ctx.enemies) {
-        if (!e.alive) continue;
+      for (const e of engineObjects) {
+        if (!(e instanceof game.Enemy) || e.destroyed) continue;
 
         if (trg === null) {
           trg = e;

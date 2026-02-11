@@ -1,15 +1,14 @@
 //////////敵基底クラス//////////
-game.Enemy = class {
+game.Enemy = class extends game.GameObject {
   static CLASS_MAP = [];    // ki → サブクラスのマッピング（ファイル末尾で設定）
 
   constructor(mv, x, y) {
-    this.alive = true;
+    super(vec2(x, y), 0);  // renderOrder=0
     this.shield = this.constructor.DATA.shield;
     this.mv = mv;
     this.x = x;
     this.y = y;
     this.x0 = x;
-    this.frm = 0;
     this.cx = 0;
     this.lckOn = 0;
     this.initAI();
@@ -17,21 +16,23 @@ game.Enemy = class {
 
   // サブクラスでオーバーライド
   initAI() {}
-  updateAI(ctx) {}
+  updateAI() {}
 
   // 敵移動
-  update(ctx) {
-    if (!this.alive) return;
+  update() {
+    const ctx = game.ctx;
+    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR) return;
 
     // --- AI移動処理（サブクラスで委譲） ---
-    this.updateAI(ctx);
+    this.updateAI();
 
-    this.frm++;
+    super.update(); // frm++
   }
 
   // 敵描画
-  draw() {
-    if (!this.alive) return;
+  render() {
+    const ctx = game.ctx;
+    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
     const d = this.constructor.DATA;
     const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
     drawTile(vec2(this.x, this.y), ti.drawSize, ti);
@@ -47,7 +48,7 @@ game.Enemy = class {
       if (ctx.enemyTable[ctx.enemyTableIndex][0] === ctx.frame) {
         const entry = ctx.enemyTable[ctx.enemyTableIndex];
         const EnemyClass = game.Enemy.CLASS_MAP[entry[1]];
-        ctx.enemies.push(new EnemyClass(entry[2], entry[3], entry[4]));
+        new EnemyClass(entry[2], entry[3], entry[4]);
         ctx.enemyTableIndex++;
       } else {
         return;
@@ -62,7 +63,7 @@ game.Enemy = class {
 game.Enemy0 = class extends game.Enemy {
   static DATA = { shield: 2, sx: 40, sy: 80, hitX1: -10, hitY1: -30, hitX2: 10, hitY2: 30, tex: game.TEX.ENEMY0, texCy: 0 };
 
-  updateAI(ctx) {
+  updateAI() {
     let r = 1.5 * this.frm * game.A256;
     if (this.mv === 0) {
       this.x = 80 * Math.sin(r) + this.x0;
@@ -72,7 +73,7 @@ game.Enemy0 = class extends game.Enemy {
     this.y -= 2;
     this.cx = Math.floor(this.frm / 2) % 6 * 40;
     if (this.y < -game.BOUNDS.ENEMY) {
-      this.alive = false;
+      this.destroy();
     }
   }
 };
@@ -85,7 +86,7 @@ game.Enemy1 = class extends game.Enemy {
     this.angleStep = 0;
   }
 
-  updateAI(ctx) {
+  updateAI() {
     if (Math.floor(this.frm / 4) <= 64) {
       this.angleStep = this.frm >> 2;
     }
@@ -102,7 +103,7 @@ game.Enemy1 = class extends game.Enemy {
       game.spawnEnemyShot(0, this.x, this.y - 40, game.DIR_DOWN);
     }
     if ((this.x < -game.BOUNDS.ENEMY) || (game.BOUNDS.ENEMY < this.x)) {
-      this.alive = false;
+      this.destroy();
     }
   }
 };
@@ -117,8 +118,8 @@ game.Enemy2 = class extends game.Enemy {
     this.vy = 0;
   }
 
-  updateAI(ctx) {
-    const ply = ctx.player;
+  updateAI() {
+    const ply = game.ctx.player;
     let r = this.trackDir;
     if (this.frm % 2 === 0) {
       if ((this.frm <= 160 && ply.alive) || this.frm === 0) {
@@ -140,7 +141,7 @@ game.Enemy2 = class extends game.Enemy {
     this.cx = game.radToSpriteFrame(r, 32, 80);
     if (this.frm > 160) {
       if (game.isOutOfBounds(this.x, this.y, game.BOUNDS.ENEMY)) {
-        this.alive = false;
+        this.destroy();
       }
     }
   }
@@ -150,8 +151,8 @@ game.Enemy2 = class extends game.Enemy {
 game.Enemy3 = class extends game.Enemy {
   static DATA = { shield: 4, sx: 80, sy: 120, hitX1: -40, hitY1: -40, hitX2: 40, hitY2: 40, tex: game.TEX.ENEMY3, texCy: 0 };
 
-  updateAI(ctx) {
-    const ply = ctx.player;
+  updateAI() {
+    const ply = game.ctx.player;
     this.y -= 4;
     if (this.frm === 40 || this.frm === 80 || this.frm === 120 || this.frm === 160) {
       const dir = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
@@ -159,7 +160,7 @@ game.Enemy3 = class extends game.Enemy {
     }
     this.cx = 0;
     if (this.y < -game.BOUNDS.ENEMY_FAR) {
-      this.alive = false;
+      this.destroy();
     }
   }
 };
@@ -172,7 +173,7 @@ game.Enemy4 = class extends game.Enemy {
     this.fanAngle = 0;
   }
 
-  updateAI(ctx) {
+  updateAI() {
     let r = this.frm * 0.5 * game.A256;
     this.y += 1;
     this.x = Math.sin(r) * 16 + this.x0;
@@ -183,7 +184,7 @@ game.Enemy4 = class extends game.Enemy {
     }
     this.cx = 0;
     if (this.y > game.BOUNDS.ENEMY_FAR) {
-      this.alive = false;
+      this.destroy();
     }
   }
 };
@@ -192,8 +193,8 @@ game.Enemy4 = class extends game.Enemy {
 game.Enemy5 = class extends game.Enemy {
   static DATA = { shield: 3, sx: 80, sy: 80, hitX1: -30, hitY1: -30, hitX2: 30, hitY2: 30, tex: game.TEX.ENEMY5, texCy: 0 };
 
-  updateAI(ctx) {
-    const ply = ctx.player;
+  updateAI() {
+    const ply = game.ctx.player;
     let r;
     if (this.mv === 0) {
       r = this.frm * game.A256;
@@ -209,7 +210,7 @@ game.Enemy5 = class extends game.Enemy {
     }
     this.cx = game.radToSpriteFrame(r, 32, 80);
     if (this.frm === 128) {
-      this.alive = false;
+      this.destroy();
     }
   }
 };
@@ -218,8 +219,8 @@ game.Enemy5 = class extends game.Enemy {
 game.Enemy6 = class extends game.Enemy {
   static DATA = { shield: 4, sx: 80, sy: 100, hitX1: -30, hitY1: -20, hitX2: 30, hitY2: 20, tex: game.TEX.ENEMY6, texCy: 0 };
 
-  updateAI(ctx) {
-    const ply = ctx.player;
+  updateAI() {
+    const ply = game.ctx.player;
     let r = this.frm * game.A256;
     this.y -= Math.cos(r) * 6;
     this.cx = (Math.floor(-Math.cos(r) * 4) + 4) * 80;
@@ -229,7 +230,7 @@ game.Enemy6 = class extends game.Enemy {
       game.spawnEnemyShot(2, this.x - 20, this.y - 50, dir);
     }
     if (this.frm >= 256) {
-      this.alive = false;
+      this.destroy();
     }
   }
 };
@@ -238,7 +239,7 @@ game.Enemy6 = class extends game.Enemy {
 game.Enemy7 = class extends game.Enemy {
   static DATA = { shield: 2, sx: 80, sy: 120, hitX1: -30, hitY1: -50, hitX2: 30, hitY2: 50, tex: game.TEX.ENEMY7, texCy: 0 };
 
-  updateAI(ctx) {
+  updateAI() {
     let r = this.frm * 2 * game.A256;
     if (this.mv === 0) {
       this.x = 80 * Math.sin(r) + this.x0;
@@ -251,7 +252,7 @@ game.Enemy7 = class extends game.Enemy {
     }
     this.cx = (Math.floor(this.frm / 4) & 7) * 80;
     if (this.y < -game.BOUNDS.ENEMY_FAR) {
-      this.alive = false;
+      this.destroy();
     }
   }
 };
@@ -264,8 +265,8 @@ game.Enemy8 = class extends game.Enemy {
     this.angleStep = 0;
   }
 
-  updateAI(ctx) {
-    const ply = ctx.player;
+  updateAI() {
+    const ply = game.ctx.player;
     let r;
     if (this.frm < 60) {
       r = game.DIR_UP;
@@ -289,7 +290,7 @@ game.Enemy8 = class extends game.Enemy {
       game.spawnEnemyShot(0, this.x, this.y, dir - Math.PI / 8);
     }
     if (this.x < -game.BOUNDS.ENEMY || game.BOUNDS.ENEMY < this.x) {
-      this.alive = false;
+      this.destroy();
     }
   }
 };
@@ -304,7 +305,7 @@ game.Enemy9 = class extends game.Enemy {
     this.bulletAngle = 0;
   }
 
-  updateAI(ctx) {
+  updateAI() {
     if (this.frm % 100 === 0) {
       this.moveDir = -this.moveDir;
     }
@@ -320,7 +321,7 @@ game.Enemy9 = class extends game.Enemy {
     }
     this.cx = (Math.floor(this.frm / 4) & 7) * 120;
     if (this.y < -game.BOUNDS.ENEMY_FAR) {
-      this.alive = false;
+      this.destroy();
     }
   }
 };

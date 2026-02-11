@@ -26,8 +26,8 @@ game.CollisionSystem = class {
   // プレイヤーショット vs 敵
   static checkPlayerShotsVsEnemies(ctx) {
     const sd = game.PlayerShot.DATA;
-    for (const e of ctx.enemies) {
-      if (!e.alive) continue;
+    for (const e of engineObjects) {
+      if (!(e instanceof game.Enemy) || e.destroyed) continue;
       const d = e.constructor.DATA;
 
       for (const s of engineObjects) {
@@ -41,7 +41,7 @@ game.CollisionSystem = class {
           e.shield--;
           game.spawnHitSpark(s.x, s.y);
           if (e.shield <= 0) {
-            e.alive = false;
+            e.destroy();
             game.spawnExplosion(e.x, e.y, d.sx, d.sy, 5);
             break;
           }
@@ -56,15 +56,15 @@ game.CollisionSystem = class {
     if (!ply.alive || ply.hitCnt !== 0) return;
     const pd = game.Player.DATA;
 
-    for (const e of ctx.enemies) {
-      if (!e.alive) continue;
+    for (const e of engineObjects) {
+      if (!(e instanceof game.Enemy) || e.destroyed) continue;
       const d = e.constructor.DATA;
 
       if (game.CollisionSystem.checkAABB(
         d.hitX1 + e.x, d.hitY1 + e.y, d.hitX2 + e.x, d.hitY2 + e.y,
         pd.hitX1 + ply.x, pd.hitY1 + ply.y, pd.hitX2 + ply.x, pd.hitY2 + ply.y
       )) {
-        e.alive = false;
+        e.destroy();
         // 敵の爆発エフェクト（小）
         game.spawnHitSparks(e.x, e.y, 2);
         // 敵の爆発エフェクト（大）

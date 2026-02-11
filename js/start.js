@@ -19,11 +19,6 @@ game.gameInit = () => {
   game.initCommon();
 };
 
-//////////死亡要素の除去//////////
-game.filterDead = (ctx) => {
-  ctx.enemies = ctx.enemies.filter(e => e.alive);
-};
-
 //////////ゲーム更新後処理（レーザー充填・衝突判定・死亡除去）//////////
 game.gameUpdatePost = () => {
   // レーザー充填判定（Player.update後に実行する必要がある）
@@ -37,15 +32,11 @@ game.gameUpdatePost = () => {
   if (game.ctx.gameSta === game.STA_PLAY) {
     game.CollisionSystem.checkAllCollisions(game.ctx);
   }
-  if (game.ctx.gameSta === game.STA_PLAY || game.ctx.gameSta === game.STA_CLEAR) {
-    game.filterDead(game.ctx);
-  }
 };
 
 //////////ゲーム要素描画//////////
 game.renderObjects = (ctx) => {
   game.drawBackground();
-  for (const e of ctx.enemies) { e.draw(); }
   if (ctx.boss.flg !== game.BOSS_NONE) {
     ctx.boss.draw(ctx);
   }
@@ -85,8 +76,6 @@ game.gameUpdate = () => {
       } else {
         game.ctx.boss.update(game.ctx);
       }
-      for (const e of game.ctx.enemies) { e.update(game.ctx); }
-
       game.updateBackground(game.ctx);
       game.ctx.frame++;
       if (game.keyWasPressed(game.KEY_SHIFT)) {
