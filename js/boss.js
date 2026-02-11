@@ -66,7 +66,7 @@ game.Boss = class {
       }
       if (this.frm === 120) {
         this.flg = game.BOSS_NONE;
-        game.ctx.gameSta = game.STA_CLEAR;
+        ctx.gameSta = game.STA_CLEAR;
       }
     }
 
@@ -75,7 +75,7 @@ game.Boss = class {
     }
 
     // ステージ1のボスAI
-    if (game.ctx.stage === 1) {
+    if (ctx.stage === 1) {
       if (this.frm < 400) {
         this.y -= 1;
       } else {
@@ -116,10 +116,10 @@ game.Boss = class {
   }
 
   // ボス描画（旧DrwBoss）
-  draw() {
+  draw(ctx) {
     if (this.flg === game.BOSS_NONE) return;
 
-    if (game.ctx.stage === 1) {
+    if (ctx.stage === 1) {
       for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
         const prt = this.parts[i];
         const d = prt.constructor.DATA;

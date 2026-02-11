@@ -52,10 +52,9 @@ game.gameUpdatePost = () => {
 //////////ゲーム要素描画//////////
 game.renderObjects = (ctx) => {
   game.drawBackground();
-  if (ctx.boss.flg === game.BOSS_NONE) {
-    for (const e of ctx.enemies) { e.draw(); }
-  } else {
-    ctx.boss.draw();
+  for (const e of ctx.enemies) { e.draw(); }
+  if (ctx.boss.flg !== game.BOSS_NONE) {
+    ctx.boss.draw(ctx);
   }
   // プレーヤーショット描画（逆順）
   for (let i = ctx.playerShots.length - 1; i >= 0; i--) { ctx.playerShots[i].draw(); }
@@ -95,10 +94,10 @@ game.gameUpdate = () => {
       // 敵/ボス更新
       if (game.ctx.boss.flg === game.BOSS_NONE) {
         game.Enemy.appear(game.ctx);
-        for (const e of game.ctx.enemies) { e.update(game.ctx); }
       } else {
         game.ctx.boss.update(game.ctx);
       }
+      for (const e of game.ctx.enemies) { e.update(game.ctx); }
       game.updateProjectiles(game.ctx);
       game.updateBackground(game.ctx);
       game.ctx.frame++;

@@ -91,7 +91,6 @@ game.Laser = class {
   // ターゲット喪失検知 + 再検索
   updateTargeting(ctx) {
     if (this.sta === game.LSR_TRACKING && (this.trg === null || !this.trg.alive)) {
-      if (this.trg !== null) { this.trg.lckOn--; }
       this.sta = game.LSR_NO_TARGET;
     }
     if (this.sta === game.LSR_NO_TARGET) {

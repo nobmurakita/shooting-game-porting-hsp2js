@@ -43,13 +43,13 @@ game.Enemy = class {
   // 敵出現処理（旧AprEne）
   static appear(ctx) {
     while (true) {
-      if (ctx.boss.aprFrm === game.ctx.frame) {
+      if (ctx.boss.aprFrm === ctx.frame) {
         ctx.boss.flg = game.BOSS_BATTLE;
       }
       if (game.Enemy.tableIndex === game.Enemy.table.length) {
         return;
       }
-      if (game.Enemy.table[game.Enemy.tableIndex][0] === game.ctx.frame) {
+      if (game.Enemy.table[game.Enemy.tableIndex][0] === ctx.frame) {
         const entry = game.Enemy.table[game.Enemy.tableIndex];
         const EnemyClass = game.Enemy.CLASS_MAP[entry[1]];
         ctx.enemies.push(new EnemyClass(entry[2], entry[3], entry[4]));
