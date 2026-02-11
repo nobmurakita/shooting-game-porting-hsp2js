@@ -73,11 +73,7 @@ game.tile = (pixelX, pixelY, w, h, texIndex) => {
 game.rnd = (max) => Math.floor(Math.random() * max);
 
 //////////UI描画ヘルパー//////////
-// スクリーン座標（Y↓左上原点、スプライト左上）→ ワールド座標（Y↑中心原点、スプライト中心）
-game.drawUI = (screenX, screenY, tileInfo) => {
-  const w = tileInfo.drawSize.x;
-  const h = tileInfo.drawSize.y;
-  const wx = screenX + w / 2 - game.SCREEN_W / 2;
-  const wy = game.SCREEN_H / 2 - (screenY + h / 2);
-  drawTile(vec2(wx, wy), vec2(w, h), tileInfo);
+// ワールド座標（Y↑中心原点、スプライト中心）で描画
+game.drawUI = (x, y, tileInfo) => {
+  drawTile(vec2(x, y), tileInfo.drawSize, tileInfo);
 };

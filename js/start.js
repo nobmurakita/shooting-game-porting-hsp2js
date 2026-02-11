@@ -149,7 +149,7 @@ game.gameRender = () => {
   } else if (game.ctx.gameSta === game.STA_PAUSE) {
     game.renderObjects(game.ctx);
     const p = game.UI_SPRITES.pauseLabel;
-    game.drawUI(258, 284,
+    game.drawUI(0, 0,
       game.tile(p.cx, p.cy, p.sx, p.sy, game.TEX.UI));
   }
 };

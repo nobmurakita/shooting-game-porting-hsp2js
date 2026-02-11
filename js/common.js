@@ -123,7 +123,8 @@ game.UI_SPRITES = {
 
 //////////数値表示ヘルパー//////////
 // 8桁の数値を右詰めで表示（先頭ゼロは空白）
-game.drawNumber = (value, rightX) => {
+// x: 最右桁の中心X（ワールド座標）、y: 中心Y（ワールド座標）
+game.drawNumber = (value, x, y) => {
   let a = value;
   let numCx = 0;     // 数字の基準X
   let numCy = 0;     // 数字のY
@@ -134,8 +135,7 @@ game.drawNumber = (value, rightX) => {
   for (let i = 0; i < 8; i++) {
     const digitX = a % 10 * 16 + cx;
     const ti = game.tile(digitX, cy, 16, 32, tex);
-    const screenX = -i * ti.drawSize.x + rightX;
-    game.drawUI(screenX, 0, ti);
+    game.drawUI(x - i * ti.drawSize.x, y, ti);
     a = Math.floor(a / 10);
     if (a === 0) { cx = blankCx; cy = blankCy; }
   }
@@ -147,27 +147,27 @@ game.Disp = () => {
   const tex = ui.tex;
 
   // スコア
-  game.drawUI(0, 0, game.tile(ui.scoreLabel.cx, ui.scoreLabel.cy, ui.scoreLabel.sx, ui.scoreLabel.sy, tex));
-  game.drawNumber(game.ctx.score, 200);
+  game.drawUI(-255, 284, game.tile(ui.scoreLabel.cx, ui.scoreLabel.cy, ui.scoreLabel.sx, ui.scoreLabel.sy, tex));
+  game.drawNumber(game.ctx.score, -92, 284);
 
   // ハイスコア
-  game.drawUI(346, 0, game.tile(ui.hiScoreLabel.cx, ui.hiScoreLabel.cy, ui.hiScoreLabel.sx, ui.hiScoreLabel.sy, tex));
-  game.drawNumber(game.ctx.hiScore, 580);
+  game.drawUI(108, 284, game.tile(ui.hiScoreLabel.cx, ui.hiScoreLabel.cy, ui.hiScoreLabel.sx, ui.hiScoreLabel.sy, tex));
+  game.drawNumber(game.ctx.hiScore, 288, 284);
 
   // レーザー
-  game.drawUI(0, 568, game.tile(ui.laserLabel.cx, ui.laserLabel.cy, ui.laserLabel.sx, ui.laserLabel.sy, tex));
-  game.drawUI(80, 576, game.tile(ui.laserBarBg.cx, ui.laserBarBg.cy, ui.laserBarBg.sx, ui.laserBarBg.sy, tex));
+  game.drawUI(-260, -284, game.tile(ui.laserLabel.cx, ui.laserLabel.cy, ui.laserLabel.sx, ui.laserLabel.sy, tex));
+  game.drawUI(-140, -288, game.tile(ui.laserBarBg.cx, ui.laserBarBg.cy, ui.laserBarBg.sx, ui.laserBarBg.sy, tex));
   const barW = Math.floor(game.ctx.player.lsrPow / 2);
   if (barW > 0) {
-    game.drawUI(80, 576, game.tile(ui.laserBarFg.cx, ui.laserBarFg.cy, barW, ui.laserBarFg.sy, tex));
+    game.drawUI(barW / 2 - 220, -288, game.tile(ui.laserBarFg.cx, ui.laserBarFg.cy, barW, ui.laserBarFg.sy, tex));
   }
 
   // シールド
-  game.drawUI(400, 568, game.tile(ui.shieldLabel.cx, ui.shieldLabel.cy, ui.shieldLabel.sx, ui.shieldLabel.sy, tex));
+  game.drawUI(145, -284, game.tile(ui.shieldLabel.cx, ui.shieldLabel.cy, ui.shieldLabel.sx, ui.shieldLabel.sy, tex));
   if (game.ctx.player.shield !== 0) {
     const shieldTi = game.tile(ui.shieldIcon.cx, ui.shieldIcon.cy, ui.shieldIcon.sx, ui.shieldIcon.sy, tex);
     for (let i = 0; i < game.ctx.player.shield; i++) {
-      game.drawUI(i * shieldTi.drawSize.x + 490, 568, shieldTi);
+      game.drawUI(i * 16 + 198, -284, shieldTi);
     }
   }
 };
