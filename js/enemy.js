@@ -316,9 +316,9 @@ game.Enemy9 = class extends game.Enemy {
       game.spawnEnemyShot(ctx, 1, this.x, this.y + 20, baseAngle + game.DIR_DOWN);
       game.spawnEnemyShot(ctx, 1, this.x, this.y + 20, baseAngle + Math.PI);
       game.spawnEnemyShot(ctx, 1, this.x, this.y + 20, baseAngle + game.DIR_UP);
-      this.bulletAngle -= 2;
+      this.bulletAngle -= 4;
     }
-    this.cx = (Math.floor(this.frm / 2) & 7) * 120;
+    this.cx = (Math.floor(this.frm / 4) & 7) * 120;
     if (this.y < -game.BOUNDS.ENEMY_FAR) {
       this.alive = false;
     }
