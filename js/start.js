@@ -19,7 +19,7 @@ game.gameInit = () => {
   game.initCommon();
 };
 
-//////////ゲーム更新後処理（レーザー充填・衝突判定・死亡除去）//////////
+//////////ゲーム更新後処理（レーザー充填・衝突判定）//////////
 game.gameUpdatePost = () => {
   // レーザー充填判定（Player.update後に実行する必要がある）
   if (game.ctx.gameSta === game.STA_PLAY || game.ctx.gameSta === game.STA_CLEAR) {
@@ -30,7 +30,7 @@ game.gameUpdatePost = () => {
     }
   }
   if (game.ctx.gameSta === game.STA_PLAY) {
-    game.CollisionSystem.checkAllCollisions(game.ctx);
+    game.CollisionSystem.checkAllCollisions();
   }
 };
 
@@ -68,9 +68,9 @@ game.gameUpdate = () => {
       }
       // 敵出現（ボス未登場時のみ）
       if (game.ctx.boss.flg === game.BOSS_NONE) {
-        game.Enemy.appear(game.ctx);
+        game.Enemy.appear();
       }
-      game.updateBackground(game.ctx);
+      game.updateBackground();
       game.ctx.frame++;
       if (game.keyWasPressed(game.KEY_SHIFT)) {
         game.ctx.gameSta = game.STA_PAUSE;
@@ -85,7 +85,7 @@ game.gameUpdate = () => {
     } else {
       game.ctx.gameSta = game.STA_INIT;
     }
-    game.updateBackground(game.ctx);
+    game.updateBackground();
   } else if (game.ctx.gameSta === game.STA_ENDING) {
     game.ctx.gameSta = game.STA_OPENING;
   } else if (game.ctx.gameSta === game.STA_PAUSE) {

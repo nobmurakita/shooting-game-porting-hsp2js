@@ -2,7 +2,7 @@ game.SCORE_SHOT_HIT = 10;
 
 //////////衝突判定システム//////////
 game.CollisionSystem = class {
-  // AABB衝突判定（旧 stg_clash）
+  // AABB衝突判定（stg_clash）
   // (x1,y1)(x2,y2)を対角線とする矩形と(x3,y3)(x4,y4)を対角線とする矩形が重なっていればtrue
   static checkAABB(x1, y1, x2, y2, x3, y3, x4, y4) {
     if (x1 > x4) return false;
@@ -12,7 +12,7 @@ game.CollisionSystem = class {
     return true;
   }
 
-  // 方向計算（旧 stg_dir）
+  // 方向計算（stg_dir）
   // (x0,y0)から(x1,y1)への向きをラジアンで返す
   static calcDir(x0, y0, x1, y1) {
     let dx = x1 - x0;
@@ -24,7 +24,8 @@ game.CollisionSystem = class {
   }
 
   // プレイヤーショット vs 敵
-  static checkPlayerShotsVsEnemies(ctx) {
+  static checkPlayerShotsVsEnemies() {
+    const ctx = game.ctx;
     const sd = game.PlayerShot.DATA;
     const enemies = game.objectsOf(game.Enemy);
     const shots = game.objectsOf(game.PlayerShot);
@@ -52,7 +53,8 @@ game.CollisionSystem = class {
   }
 
   // プレイヤー vs 敵（接触ダメージ）
-  static checkPlayerVsEnemies(ctx) {
+  static checkPlayerVsEnemies() {
+    const ctx = game.ctx;
     const ply = ctx.player;
     if (!ply.alive || ply.hitCnt !== 0) return;
     const pd = game.Player.DATA;
@@ -82,7 +84,8 @@ game.CollisionSystem = class {
   }
 
   // プレイヤーショット vs ボスパーツ
-  static checkPlayerShotsVsBoss(ctx) {
+  static checkPlayerShotsVsBoss() {
+    const ctx = game.ctx;
     const boss = ctx.boss;
     if (boss.flg !== game.BOSS_BATTLE) return;
     const sd = game.PlayerShot.DATA;
@@ -123,7 +126,8 @@ game.CollisionSystem = class {
   }
 
   // 敵ショット vs プレイヤー
-  static checkEnemyShotsVsPlayer(ctx) {
+  static checkEnemyShotsVsPlayer() {
+    const ctx = game.ctx;
     const ply = ctx.player;
     if (!ply.alive || ply.hitCnt !== 0) return;
     const pd = game.Player.DATA;
@@ -149,7 +153,8 @@ game.CollisionSystem = class {
   }
 
   // プレイヤーショット vs 誘導弾（EnemyShot2）
-  static checkPlayerShotsVsEnemyShots(ctx) {
+  static checkPlayerShotsVsEnemyShots() {
+    const ctx = game.ctx;
     const sd = game.PlayerShot.DATA;
     const enemyShots = game.objectsOf(game.EnemyShot2);
     const playerShots = game.objectsOf(game.PlayerShot);
@@ -174,14 +179,15 @@ game.CollisionSystem = class {
   }
 
   // 全衝突判定を一括実行
-  static checkAllCollisions(ctx) {
+  static checkAllCollisions() {
+    const ctx = game.ctx;
     // 通常敵の衝突判定は常に実行（ボス戦突入時に残存敵がいる場合に備える）
-    game.CollisionSystem.checkPlayerShotsVsEnemies(ctx);
-    game.CollisionSystem.checkPlayerVsEnemies(ctx);
+    game.CollisionSystem.checkPlayerShotsVsEnemies();
+    game.CollisionSystem.checkPlayerVsEnemies();
     if (ctx.boss.flg === game.BOSS_BATTLE) {
-      game.CollisionSystem.checkPlayerShotsVsBoss(ctx);
+      game.CollisionSystem.checkPlayerShotsVsBoss();
     }
-    game.CollisionSystem.checkPlayerShotsVsEnemyShots(ctx);
-    game.CollisionSystem.checkEnemyShotsVsPlayer(ctx);
+    game.CollisionSystem.checkPlayerShotsVsEnemyShots();
+    game.CollisionSystem.checkEnemyShotsVsPlayer();
   }
 };

@@ -40,7 +40,8 @@ game.Enemy = class extends game.GameObject {
 
   // 敵出現処理（旧AprEne）
   // ※ボス出現判定は start.js 側で実行
-  static appear(ctx) {
+  static appear() {
+    const ctx = game.ctx;
     while (true) {
       if (ctx.enemyTableIndex === ctx.enemyTable.length) {
         return;

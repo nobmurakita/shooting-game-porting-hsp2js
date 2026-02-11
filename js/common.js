@@ -83,7 +83,8 @@ game.initCommon = () => {
 };
 
 //////////背景//////////
-game.updateBackground = (ctx) => {
+game.updateBackground = () => {
+  const ctx = game.ctx;
   ctx.bg1 += game.BG_SCROLL_SPEED;
   if (ctx.bg1 >= game.SCREEN_H) {
     ctx.bg1 -= game.SCREEN_H;
