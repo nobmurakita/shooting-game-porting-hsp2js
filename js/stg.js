@@ -2,7 +2,6 @@ const game = {};
 
 // 方向定数（ラジアン、Y↑座標系）
 game.DIR_UP    = Math.PI / 2;        // 旧256段階: 64（Y↑で上方向）
-game.DIR_LEFT  = Math.PI;            // 旧256段階: 128
 game.DIR_DOWN  = 3 * Math.PI / 2;    // 旧256段階: 192（Y↑で下方向）
 
 // 256段階角度1刻みのラジアン値（周期運動のフレームカウンタ用）

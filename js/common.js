@@ -32,7 +32,6 @@ game.GameContext = class {
     this.frame = 0;
 
     this.bg1 = 0;
-    this.bg2 = 0;
     this.effects = [];
     this.player = null;
     this.playerShots = [];
@@ -77,7 +76,6 @@ game.initCommon = () => {
     });
   }
   game.ctx.bg1 = 0;
-  game.ctx.bg2 = 0;
 };
 
 //////////背景//////////

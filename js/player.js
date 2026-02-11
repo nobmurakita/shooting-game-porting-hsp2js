@@ -7,7 +7,6 @@ game.PlayerShot = class {
     this.alive = true;
     this.x = x;
     this.y = y;
-    this.frm = 0;
   }
 
   // ショット移動（旧MovPlySht内ループ1回分）

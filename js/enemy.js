@@ -9,7 +9,6 @@ game.Enemy = class {
     this.x = x;
     this.y = y;
     this.x0 = x;
-    this.y0 = y;
     this.frm = 0;
     this.cx = 0;
     this.lckOn = 0;
