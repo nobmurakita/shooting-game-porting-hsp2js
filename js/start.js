@@ -37,7 +37,6 @@ game.gameUpdatePost = () => {
 //////////ゲーム要素描画//////////
 game.renderObjects = () => {
   game.drawBackground();
-  game.drawStatusUI();
 };
 
 //////////ゲーム更新//////////
@@ -110,13 +109,20 @@ game.gameRender = () => {
     game.renderObjects();
   } else if (game.ctx.gameSta === game.STA_PAUSE) {
     game.renderObjects();
+  }
+};
+
+game.gameRenderPost = () => {
+  if (game.ctx.gameSta === game.STA_PLAY ||
+      game.ctx.gameSta === game.STA_CLEAR) {
+    game.drawStatusUI();
+  } else if (game.ctx.gameSta === game.STA_PAUSE) {
+    game.drawStatusUI();
     const p = game.UI_SPRITES.pauseLabel;
     game.drawUI(0, 0,
       game.tile(p.cx, p.cy, p.sx, p.sy, game.TEX.UI));
   }
 };
-
-game.gameRenderPost = () => {};
 
 //////////エンジン起動//////////
 engineInit(
