@@ -19,27 +19,21 @@ game.gameInit = () => {
   game.initCommon();
 };
 
-//////////プレイヤーショット更新 + レーザー充填判定//////////
-game.updatePlayerShots = (ctx) => {
-  for (const s of ctx.playerShots) { s.update(); }
-  // レーザー充填判定を一元管理
-  if (engineObjects.some(o => o instanceof game.Laser && !o.destroyed)) {
-    // レーザー生存中は充填不可
-    ctx.player.lsrF = game.LSR_CHARGE_OFF;
-  } else if (ctx.player.lsrPow <= 0) {
-    // 全レーザー消滅かつパワー0で充填再開
-    ctx.player.lsrF = game.LSR_CHARGE_ON;
-  }
-};
-
 //////////死亡要素の除去//////////
 game.filterDead = (ctx) => {
-  ctx.playerShots = ctx.playerShots.filter(s => s.alive);
   ctx.enemies = ctx.enemies.filter(e => e.alive);
 };
 
-//////////ゲーム更新後処理（衝突判定・死亡除去）//////////
+//////////ゲーム更新後処理（レーザー充填・衝突判定・死亡除去）//////////
 game.gameUpdatePost = () => {
+  // レーザー充填判定（Player.update後に実行する必要がある）
+  if (game.ctx.gameSta === game.STA_PLAY || game.ctx.gameSta === game.STA_CLEAR) {
+    if (engineObjects.some(o => o instanceof game.Laser && !o.destroyed)) {
+      game.ctx.player.lsrF = game.LSR_CHARGE_OFF;
+    } else if (game.ctx.player.lsrPow <= 0) {
+      game.ctx.player.lsrF = game.LSR_CHARGE_ON;
+    }
+  }
   if (game.ctx.gameSta === game.STA_PLAY) {
     game.CollisionSystem.checkAllCollisions(game.ctx);
   }
@@ -55,10 +49,6 @@ game.renderObjects = (ctx) => {
   if (ctx.boss.flg !== game.BOSS_NONE) {
     ctx.boss.draw(ctx);
   }
-  // プレーヤーショット描画（逆順）
-  for (let i = ctx.playerShots.length - 1; i >= 0; i--) { ctx.playerShots[i].draw(); }
-  // プレーヤー描画
-  ctx.player.draw();
   game.drawStatusUI();
 };
 
@@ -85,8 +75,6 @@ game.gameUpdate = () => {
     if (game.keyWasPressed(game.KEY_ESC)) {
       game.ctx.gameSta = game.STA_OPENING;
     } else {
-      game.ctx.player.update(game.ctx);
-      game.updatePlayerShots(game.ctx);
       // ボス出現判定（Enemy.appear()の外で常に判定）
       if (game.ctx.boss.flg === game.BOSS_NONE && game.ctx.boss.aprFrm === game.ctx.frame) {
         game.ctx.boss.flg = game.BOSS_BATTLE;
@@ -115,7 +103,6 @@ game.gameUpdate = () => {
       game.ctx.gameSta = game.STA_INIT;
     }
     game.updateBackground(game.ctx);
-    game.updatePlayerShots(game.ctx);
   } else if (game.ctx.gameSta === game.STA_ENDING) {
     game.ctx.gameSta = game.STA_OPENING;
   } else if (game.ctx.gameSta === game.STA_PAUSE) {

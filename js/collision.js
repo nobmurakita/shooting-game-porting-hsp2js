@@ -30,14 +30,14 @@ game.CollisionSystem = class {
       if (!e.alive) continue;
       const d = e.constructor.DATA;
 
-      for (const s of ctx.playerShots) {
-        if (!s.alive) continue;
+      for (const s of engineObjects) {
+        if (!(s instanceof game.PlayerShot) || s.destroyed) continue;
         if (game.CollisionSystem.checkAABB(
           d.hitX1 + e.x, d.hitY1 + e.y, d.hitX2 + e.x, d.hitY2 + e.y,
           sd.hitX1 + s.x, sd.hitY1 + s.y, sd.hitX2 + s.x, sd.hitY2 + s.y
         )) {
           ctx.score += game.SCORE_SHOT_HIT;
-          s.alive = false;
+          s.destroy();
           e.shield--;
           game.spawnHitSpark(s.x, s.y);
           if (e.shield <= 0) {
@@ -92,8 +92,8 @@ game.CollisionSystem = class {
       if (!prt.alive) continue;
       const d = prt.constructor.DATA;
 
-      for (const s of ctx.playerShots) {
-        if (!s.alive) continue;
+      for (const s of engineObjects) {
+        if (!(s instanceof game.PlayerShot) || s.destroyed) continue;
 
         if (game.CollisionSystem.checkAABB(
           boss.x + d.x + d.hitX1, boss.y + d.y + d.hitY1,
@@ -102,7 +102,7 @@ game.CollisionSystem = class {
           sd.hitX2 + s.x, sd.hitY2 + s.y
         )) {
           ctx.score += game.SCORE_SHOT_HIT;
-          s.alive = false;
+          s.destroy();
           boss.shield--;
           prt.shield--;
           game.spawnHitSpark(s.x, s.y);
@@ -155,14 +155,14 @@ game.CollisionSystem = class {
       if (!(es instanceof game.EnemyShot2) || es.destroyed) continue;
       const d = es.constructor.DATA;
 
-      for (const ps of ctx.playerShots) {
-        if (!ps.alive) continue;
+      for (const ps of engineObjects) {
+        if (!(ps instanceof game.PlayerShot) || ps.destroyed) continue;
         if (game.CollisionSystem.checkAABB(
           d.hitX1 + es.x, d.hitY1 + es.y, d.hitX2 + es.x, d.hitY2 + es.y,
           sd.hitX1 + ps.x, sd.hitY1 + ps.y, sd.hitX2 + ps.x, sd.hitY2 + ps.y
         )) {
           ctx.score += game.SCORE_SHOT_HIT;
-          ps.alive = false;
+          ps.destroy();
           es.destroy();
           game.spawnHitSpark(ps.x, ps.y);
           game.spawnExplosion(es.x, es.y, d.sx, d.sy, 2);

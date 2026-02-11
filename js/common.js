@@ -47,7 +47,6 @@ game.GameContext = class {
 
     this.bg1 = 0;
     this.player = null;
-    this.playerShots = [];
     this.enemies = [];
     this.boss = null;
   }
@@ -55,9 +54,8 @@ game.GameContext = class {
   // ステージ初期化
   initStage(stageNum) {
     this.stage = stageNum;
-    this.player.init();
-    this.playerShots = [];
     [...engineObjects].forEach(o => o.destroy());
+    this.player = new game.Player();
     this.enemies = [];
     this.enemyTable = game.Stages[stageNum];
     this.enemyTableIndex = 0;
@@ -69,7 +67,6 @@ game.GameContext = class {
 //////////初期設定//////////
 game.initCommon = () => {
   game.ctx = new game.GameContext();
-  game.ctx.player = new game.Player();
 
   // 背景星データ生成（描画時にdrawRectで描画）
   game.bgStars = [];

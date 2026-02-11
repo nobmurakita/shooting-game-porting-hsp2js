@@ -1,29 +1,34 @@
 //////////プレーヤーショットクラス//////////
-game.PlayerShot = class {
+game.PlayerShot = class extends game.GameObject {
   static CONFIG = { speed: 16, offscreenY: 340 };
   static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: game.TEX.PLAYER, hitX1: -10, hitY1: -20, hitX2: 10, hitY2: 20 };
 
   constructor(x, y) {
-    this.alive = true;
+    super(vec2(x, y), 10);  // renderOrder=10
     this.x = x;
     this.y = y;
   }
 
   // ショット移動（旧MovPlySht内ループ1回分）
   update() {
-    if (!this.alive) return;
+    const ctx = game.ctx;
+    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR) return;
 
     this.y += game.PlayerShot.CONFIG.speed;
 
     // 画面外で消滅
     if (this.y > game.PlayerShot.CONFIG.offscreenY) {
-      this.alive = false;
+      this.destroy();
+      return;
     }
+
+    super.update(); // frm++
   }
 
   // ショット描画（旧DrwPlySht内ループ1回分）
-  draw() {
-    if (!this.alive) return;
+  render() {
+    const ctx = game.ctx;
+    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
     const d = game.PlayerShot.DATA;
     const ti = game.tile(d.cx, d.cy, d.sx, d.sy, d.tex);
     drawTile(vec2(this.x, this.y), ti.drawSize, ti);
@@ -100,7 +105,7 @@ game.Laser = class extends game.GameObject {
       this.sta = game.LSR_NO_TARGET;
     }
     if (this.sta === game.LSR_NO_TARGET) {
-      const newTrg = ctx.player.searchTarget(ctx);
+      const newTrg = ctx.player.searchTarget();
       if (newTrg !== null) {
         this.sta = game.LSR_TRACKING;
         this.trg = newTrg;
@@ -230,7 +235,7 @@ game.Laser = class extends game.GameObject {
 };
 
 //////////プレーヤークラス//////////
-game.Player = class {
+game.Player = class extends game.GameObject {
   static CONFIG = {
     moveSpeed: 5.5,
     shotInterval: 6,
@@ -251,6 +256,7 @@ game.Player = class {
   static LSR_DIR = [187, 197, 177, 207, 167, 217, 157, 227].map(a => -a * Math.PI / 128);
 
   constructor() {
+    super(vec2(game.Player.CONFIG.initX, game.Player.CONFIG.initY), 20); // renderOrder=20
     this.init();
   }
 
@@ -271,7 +277,10 @@ game.Player = class {
   }
 
   // プレーヤー移動（旧MovPly）
-  update(ctx) {
+  update() {
+    const ctx = game.ctx;
+    if (ctx.gameSta !== game.STA_PLAY) return;
+
     if (!this.alive) {
       this.lsrPow = 0;
       this.lsrPowDisplay = Math.max(0, this.lsrPowDisplay - game.Player.CONFIG.laserDecay);
@@ -314,7 +323,7 @@ game.Player = class {
           const posRad = game.Player.SHT_POS[i];
           const x = Math.cos(posRad) * 40 + this.x;
           const y = Math.sin(posRad) * 40 + this.y;
-          ctx.playerShots.push(new game.PlayerShot(x, y));
+          new game.PlayerShot(x, y);
         }
       }
     }
@@ -325,7 +334,7 @@ game.Player = class {
         if (this.lsrPow >= game.Player.CONFIG.laserThreshold) {
           const count = Math.min(Math.floor(this.lsrPow / game.Player.CONFIG.laserThreshold), game.Player.LSR_DIR.length);
           for (let i = 0; i < count; i++) {
-            const trg = this.searchTarget(ctx);
+            const trg = this.searchTarget();
             if (trg !== null) { trg.lckOn++; }
             const rad = game.Player.LSR_DIR[i];
             const vx = Math.cos(rad) * 16;
@@ -360,7 +369,8 @@ game.Player = class {
 
   // ロックオンする敵をサーチ（旧SearchTrget）
   // 戻り値: ターゲットオブジェクト参照（null=なし）
-  searchTarget(ctx) {
+  searchTarget() {
+    const ctx = game.ctx;
     let trg = null;
 
     if (ctx.boss.flg !== game.BOSS_BATTLE) {
@@ -429,7 +439,9 @@ game.Player = class {
   }
 
   // プレーヤー描画（旧DrwPly）
-  draw() {
+  render() {
+    const ctx = game.ctx;
+    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
     if (!this.alive) return;
     const d = game.Player.DATA;
     const frameX = Math.floor(this.gra / 2) * d.sx + d.baseX;
