@@ -16,6 +16,16 @@ game.gameInit = () => {
   setDebugKey('');
   setDebugWatermark(false);
 
+  // レーザー用オフスクリーンCanvas + TextureInfo
+  game.laserCanvas = document.createElement('canvas');
+  game.laserCanvas.width = game.SCREEN_W;
+  game.laserCanvas.height = game.SCREEN_H;
+  game.laserCtx2d = game.laserCanvas.getContext('2d');
+  game.laserCtx2d.lineCap = 'round';
+  game.laserCtx2d.lineWidth = 6;
+  game.laserTexInfo = new TextureInfo(game.laserCanvas);
+  game.laserTile = tile(vec2(), vec2(game.SCREEN_W, game.SCREEN_H), game.laserTexInfo);
+
   game.initCommon();
 };
 

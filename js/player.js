@@ -146,17 +146,34 @@ game.Laser = class extends game.GameObject {
     super.update(); // frm++
   }
 
-  // レーザー描画（旧DrwLsr内ループ1回分）
+  // レーザー描画（オフスクリーンCanvas→加算合成）
   render() {
     const ctx = game.ctx;
     if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
+
+    const c2d = game.laserCtx2d;
+    const W = game.SCREEN_W;
+    const H = game.SCREEN_H;
+    const halfW = W / 2;
+    const halfH = H / 2;
     const d = game.Laser.DRAW;
     const t = this.trail;
-    setBlendMode(true);
-    for (let j = 0; j < d.segments; j++) {
-      const c = game.color(d.baseR/255, (d.baseG - j*d.fadeG)/255, (d.baseB - j*d.fadeB)/255, 0.8);
-      drawLine(t[j], t[j+1], 6, c);
+
+    // オフスクリーンに不透明で描画（round capで継ぎ目なし）
+    c2d.clearRect(0, 0, W, H);
+    for (let j = d.segments - 1; j >= 0; j--) {
+      c2d.strokeStyle = `rgb(${d.baseR},${d.baseG - j*d.fadeG},${d.baseB - j*d.fadeB})`;
+      c2d.beginPath();
+      c2d.moveTo(t[j].x + halfW, halfH - t[j].y);
+      c2d.lineTo(t[j+1].x + halfW, halfH - t[j+1].y);
+      c2d.stroke();
     }
+
+    // テクスチャ更新→加算合成でゲーム画面に転写
+    game.laserTexInfo.createWebGLTexture();
+    setBlendMode(true);
+    drawTile(vec2(0, 0), vec2(W, H), game.laserTile, game.color(1, 1, 1, 0.8));
+    glFlush();
     setBlendMode();
   }
 };
