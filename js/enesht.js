@@ -106,6 +106,16 @@ game.EnemyShot2 = class extends game.EnemyShot {
   }
 };
 
+// EnemyShot2に被弾応答メソッドを追加（プレイヤーショットで撃破可能な誘導弾）
+game.EnemyShot2.prototype.getHitPos = function() { return this; };
+
+game.EnemyShot2.prototype.onHitByShot = function() {
+  const d = this.constructor.DATA;
+  this.destroy();
+  game.spawnExplosion(this.x, this.y, d.sx, d.sy, 2);
+  return true;
+};
+
 // CLASS_MAP 構築
 game.EnemyShot.CLASS_MAP = [
   game.EnemyShot0, game.EnemyShot1, game.EnemyShot2,

@@ -8,6 +8,47 @@ game.BossPart = class extends game.GameObject {
     this.lckOn = 0;
   }
 
+  // 衝突判定座標の取得
+  getHitPos() { return this.pos; }
+
+  // プレイヤーショットによる被弾。パーツ破壊時trueを返す
+  onHitByShot() {
+    const boss = this.parent;
+    boss.shield--;
+    this.shield--;
+    if (boss.shield <= 0) {
+      boss.flg = game.BOSS_DESTROY;
+      boss.destroyFrm = boss.frm;
+    }
+    if (this.shield <= 0) {
+      this.alive = false;
+      const d = this.constructor.DATA;
+      this.cx = d.sx;
+      game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 5);
+      return true;
+    }
+    return false;
+  }
+
+  // レーザーによる被弾
+  onHitByLaser(damage) {
+    const boss = this.parent;
+    boss.shield -= damage;
+    this.shield -= damage;
+    this.lckOn--;
+    if (boss.shield <= 0) {
+      boss.shield = 0;
+      boss.flg = game.BOSS_DESTROY;
+      boss.destroyFrm = boss.frm;
+    }
+    if (this.shield <= 0) {
+      this.alive = false;
+      const d = this.constructor.DATA;
+      this.cx = d.sx;
+      game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 3);
+    }
+  }
+
   render() {
     const ctx = game.ctx;
     if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;

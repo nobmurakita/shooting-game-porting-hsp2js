@@ -38,6 +38,40 @@ game.Enemy = class extends game.GameObject {
     drawTile(vec2(this.x, this.y), ti.drawSize, ti);
   }
 
+  // 衝突判定座標の取得
+  getHitPos() { return this; }
+
+  // プレイヤーショットによる被弾。撃破時trueを返す
+  onHitByShot() {
+    this.shield--;
+    if (this.shield <= 0) {
+      const d = this.constructor.DATA;
+      this.destroy();
+      game.spawnExplosion(this.x, this.y, d.sx, d.sy, 5);
+      return true;
+    }
+    return false;
+  }
+
+  // レーザーによる被弾
+  onHitByLaser(damage) {
+    this.shield -= damage;
+    this.lckOn--;
+    if (this.shield <= 0) {
+      const d = this.constructor.DATA;
+      this.destroy();
+      game.spawnExplosion(this.x, this.y, d.sx, d.sy, 3);
+    }
+  }
+
+  // プレイヤーとの接触
+  onContactPlayer() {
+    const d = this.constructor.DATA;
+    this.destroy();
+    game.spawnHitSparks(this.x, this.y, 2);
+    game.spawnExplosion(this.x, this.y, d.sx, d.sy, 3);
+  }
+
   // 敵出現処理（旧AprEne）
   // ※ボス出現判定は start.js 側で実行
   static appear() {

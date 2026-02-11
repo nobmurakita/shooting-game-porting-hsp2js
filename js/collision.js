@@ -24,15 +24,13 @@ game.CollisionSystem = class {
   }
 
   // ショット vs ターゲット群の共通処理
-  // targets: 対象リスト
-  // getPos: target → {x, y} 座標取得
-  // onHit: (target, data) → boolean ヒット時処理（trueでbreak）
-  static _checkShotsVsTargets(targets, getPos, onHit) {
+  // targets: getHitPos()とonHitByShot()を持つ対象リスト
+  static _checkShotsVsTargets(targets) {
     const sd = game.PlayerShot.DATA;
     const shots = game.objectsOf(game.PlayerShot);
     for (const target of targets) {
       const d = target.constructor.DATA;
-      const pos = getPos(target);
+      const pos = target.getHitPos();
       for (const s of shots) {
         if (s.destroyed) continue;
         if (game.CollisionSystem.checkAABB(
@@ -42,7 +40,7 @@ game.CollisionSystem = class {
           game.ctx.score += game.SCORE_SHOT_HIT;
           s.destroy();
           game.spawnHitSpark(s.x, s.y);
-          if (onHit(target, d)) break;
+          if (target.onHitByShot()) break;
         }
       }
     }
@@ -50,25 +48,12 @@ game.CollisionSystem = class {
 
   // プレイヤーショット vs 敵
   static checkPlayerShotsVsEnemies() {
-    game.CollisionSystem._checkShotsVsTargets(
-      game.objectsOf(game.Enemy),
-      e => e,  // enemy自体が{x, y}を持つ
-      (e, d) => {
-        e.shield--;
-        if (e.shield <= 0) {
-          e.destroy();
-          game.spawnExplosion(e.x, e.y, d.sx, d.sy, 5);
-          return true;
-        }
-        return false;
-      }
-    );
+    game.CollisionSystem._checkShotsVsTargets(game.objectsOf(game.Enemy));
   }
 
   // プレイヤー vs 敵（接触ダメージ）
   static checkPlayerVsEnemies() {
-    const ctx = game.ctx;
-    const ply = ctx.player;
+    const ply = game.ctx.player;
     if (!ply.alive || ply.hitCnt !== 0) return;
     const pd = game.Player.DATA;
 
@@ -79,18 +64,8 @@ game.CollisionSystem = class {
         d.hitX1 + e.x, d.hitY1 + e.y, d.hitX2 + e.x, d.hitY2 + e.y,
         pd.hitX1 + ply.x, pd.hitY1 + ply.y, pd.hitX2 + ply.x, pd.hitY2 + ply.y
       )) {
-        e.destroy();
-        // 敵の爆発エフェクト（小）
-        game.spawnHitSparks(e.x, e.y, 2);
-        // 敵の爆発エフェクト（大）
-        game.spawnExplosion(e.x, e.y, d.sx, d.sy, 3);
-        // プレイヤーにダメージ
-        ply.hitCnt = game.Player.CONFIG.hitInvincible;
-        ply.shield--;
-        if (ply.shield <= 0) {
-          ply.alive = false;
-          game.spawnExplosion(ply.x, ply.y, pd.sx, pd.sy, 5);
-        }
+        e.onContactPlayer();
+        ply.takeDamage(5);
         break;
       }
     }
@@ -100,31 +75,12 @@ game.CollisionSystem = class {
   static checkPlayerShotsVsBoss() {
     const boss = game.ctx.boss;
     if (boss.flg !== game.BOSS_BATTLE) return;
-    game.CollisionSystem._checkShotsVsTargets(
-      boss.parts.filter(p => p.alive),
-      p => p.pos,  // パーツはpos.x/pos.yで参照
-      (p, d) => {
-        boss.shield--;
-        p.shield--;
-        if (boss.shield <= 0) {
-          boss.flg = game.BOSS_DESTROY;
-          boss.destroyFrm = boss.frm;
-        }
-        if (p.shield <= 0) {
-          p.alive = false;
-          p.cx = d.sx;
-          game.spawnExplosion(p.pos.x, p.pos.y, d.sx, d.sy, 5);
-          return true;
-        }
-        return false;
-      }
-    );
+    game.CollisionSystem._checkShotsVsTargets(boss.parts.filter(p => p.alive));
   }
 
   // 敵ショット vs プレイヤー
   static checkEnemyShotsVsPlayer() {
-    const ctx = game.ctx;
-    const ply = ctx.player;
+    const ply = game.ctx.player;
     if (!ply.alive || ply.hitCnt !== 0) return;
     const pd = game.Player.DATA;
 
@@ -136,13 +92,8 @@ game.CollisionSystem = class {
         pd.hitX1 + ply.x, pd.hitY1 + ply.y, pd.hitX2 + ply.x, pd.hitY2 + ply.y
       )) {
         es.destroy();
-        ply.shield--;
-        ply.hitCnt = game.Player.CONFIG.hitInvincible;
         game.spawnHitSparks(es.x, es.y, 2);
-        if (ply.shield <= 0) {
-          ply.alive = false;
-          game.spawnExplosion(ply.x, ply.y, pd.sx, pd.sy, 3);
-        }
+        ply.takeDamage(3);
         break;
       }
     }
@@ -150,28 +101,7 @@ game.CollisionSystem = class {
 
   // プレイヤーショット vs 誘導弾（EnemyShot2）
   static checkPlayerShotsVsEnemyShots() {
-    const ctx = game.ctx;
-    const sd = game.PlayerShot.DATA;
-    const enemyShots = game.objectsOf(game.EnemyShot2);
-    const playerShots = game.objectsOf(game.PlayerShot);
-    for (const es of enemyShots) {
-      const d = es.constructor.DATA;
-
-      for (const ps of playerShots) {
-        if (ps.destroyed) continue;
-        if (game.CollisionSystem.checkAABB(
-          d.hitX1 + es.x, d.hitY1 + es.y, d.hitX2 + es.x, d.hitY2 + es.y,
-          sd.hitX1 + ps.x, sd.hitY1 + ps.y, sd.hitX2 + ps.x, sd.hitY2 + ps.y
-        )) {
-          ctx.score += game.SCORE_SHOT_HIT;
-          ps.destroy();
-          es.destroy();
-          game.spawnHitSpark(ps.x, ps.y);
-          game.spawnExplosion(es.x, es.y, d.sx, d.sy, 2);
-          break;
-        }
-      }
-    }
+    game.CollisionSystem._checkShotsVsTargets(game.objectsOf(game.EnemyShot2));
   }
 
   // 全衝突判定を一括実行

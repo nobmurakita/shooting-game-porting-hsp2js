@@ -114,60 +114,31 @@ game.Laser = class extends game.GameObject {
     }
   }
 
-  // 衝突判定 + ダメージ + 撃破 + 方向更新
+  // 衝突判定 + ダメージ + 方向更新
   checkHit() {
     const ctx = game.ctx;
     if (this.sta !== game.LSR_TRACKING) return;
     if (this.trg.alive === false || this.trg.destroyed) { this.sta = game.LSR_DYING; return; }
 
-    const isBossMode = (ctx.boss.flg === game.BOSS_BATTLE);
     const target = this.trg;
     const d = target.constructor.DATA;
+    const pos = target.getHitPos();
 
-    // 座標取得（敵: target.x/y、ボスパーツ: target.pos.x/y）
-    const tx = isBossMode ? target.pos.x : target.x;
-    const ty = isBossMode ? target.pos.y : target.y;
-
-    // 衝突判定（点 vs 矩形）
     const hit = game.CollisionSystem.checkAABB(
       this.x[0], this.y[0], this.x[0], this.y[0],
-      d.hitX1 + tx, d.hitY1 + ty, d.hitX2 + tx, d.hitY2 + ty
+      d.hitX1 + pos.x, d.hitY1 + pos.y, d.hitX2 + pos.x, d.hitY2 + pos.y
     );
 
     if (hit) {
       ctx.score += game.Laser.CONFIG.hitScore;
-      target.shield -= game.Laser.CONFIG.damage;
-      target.lckOn--;
       this.sta = game.LSR_DYING;
       game.spawnHitSparks(this.x[0], this.y[0], 2);
-
-      if (isBossMode) {
-        // ボス本体シールド減算＆撃破判定
-        const boss = ctx.boss;
-        boss.shield -= game.Laser.CONFIG.damage;
-        if (boss.shield <= 0) {
-          boss.shield = 0;
-          boss.flg = game.BOSS_DESTROY;
-          boss.destroyFrm = boss.frm;
-        }
-        // パーツ破壊
-        if (target.shield <= 0) {
-          target.alive = false;
-          target.cx = d.sx;
-          game.spawnExplosion(tx, ty, d.sx, d.sy, 3);
-        }
-      } else {
-        // 敵撃破
-        if (target.shield <= 0) {
-          target.destroy();
-          game.spawnExplosion(tx, ty, d.sx, d.sy, 3);
-        }
-      }
+      target.onHitByLaser(game.Laser.CONFIG.damage);
     }
 
     // ターゲットへの方向を更新（2フレームに1回）
     if (this.frm % 2 === 0) {
-      this.dir = game.CollisionSystem.calcDir(this.x[0], this.y[0], tx, ty);
+      this.dir = game.CollisionSystem.calcDir(this.x[0], this.y[0], pos.x, pos.y);
     }
   }
 
@@ -350,6 +321,17 @@ game.Player = class extends game.GameObject {
   updateHitCounter() {
     if (this.hitCnt !== 0) {
       this.hitCnt--;
+    }
+  }
+
+  // ダメージ処理（敵接触・敵ショット共通）
+  takeDamage(explosionScale) {
+    this.hitCnt = game.Player.CONFIG.hitInvincible;
+    this.shield--;
+    if (this.shield <= 0) {
+      this.alive = false;
+      const d = game.Player.DATA;
+      game.spawnExplosion(this.x, this.y, d.sx, d.sy, explosionScale);
     }
   }
 
