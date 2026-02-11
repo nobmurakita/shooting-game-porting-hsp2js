@@ -1,32 +1,33 @@
 //////////敵ショット基底クラス//////////
-game.EnemyShot = class {
+game.EnemyShot = class extends game.GameObject {
   static CLASS_MAP = [];  // ki → サブクラスのマッピング（ファイル末尾で設定）
 
   constructor(x, y, dir) {
-    this.alive = true;
+    super(vec2(x, y), 40);  // renderOrder=40（レーザー=50の下）
     this.x = x;
     this.y = y;
     this.dir = dir;
-    this.frm = 0;
     this.cx = 0;
     this.initAI();
   }
 
   // サブクラスでオーバーライド
   initAI() {}
-  updateAI(ctx) {}
+  updateAI() {}
 
-  update(ctx) {
-    if (!this.alive) return;
+  update() {
+    const ctx = game.ctx;
+    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR) return;
 
     // --- AI移動処理（サブクラスで委譲） ---
-    this.updateAI(ctx);
+    this.updateAI();
 
-    this.frm++;
+    super.update(); // frm++
   }
 
-  draw() {
-    if (!this.alive) return;
+  render() {
+    const ctx = game.ctx;
+    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
     const d = this.constructor.DATA;
     const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
     drawTile(vec2(this.x, this.y), ti.drawSize, ti);
@@ -43,11 +44,11 @@ game.EnemyShot0 = class extends game.EnemyShot {
     this.cx = game.radToSpriteFrameHalf(this.dir, 16, 40);
   }
 
-  updateAI(ctx) {
+  updateAI() {
     this.x += Math.cos(this.dir) * 7;
     this.y += Math.sin(this.dir) * 7;
     if (game.isOutOfBounds(this.x, this.y, game.BOUNDS.SHOT)) {
-      this.alive = false;
+      this.destroy();
     }
   }
 };
@@ -56,12 +57,12 @@ game.EnemyShot0 = class extends game.EnemyShot {
 game.EnemyShot1 = class extends game.EnemyShot {
   static DATA = { sx: 40, sy: 40, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10, tex: game.TEX.ENESHT, texCy: 0 };
 
-  updateAI(ctx) {
+  updateAI() {
     this.x += Math.cos(this.dir) * 5;
     this.y += Math.sin(this.dir) * 5;
     this.cx = (Math.floor(this.frm / 2) % 16) * 40 + 640;
     if (game.isOutOfBounds(this.x, this.y, game.BOUNDS.SHOT)) {
-      this.alive = false;
+      this.destroy();
     }
   }
 };
@@ -75,8 +76,8 @@ game.EnemyShot2 = class extends game.EnemyShot {
     this.vy = 0;
   }
 
-  updateAI(ctx) {
-    const ply = ctx.player;
+  updateAI() {
+    const ply = game.ctx.player;
 
     if (this.frm % 2 === 0) {
       if ((this.frm < 160 && ply.alive) || this.frm === 0) {
@@ -95,11 +96,11 @@ game.EnemyShot2 = class extends game.EnemyShot {
     if (this.frm % 6 === 0) {
       let ox = game.rnd(20) - 10;
       let oy = game.rnd(20) - 10;
-      game.spawnEffect(ctx, 2, -Math.cos(this.dir) * 20 + this.x + ox, -Math.sin(this.dir) * 20 + this.y + oy, 0);
+      game.spawnEffect(game.ctx, 2, -Math.cos(this.dir) * 20 + this.x + ox, -Math.sin(this.dir) * 20 + this.y + oy, 0);
     }
     if (this.frm > 160) {
       if (game.isOutOfBounds(this.x, this.y, game.BOUNDS.SHOT)) {
-        this.alive = false;
+        this.destroy();
       }
     }
   }
@@ -111,8 +112,8 @@ game.EnemyShot.CLASS_MAP = [
 ];
 
 // 敵ショット生成ヘルパー
-game.spawnEnemyShot = (ctx, ki, x, y, dir) => {
+game.spawnEnemyShot = (ki, x, y, dir) => {
   const ShotClass = game.EnemyShot.CLASS_MAP[ki];
   if (!ShotClass) return;
-  ctx.enemyShots.push(new ShotClass(x, y, dir));
+  new ShotClass(x, y, dir);
 };

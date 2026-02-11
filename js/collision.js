@@ -127,15 +127,15 @@ game.CollisionSystem = class {
     if (!ply.alive || ply.hitCnt !== 0) return;
     const pd = game.Player.DATA;
 
-    for (const es of ctx.enemyShots) {
-      if (!es.alive) continue;
+    for (const es of engineObjects) {
+      if (!(es instanceof game.EnemyShot) || es.destroyed) continue;
       const d = es.constructor.DATA;
 
       if (game.CollisionSystem.checkAABB(
         d.hitX1 + es.x, d.hitY1 + es.y, d.hitX2 + es.x, d.hitY2 + es.y,
         pd.hitX1 + ply.x, pd.hitY1 + ply.y, pd.hitX2 + ply.x, pd.hitY2 + ply.y
       )) {
-        es.alive = false;
+        es.destroy();
         ply.shield--;
         ply.hitCnt = game.Player.CONFIG.hitInvincible;
         game.spawnHitSparks(ctx, es.x, es.y, 2);
@@ -151,9 +151,8 @@ game.CollisionSystem = class {
   // プレイヤーショット vs 誘導弾（EnemyShot2）
   static checkPlayerShotsVsEnemyShots(ctx) {
     const sd = game.PlayerShot.DATA;
-    for (const es of ctx.enemyShots) {
-      if (!es.alive) continue;
-      if (!(es instanceof game.EnemyShot2)) continue;
+    for (const es of engineObjects) {
+      if (!(es instanceof game.EnemyShot2) || es.destroyed) continue;
       const d = es.constructor.DATA;
 
       for (const ps of ctx.playerShots) {
@@ -164,7 +163,7 @@ game.CollisionSystem = class {
         )) {
           ctx.score += game.SCORE_SHOT_HIT;
           ps.alive = false;
-          es.alive = false;
+          es.destroy();
           game.spawnHitSpark(ctx, ps.x, ps.y);
           game.spawnExplosion(ctx, es.x, es.y, d.sx, d.sy, 2);
           break;

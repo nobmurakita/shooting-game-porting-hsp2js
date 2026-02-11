@@ -99,7 +99,7 @@ game.Enemy1 = class extends game.Enemy {
     this.y += Math.sin(r) * 4;
     this.cx = (Math.floor(Math.cos(r) * 3) + 3) * 80;
     if (this.frm === 64) {
-      game.spawnEnemyShot(ctx, 0, this.x, this.y - 40, game.DIR_DOWN);
+      game.spawnEnemyShot(0, this.x, this.y - 40, game.DIR_DOWN);
     }
     if ((this.x < -game.BOUNDS.ENEMY) || (game.BOUNDS.ENEMY < this.x)) {
       this.alive = false;
@@ -135,7 +135,7 @@ game.Enemy2 = class extends game.Enemy {
       this.vy = this.vy * 19 / 20;
     }
     if (this.frm !== 0 && this.frm % 60 === 0) {
-      game.spawnEnemyShot(ctx, 0, Math.cos(r) * 40 + this.x, Math.sin(r) * 40 + this.y, r);
+      game.spawnEnemyShot(0, Math.cos(r) * 40 + this.x, Math.sin(r) * 40 + this.y, r);
     }
     this.cx = game.radToSpriteFrame(r, 32, 80);
     if (this.frm > 160) {
@@ -155,7 +155,7 @@ game.Enemy3 = class extends game.Enemy {
     this.y -= 4;
     if (this.frm === 40 || this.frm === 80 || this.frm === 120 || this.frm === 160) {
       const dir = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
-      game.spawnEnemyShot(ctx, 1, this.x, this.y - 60, dir);
+      game.spawnEnemyShot(1, this.x, this.y - 60, dir);
     }
     this.cx = 0;
     if (this.y < -game.BOUNDS.ENEMY_FAR) {
@@ -177,8 +177,8 @@ game.Enemy4 = class extends game.Enemy {
     this.y += 1;
     this.x = Math.sin(r) * 16 + this.x0;
     if (this.frm > 100 && this.frm % 16 === 0) {
-      game.spawnEnemyShot(ctx, 1, this.x + 20, this.y + 4, game.DIR_DOWN + this.fanAngle * game.A256);
-      game.spawnEnemyShot(ctx, 1, this.x - 20, this.y + 4, game.DIR_DOWN - this.fanAngle * game.A256);
+      game.spawnEnemyShot(1, this.x + 20, this.y + 4, game.DIR_DOWN + this.fanAngle * game.A256);
+      game.spawnEnemyShot(1, this.x - 20, this.y + 4, game.DIR_DOWN - this.fanAngle * game.A256);
       this.fanAngle += 4;
     }
     this.cx = 0;
@@ -205,7 +205,7 @@ game.Enemy5 = class extends game.Enemy {
     // プレイヤー方向に上書き
     r = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
     if (this.frm === 32 || this.frm === 96) {
-      game.spawnEnemyShot(ctx, 0, Math.cos(r) * 40 + this.x, Math.sin(r) * 40 + this.y, r);
+      game.spawnEnemyShot(0, Math.cos(r) * 40 + this.x, Math.sin(r) * 40 + this.y, r);
     }
     this.cx = game.radToSpriteFrame(r, 32, 80);
     if (this.frm === 128) {
@@ -225,8 +225,8 @@ game.Enemy6 = class extends game.Enemy {
     this.cx = (Math.floor(-Math.cos(r) * 4) + 4) * 80;
     if (this.frm === 50) {
       const dir = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
-      game.spawnEnemyShot(ctx, 2, this.x + 20, this.y - 50, dir);
-      game.spawnEnemyShot(ctx, 2, this.x - 20, this.y - 50, dir);
+      game.spawnEnemyShot(2, this.x + 20, this.y - 50, dir);
+      game.spawnEnemyShot(2, this.x - 20, this.y - 50, dir);
     }
     if (this.frm >= 256) {
       this.alive = false;
@@ -247,7 +247,7 @@ game.Enemy7 = class extends game.Enemy {
     }
     this.y -= 2;
     if (this.frm % 32 === 0) {
-      game.spawnEnemyShot(ctx, 0, this.x, this.y - 60, game.DIR_DOWN);
+      game.spawnEnemyShot(0, this.x, this.y - 60, game.DIR_DOWN);
     }
     this.cx = (Math.floor(this.frm / 4) & 7) * 80;
     if (this.y < -game.BOUNDS.ENEMY_FAR) {
@@ -284,9 +284,9 @@ game.Enemy8 = class extends game.Enemy {
     this.cx = (Math.floor(Math.cos(r) * 3) + 3) * 80;
     if (this.frm === 60) {
       const dir = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
-      game.spawnEnemyShot(ctx, 0, this.x, this.y, dir);
-      game.spawnEnemyShot(ctx, 0, this.x, this.y, dir + Math.PI / 8);
-      game.spawnEnemyShot(ctx, 0, this.x, this.y, dir - Math.PI / 8);
+      game.spawnEnemyShot(0, this.x, this.y, dir);
+      game.spawnEnemyShot(0, this.x, this.y, dir + Math.PI / 8);
+      game.spawnEnemyShot(0, this.x, this.y, dir - Math.PI / 8);
     }
     if (this.x < -game.BOUNDS.ENEMY || game.BOUNDS.ENEMY < this.x) {
       this.alive = false;
@@ -312,10 +312,10 @@ game.Enemy9 = class extends game.Enemy {
     this.y -= 1;
     if (this.frm > 100 && this.frm < 592 && this.frm % 8 === 0) {
       const baseAngle = this.bulletAngle * game.A256;
-      game.spawnEnemyShot(ctx, 1, this.x, this.y + 20, baseAngle);
-      game.spawnEnemyShot(ctx, 1, this.x, this.y + 20, baseAngle + game.DIR_DOWN);
-      game.spawnEnemyShot(ctx, 1, this.x, this.y + 20, baseAngle + Math.PI);
-      game.spawnEnemyShot(ctx, 1, this.x, this.y + 20, baseAngle + game.DIR_UP);
+      game.spawnEnemyShot(1, this.x, this.y + 20, baseAngle);
+      game.spawnEnemyShot(1, this.x, this.y + 20, baseAngle + game.DIR_DOWN);
+      game.spawnEnemyShot(1, this.x, this.y + 20, baseAngle + Math.PI);
+      game.spawnEnemyShot(1, this.x, this.y + 20, baseAngle + game.DIR_UP);
       this.bulletAngle -= 4;
     }
     this.cx = (Math.floor(this.frm / 4) & 7) * 120;

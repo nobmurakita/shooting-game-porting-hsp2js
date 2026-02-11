@@ -50,7 +50,6 @@ game.GameContext = class {
     this.player = null;
     this.playerShots = [];
     this.enemies = [];
-    this.enemyShots = [];
     this.boss = null;
   }
 
@@ -58,7 +57,6 @@ game.GameContext = class {
   initStage(stageNum) {
     this.stage = stageNum;
     this.effects = [];
-    this.enemyShots = [];
     this.player.init();
     this.playerShots = [];
     [...engineObjects].forEach(o => o.destroy());

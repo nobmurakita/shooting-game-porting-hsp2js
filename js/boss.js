@@ -94,21 +94,21 @@ game.Boss = class {
         // 誘導弾発射（パーツ1,2）
         if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 16 === 0) {
           if (this.parts[1].alive) {
-            game.spawnEnemyShot(ctx, 2, -80 + this.x, this.y, r);
+            game.spawnEnemyShot(2, -80 + this.x, this.y, r);
           }
           if (this.parts[2].alive) {
-            game.spawnEnemyShot(ctx, 2, 80 + this.x, this.y, r);
+            game.spawnEnemyShot(2, 80 + this.x, this.y, r);
           }
         }
         // 照準弾発射
         if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 8 === 0) {
           let dir = game.CollisionSystem.calcDir(this.x, this.y, ctx.player.x, ctx.player.y);
-          game.spawnEnemyShot(ctx, 1, this.x, this.y + 40, dir);
+          game.spawnEnemyShot(1, this.x, this.y + 40, dir);
         }
         // 通常弾発射
         if ((this.frm - 400) % 64 === 63) {
-          game.spawnEnemyShot(ctx, 0, -10 + this.x, this.y - 50, game.DIR_DOWN);
-          game.spawnEnemyShot(ctx, 0, 10 + this.x, this.y - 50, game.DIR_DOWN);
+          game.spawnEnemyShot(0, -10 + this.x, this.y - 50, game.DIR_DOWN);
+          game.spawnEnemyShot(0, 10 + this.x, this.y - 50, game.DIR_DOWN);
         }
       }
       this.frm++;

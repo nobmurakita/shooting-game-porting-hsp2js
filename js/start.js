@@ -32,9 +32,8 @@ game.updatePlayerShots = (ctx) => {
   }
 };
 
-//////////敵ショット・レーザー・エフェクト更新//////////
+//////////エフェクト更新//////////
 game.updateProjectiles = (ctx) => {
-  for (const s of ctx.enemyShots) { s.update(ctx); }
   for (const e of ctx.effects) { e.update(); }
 };
 
@@ -42,7 +41,6 @@ game.updateProjectiles = (ctx) => {
 game.filterDead = (ctx) => {
   ctx.playerShots = ctx.playerShots.filter(s => s.alive);
   ctx.enemies = ctx.enemies.filter(e => e.alive);
-  ctx.enemyShots = ctx.enemyShots.filter(s => s.alive);
   ctx.effects = ctx.effects.filter(e => e.alive);
 };
 
@@ -68,7 +66,6 @@ game.renderObjects = (ctx) => {
   // プレーヤー描画
   ctx.player.draw();
   for (let i = ctx.effects.length - 1; i >= 0; i--) { ctx.effects[i].draw(); }
-  for (const s of ctx.enemyShots) { s.draw(); }
   game.drawStatusUI();
 };
 
