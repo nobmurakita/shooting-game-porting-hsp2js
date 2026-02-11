@@ -4,8 +4,6 @@ game.EnemyShot = class extends game.GameObject {
 
   constructor(x, y, dir) {
     super(vec2(x, y), 40);  // renderOrder=40（レーザー=50の下）
-    this.x = x;
-    this.y = y;
     this.dir = dir;
     this.cx = 0;
     this.initAI();
@@ -30,7 +28,7 @@ game.EnemyShot = class extends game.GameObject {
     if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
     const d = this.constructor.DATA;
     const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
-    drawTile(vec2(this.x, this.y), ti.drawSize, ti);
+    drawTile(this.pos, ti.drawSize, ti);
   }
 };
 
@@ -45,9 +43,9 @@ game.EnemyShot0 = class extends game.EnemyShot {
   }
 
   updateAI() {
-    this.x += Math.cos(this.dir) * 7;
-    this.y += Math.sin(this.dir) * 7;
-    if (game.isOutOfBounds(this.x, this.y, game.BOUNDS.SHOT)) {
+    this.pos.x += Math.cos(this.dir) * 7;
+    this.pos.y += Math.sin(this.dir) * 7;
+    if (game.isOutOfBounds(this.pos.x, this.pos.y, game.BOUNDS.SHOT)) {
       this.destroy();
     }
   }
@@ -58,10 +56,10 @@ game.EnemyShot1 = class extends game.EnemyShot {
   static DATA = { sx: 40, sy: 40, hitX1: -10, hitY1: -10, hitX2: 10, hitY2: 10, tex: game.TEX.ENESHT, texCy: 0 };
 
   updateAI() {
-    this.x += Math.cos(this.dir) * 5;
-    this.y += Math.sin(this.dir) * 5;
+    this.pos.x += Math.cos(this.dir) * 5;
+    this.pos.y += Math.sin(this.dir) * 5;
     this.cx = (Math.floor(this.frm / 2) % 16) * 40 + 640;
-    if (game.isOutOfBounds(this.x, this.y, game.BOUNDS.SHOT)) {
+    if (game.isOutOfBounds(this.pos.x, this.pos.y, game.BOUNDS.SHOT)) {
       this.destroy();
     }
   }
@@ -81,13 +79,13 @@ game.EnemyShot2 = class extends game.EnemyShot {
 
     if (this.frm % 2 === 0) {
       if ((this.frm < 160 && ply.alive) || this.frm === 0) {
-        this.dir = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
+        this.dir = game.CollisionSystem.calcDir(this.pos.x, this.pos.y, ply.pos.x, ply.pos.y);
       }
       this.vx += Math.cos(this.dir) * 2 / 3;
       this.vy += Math.sin(this.dir) * 2 / 3;
     }
-    this.x += this.vx;
-    this.y += this.vy;
+    this.pos.x += this.vx;
+    this.pos.y += this.vy;
     if (this.frm % 2 === 0) {
       this.vx = this.vx * 14 / 15;
       this.vy = this.vy * 14 / 15;
@@ -96,10 +94,10 @@ game.EnemyShot2 = class extends game.EnemyShot {
     if (this.frm % 6 === 0) {
       let ox = game.rnd(20) - 10;
       let oy = game.rnd(20) - 10;
-      game.spawnEffect(2, -Math.cos(this.dir) * 20 + this.x + ox, -Math.sin(this.dir) * 20 + this.y + oy, 0);
+      game.spawnEffect(2, -Math.cos(this.dir) * 20 + this.pos.x + ox, -Math.sin(this.dir) * 20 + this.pos.y + oy, 0);
     }
     if (this.frm > 160) {
-      if (game.isOutOfBounds(this.x, this.y, game.BOUNDS.SHOT)) {
+      if (game.isOutOfBounds(this.pos.x, this.pos.y, game.BOUNDS.SHOT)) {
         this.destroy();
       }
     }
@@ -107,12 +105,10 @@ game.EnemyShot2 = class extends game.EnemyShot {
 };
 
 // EnemyShot2に被弾応答メソッドを追加（プレイヤーショットで撃破可能な誘導弾）
-game.EnemyShot2.prototype.getHitPos = function() { return this; };
-
 game.EnemyShot2.prototype.onHitByShot = function() {
   const d = this.constructor.DATA;
   this.destroy();
-  game.spawnExplosion(this.x, this.y, d.sx, d.sy, 2);
+  game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 2);
   return true;
 };
 

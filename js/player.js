@@ -5,8 +5,6 @@ game.PlayerShot = class extends game.GameObject {
 
   constructor(x, y) {
     super(vec2(x, y), 10);  // renderOrder=10
-    this.x = x;
-    this.y = y;
   }
 
   // ショット移動（旧MovPlySht内ループ1回分）
@@ -14,10 +12,10 @@ game.PlayerShot = class extends game.GameObject {
     const ctx = game.ctx;
     if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR) return;
 
-    this.y += game.PlayerShot.CONFIG.speed;
+    this.pos.y += game.PlayerShot.CONFIG.speed;
 
     // 画面外で消滅
-    if (this.y > game.PlayerShot.CONFIG.offscreenY) {
+    if (this.pos.y > game.PlayerShot.CONFIG.offscreenY) {
       this.destroy();
       return;
     }
@@ -31,7 +29,7 @@ game.PlayerShot = class extends game.GameObject {
     if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
     const d = game.PlayerShot.DATA;
     const ti = game.tile(d.cx, d.cy, d.sx, d.sy, d.tex);
-    drawTile(vec2(this.x, this.y), ti.drawSize, ti);
+    drawTile(this.pos, ti.drawSize, ti);
   }
 };
 
@@ -122,7 +120,7 @@ game.Laser = class extends game.GameObject {
 
     const target = this.trg;
     const d = target.constructor.DATA;
-    const pos = target.getHitPos();
+    const pos = target.pos;
 
     const hit = game.CollisionSystem.checkAABB(
       this.x[0], this.y[0], this.x[0], this.y[0],
@@ -205,8 +203,8 @@ game.Player = class extends game.GameObject {
   init() {
     this.alive = true;
     this.shield = game.Player.CONFIG.initShield;
-    this.x = game.Player.CONFIG.initX;
-    this.y = game.Player.CONFIG.initY;
+    this.pos.x = game.Player.CONFIG.initX;
+    this.pos.y = game.Player.CONFIG.initY;
     this.hitCnt = 0;
     this.gra = 0;
     this.frm = 0;
@@ -244,8 +242,8 @@ game.Player = class extends game.GameObject {
 
     if (dx || dy) {
       const r = game.CollisionSystem.calcDir(0, 0, dx, dy);
-      this.x += Math.cos(r) * game.Player.CONFIG.moveSpeed;
-      this.y += Math.sin(r) * game.Player.CONFIG.moveSpeed;
+      this.pos.x += Math.cos(r) * game.Player.CONFIG.moveSpeed;
+      this.pos.y += Math.sin(r) * game.Player.CONFIG.moveSpeed;
     }
 
     // 傾きアニメーション
@@ -259,10 +257,10 @@ game.Player = class extends game.GameObject {
     }
 
     // はみ出し制限
-    if (this.x < -game.BOUNDS.PLAYER) { this.x = -game.BOUNDS.PLAYER; }
-    if (this.y < -game.BOUNDS.PLAYER) { this.y = -game.BOUNDS.PLAYER; }
-    if (this.x > game.BOUNDS.PLAYER) { this.x = game.BOUNDS.PLAYER; }
-    if (this.y > game.BOUNDS.PLAYER) { this.y = game.BOUNDS.PLAYER; }
+    if (this.pos.x < -game.BOUNDS.PLAYER) { this.pos.x = -game.BOUNDS.PLAYER; }
+    if (this.pos.y < -game.BOUNDS.PLAYER) { this.pos.y = -game.BOUNDS.PLAYER; }
+    if (this.pos.x > game.BOUNDS.PLAYER) { this.pos.x = game.BOUNDS.PLAYER; }
+    if (this.pos.y > game.BOUNDS.PLAYER) { this.pos.y = game.BOUNDS.PLAYER; }
   }
 
   // ショット発射カウンタ＆生成
@@ -274,8 +272,8 @@ game.Player = class extends game.GameObject {
         this.shtCnt = game.Player.CONFIG.shotInterval;
         for (let i = 0; i < this.shtLV * 2; i++) {
           const posRad = game.Player.SHT_POS[i];
-          const x = Math.cos(posRad) * 40 + this.x;
-          const y = Math.sin(posRad) * 40 + this.y;
+          const x = Math.cos(posRad) * 40 + this.pos.x;
+          const y = Math.sin(posRad) * 40 + this.pos.y;
           new game.PlayerShot(x, y);
         }
       }
@@ -294,7 +292,7 @@ game.Player = class extends game.GameObject {
             const rad = game.Player.LSR_DIR[i];
             const vx = Math.cos(rad) * 16;
             const vy = Math.sin(rad) * 16;
-            new game.Laser(this.x, this.y + 40, vx, vy, trg);
+            new game.Laser(this.pos.x, this.pos.y + 40, vx, vy, trg);
           }
           this.lsrPow = 0;
         }
@@ -331,7 +329,7 @@ game.Player = class extends game.GameObject {
     if (this.shield <= 0) {
       this.alive = false;
       const d = game.Player.DATA;
-      game.spawnExplosion(this.x, this.y, d.sx, d.sy, explosionScale);
+      game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, explosionScale);
     }
   }
 
@@ -360,11 +358,11 @@ game.Player = class extends game.GameObject {
         }
 
         // ロックオン数が同じなら距離が近い方
-        let tx = trg.x - this.x; tx = tx * tx;
-        let ty = trg.y - this.y; ty = ty * ty;
+        let tx = trg.pos.x - this.pos.x; tx = tx * tx;
+        let ty = trg.pos.y - this.pos.y; ty = ty * ty;
         const rd = tx + ty;
-        let ix = e.x - this.x; ix = ix * ix;
-        let iy = e.y - this.y; iy = iy * iy;
+        let ix = e.pos.x - this.pos.x; ix = ix * ix;
+        let iy = e.pos.y - this.pos.y; iy = iy * iy;
         if (rd > ix + iy) {
           trg = e;
         }
@@ -391,11 +389,11 @@ game.Player = class extends game.GameObject {
         // }
 
         // 距離が近いパーツを優先
-        let tx = trg.pos.x - this.x; tx = tx * tx;
-        let ty = trg.pos.y - this.y; ty = ty * ty;
+        let tx = trg.pos.x - this.pos.x; tx = tx * tx;
+        let ty = trg.pos.y - this.pos.y; ty = ty * ty;
         const rd = tx + ty;
-        let ix = p.pos.x - this.x; ix = ix * ix;
-        let iy = p.pos.y - this.y; iy = iy * iy;
+        let ix = p.pos.x - this.pos.x; ix = ix * ix;
+        let iy = p.pos.y - this.pos.y; iy = iy * iy;
         if (rd > ix + iy) {
           trg = p;
         }
@@ -414,7 +412,7 @@ game.Player = class extends game.GameObject {
     const frameX = Math.floor(this.gra / 2) * d.sx + d.baseX;
     const frameY = (Math.floor(this.hitCnt / 6) % 2 === 0) ? d.normalY : d.hitY;
     const ti = game.tile(frameX, frameY, d.sx, d.sy, d.tex);
-    drawTile(vec2(this.x, this.y), ti.drawSize, ti);
+    drawTile(this.pos, ti.drawSize, ti);
   }
 
 };

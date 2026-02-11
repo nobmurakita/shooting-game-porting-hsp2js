@@ -8,9 +8,6 @@ game.BossPart = class extends game.GameObject {
     this.lckOn = 0;
   }
 
-  // 衝突判定座標の取得
-  getHitPos() { return this.pos; }
-
   // プレイヤーショットによる被弾。パーツ破壊時trueを返す
   onHitByShot() {
     const boss = this.parent;
@@ -82,8 +79,6 @@ game.Boss = class extends game.GameObject {
     super(vec2(0, 500), 5);  // renderOrder=5（敵=0の上、PlayerShot=10の下）
     this.flg = game.BOSS_NONE;
     this.shield = 500;
-    this.x = 0;
-    this.y = 500;
     this.aprFrm = 4900;
     this.destroyFrm = 0;  // 破壊演出開始時のfrm（経過フレーム算出用）
     this.parts = [new game.BossPart0(), new game.BossPart1(), new game.BossPart2()];
@@ -101,8 +96,6 @@ game.Boss = class extends game.GameObject {
     if (this.flg === game.BOSS_DESTROY) {
       super.update(); // frm++（破壊演出は旧コードでfrm先行インクリメントのため先に実行）
       this.updateDestroy();
-      this.pos.x = this.x;
-      this.pos.y = this.y;
       return;
     }
 
@@ -118,8 +111,6 @@ game.Boss = class extends game.GameObject {
     }
 
     super.update(); // frm++
-    this.pos.x = this.x;
-    this.pos.y = this.y;
   }
 
   // 破壊演出（爆発・揺れ・クリア遷移）
@@ -132,19 +123,19 @@ game.Boss = class extends game.GameObject {
     if (elapsed % 6 === 0) {
       let x = game.rnd(100) - 50;
       let y = game.rnd(100) - 50;
-      game.spawnEffect(0, this.x + x, this.y + y, 0);
+      game.spawnEffect(0, this.pos.x + x, this.pos.y + y, 0);
     }
     let x = game.rnd(1024) / 256 - 2;
     let y = game.rnd(256) / 256 - 0.5;
-    this.x += x;
-    this.y -= (y + 1);
+    this.pos.x += x;
+    this.pos.y -= (y + 1);
     if (elapsed === 100) {
       for (let i = 0; i < 3; i++) {
         let a = (i + 1) * 50;
         let t = -i * 2;
         for (let j = 0; j < 16; j++) {
           let r = j * Math.PI / 8;
-          game.spawnEffect(0, a * Math.cos(r) + this.x, a * Math.sin(r) + this.y, t);
+          game.spawnEffect(0, a * Math.cos(r) + this.pos.x, a * Math.sin(r) + this.pos.y, t);
         }
       }
     }
@@ -156,7 +147,7 @@ game.Boss = class extends game.GameObject {
 
   // 初期降下
   updateApproach() {
-    this.y -= 1;
+    this.pos.y -= 1;
   }
 
   // 移動パターン＆攻撃パターン
@@ -165,32 +156,32 @@ game.Boss = class extends game.GameObject {
     let a = Math.floor((this.frm - 400) / 256) % 4;
 
     if (a === 0 || a === 3) {
-      this.x -= 1;
+      this.pos.x -= 1;
     } else {
-      this.x += 1;
+      this.pos.x += 1;
     }
 
     let r = this.frm * 0.5 * game.A256;
-    this.y -= Math.sin(r) * 1;
+    this.pos.y -= Math.sin(r) * 1;
 
     // 誘導弾発射（パーツ1,2）
     if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 16 === 0) {
       if (this.parts[1].alive) {
-        game.spawnEnemyShot(2, -80 + this.x, this.y, r);
+        game.spawnEnemyShot(2, -80 + this.pos.x, this.pos.y, r);
       }
       if (this.parts[2].alive) {
-        game.spawnEnemyShot(2, 80 + this.x, this.y, r);
+        game.spawnEnemyShot(2, 80 + this.pos.x, this.pos.y, r);
       }
     }
     // 照準弾発射
     if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 8 === 0) {
-      let dir = game.CollisionSystem.calcDir(this.x, this.y, ctx.player.x, ctx.player.y);
-      game.spawnEnemyShot(1, this.x, this.y + 40, dir);
+      let dir = game.CollisionSystem.calcDir(this.pos.x, this.pos.y, ctx.player.pos.x, ctx.player.pos.y);
+      game.spawnEnemyShot(1, this.pos.x, this.pos.y + 40, dir);
     }
     // 通常弾発射
     if ((this.frm - 400) % 64 === 63) {
-      game.spawnEnemyShot(0, -10 + this.x, this.y - 50, game.DIR_DOWN);
-      game.spawnEnemyShot(0, 10 + this.x, this.y - 50, game.DIR_DOWN);
+      game.spawnEnemyShot(0, -10 + this.pos.x, this.pos.y - 50, game.DIR_DOWN);
+      game.spawnEnemyShot(0, 10 + this.pos.x, this.pos.y - 50, game.DIR_DOWN);
     }
   }
 

@@ -80,8 +80,8 @@ game.gameUpdate = () => {
     if (game.keyWasPressed(game.KEY_ESC)) {
       game.ctx.gameSta = game.STA_OPENING;
     }
-    if (game.ctx.player.y < 340) {
-      game.ctx.player.y += 7;
+    if (game.ctx.player.pos.y < 340) {
+      game.ctx.player.pos.y += 7;
     } else {
       game.ctx.gameSta = game.STA_INIT;
     }

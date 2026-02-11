@@ -4,8 +4,6 @@ game.Effect = class extends game.GameObject {
 
   constructor(x, y, startFrm) {
     super(vec2(x, y), 30);  // renderOrder=30
-    this.x = x;
-    this.y = y;
     this.frm = startFrm;
     this.cx = 0;
   }
@@ -30,7 +28,7 @@ game.Effect = class extends game.GameObject {
     const d = this.constructor.DATA;
     const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
     setBlendMode(true);
-    drawTile(vec2(this.x, this.y), ti.drawSize, ti, game.color(1, 1, 1, 0.8));
+    drawTile(this.pos, ti.drawSize, ti, game.color(1, 1, 1, 0.8));
     setBlendMode();
   }
 };
@@ -43,7 +41,7 @@ game.Effect0 = class extends game.Effect {
 
   updateAI() {
     if (this.frm >= 16) {
-      this.y -= 7;
+      this.pos.y -= 7;
     }
     this.cx = Math.floor(this.frm / 6) % 6 * 80;
     if (this.frm === 34) {

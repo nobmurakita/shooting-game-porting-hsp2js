@@ -6,8 +6,6 @@ game.Enemy = class extends game.GameObject {
     super(vec2(x, y), 0);  // renderOrder=0
     this.shield = this.constructor.DATA.shield;
     this.mv = mv;
-    this.x = x;
-    this.y = y;
     this.x0 = x;
     this.cx = 0;
     this.lckOn = 0;
@@ -35,11 +33,8 @@ game.Enemy = class extends game.GameObject {
     if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
     const d = this.constructor.DATA;
     const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
-    drawTile(vec2(this.x, this.y), ti.drawSize, ti);
+    drawTile(this.pos, ti.drawSize, ti);
   }
-
-  // 衝突判定座標の取得
-  getHitPos() { return this; }
 
   // プレイヤーショットによる被弾。撃破時trueを返す
   onHitByShot() {
@@ -47,7 +42,7 @@ game.Enemy = class extends game.GameObject {
     if (this.shield <= 0) {
       const d = this.constructor.DATA;
       this.destroy();
-      game.spawnExplosion(this.x, this.y, d.sx, d.sy, 5);
+      game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 5);
       return true;
     }
     return false;
@@ -60,7 +55,7 @@ game.Enemy = class extends game.GameObject {
     if (this.shield <= 0) {
       const d = this.constructor.DATA;
       this.destroy();
-      game.spawnExplosion(this.x, this.y, d.sx, d.sy, 3);
+      game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 3);
     }
   }
 
@@ -68,8 +63,8 @@ game.Enemy = class extends game.GameObject {
   onContactPlayer() {
     const d = this.constructor.DATA;
     this.destroy();
-    game.spawnHitSparks(this.x, this.y, 2);
-    game.spawnExplosion(this.x, this.y, d.sx, d.sy, 3);
+    game.spawnHitSparks(this.pos.x, this.pos.y, 2);
+    game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 3);
   }
 
   // 敵出現処理（旧AprEne）
@@ -101,13 +96,13 @@ game.Enemy0 = class extends game.Enemy {
   updateAI() {
     let r = 1.5 * this.frm * game.A256;
     if (this.mv === 0) {
-      this.x = 80 * Math.sin(r) + this.x0;
+      this.pos.x = 80 * Math.sin(r) + this.x0;
     } else {
-      this.x = -80 * Math.sin(r) + this.x0;
+      this.pos.x = -80 * Math.sin(r) + this.x0;
     }
-    this.y -= 2;
+    this.pos.y -= 2;
     this.cx = Math.floor(this.frm / 2) % 6 * 40;
-    if (this.y < -game.BOUNDS.ENEMY) {
+    if (this.pos.y < -game.BOUNDS.ENEMY) {
       this.destroy();
     }
   }
@@ -131,13 +126,13 @@ game.Enemy1 = class extends game.Enemy {
     } else {
       r = game.DIR_DOWN + this.angleStep * game.A256;
     }
-    this.x += Math.cos(r) * 4;
-    this.y += Math.sin(r) * 4;
+    this.pos.x += Math.cos(r) * 4;
+    this.pos.y += Math.sin(r) * 4;
     this.cx = (Math.floor(Math.cos(r) * 3) + 3) * 80;
     if (this.frm === 64) {
-      game.spawnEnemyShot(0, this.x, this.y - 40, game.DIR_DOWN);
+      game.spawnEnemyShot(0, this.pos.x, this.pos.y - 40, game.DIR_DOWN);
     }
-    if ((this.x < -game.BOUNDS.ENEMY) || (game.BOUNDS.ENEMY < this.x)) {
+    if ((this.pos.x < -game.BOUNDS.ENEMY) || (game.BOUNDS.ENEMY < this.pos.x)) {
       this.destroy();
     }
   }
@@ -158,24 +153,24 @@ game.Enemy2 = class extends game.Enemy {
     let r = this.trackDir;
     if (this.frm % 2 === 0) {
       if ((this.frm <= 160 && ply.alive) || this.frm === 0) {
-        r = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
+        r = game.CollisionSystem.calcDir(this.pos.x, this.pos.y, ply.pos.x, ply.pos.y);
         this.trackDir = r;
       }
       this.vx += Math.cos(r) * 0.5;
       this.vy += Math.sin(r) * 0.5;
     }
-    this.x += this.vx;
-    this.y += this.vy;
+    this.pos.x += this.vx;
+    this.pos.y += this.vy;
     if (this.frm % 2 === 0) {
       this.vx = this.vx * 19 / 20;
       this.vy = this.vy * 19 / 20;
     }
     if (this.frm !== 0 && this.frm % 60 === 0) {
-      game.spawnEnemyShot(0, Math.cos(r) * 40 + this.x, Math.sin(r) * 40 + this.y, r);
+      game.spawnEnemyShot(0, Math.cos(r) * 40 + this.pos.x, Math.sin(r) * 40 + this.pos.y, r);
     }
     this.cx = game.radToSpriteFrame(r, 32, 80);
     if (this.frm > 160) {
-      if (game.isOutOfBounds(this.x, this.y, game.BOUNDS.ENEMY)) {
+      if (game.isOutOfBounds(this.pos.x, this.pos.y, game.BOUNDS.ENEMY)) {
         this.destroy();
       }
     }
@@ -188,13 +183,13 @@ game.Enemy3 = class extends game.Enemy {
 
   updateAI() {
     const ply = game.ctx.player;
-    this.y -= 4;
+    this.pos.y -= 4;
     if (this.frm === 40 || this.frm === 80 || this.frm === 120 || this.frm === 160) {
-      const dir = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
-      game.spawnEnemyShot(1, this.x, this.y - 60, dir);
+      const dir = game.CollisionSystem.calcDir(this.pos.x, this.pos.y, ply.pos.x, ply.pos.y);
+      game.spawnEnemyShot(1, this.pos.x, this.pos.y - 60, dir);
     }
     this.cx = 0;
-    if (this.y < -game.BOUNDS.ENEMY_FAR) {
+    if (this.pos.y < -game.BOUNDS.ENEMY_FAR) {
       this.destroy();
     }
   }
@@ -210,15 +205,15 @@ game.Enemy4 = class extends game.Enemy {
 
   updateAI() {
     let r = this.frm * 0.5 * game.A256;
-    this.y += 1;
-    this.x = Math.sin(r) * 16 + this.x0;
+    this.pos.y += 1;
+    this.pos.x = Math.sin(r) * 16 + this.x0;
     if (this.frm > 100 && this.frm % 16 === 0) {
-      game.spawnEnemyShot(1, this.x + 20, this.y + 4, game.DIR_DOWN + this.fanAngle * game.A256);
-      game.spawnEnemyShot(1, this.x - 20, this.y + 4, game.DIR_DOWN - this.fanAngle * game.A256);
+      game.spawnEnemyShot(1, this.pos.x + 20, this.pos.y + 4, game.DIR_DOWN + this.fanAngle * game.A256);
+      game.spawnEnemyShot(1, this.pos.x - 20, this.pos.y + 4, game.DIR_DOWN - this.fanAngle * game.A256);
       this.fanAngle += 4;
     }
     this.cx = 0;
-    if (this.y > game.BOUNDS.ENEMY_FAR) {
+    if (this.pos.y > game.BOUNDS.ENEMY_FAR) {
       this.destroy();
     }
   }
@@ -236,12 +231,12 @@ game.Enemy5 = class extends game.Enemy {
     } else {
       r = (-this.frm + 128) * game.A256;
     }
-    this.x = Math.cos(r) * 300;
-    this.y = -Math.sin(r) * 300 + 300;
+    this.pos.x = Math.cos(r) * 300;
+    this.pos.y = -Math.sin(r) * 300 + 300;
     // プレイヤー方向に上書き
-    r = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
+    r = game.CollisionSystem.calcDir(this.pos.x, this.pos.y, ply.pos.x, ply.pos.y);
     if (this.frm === 32 || this.frm === 96) {
-      game.spawnEnemyShot(0, Math.cos(r) * 40 + this.x, Math.sin(r) * 40 + this.y, r);
+      game.spawnEnemyShot(0, Math.cos(r) * 40 + this.pos.x, Math.sin(r) * 40 + this.pos.y, r);
     }
     this.cx = game.radToSpriteFrame(r, 32, 80);
     if (this.frm === 128) {
@@ -257,12 +252,12 @@ game.Enemy6 = class extends game.Enemy {
   updateAI() {
     const ply = game.ctx.player;
     let r = this.frm * game.A256;
-    this.y -= Math.cos(r) * 6;
+    this.pos.y -= Math.cos(r) * 6;
     this.cx = (Math.floor(-Math.cos(r) * 4) + 4) * 80;
     if (this.frm === 50) {
-      const dir = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
-      game.spawnEnemyShot(2, this.x + 20, this.y - 50, dir);
-      game.spawnEnemyShot(2, this.x - 20, this.y - 50, dir);
+      const dir = game.CollisionSystem.calcDir(this.pos.x, this.pos.y, ply.pos.x, ply.pos.y);
+      game.spawnEnemyShot(2, this.pos.x + 20, this.pos.y - 50, dir);
+      game.spawnEnemyShot(2, this.pos.x - 20, this.pos.y - 50, dir);
     }
     if (this.frm >= 256) {
       this.destroy();
@@ -277,16 +272,16 @@ game.Enemy7 = class extends game.Enemy {
   updateAI() {
     let r = this.frm * 2 * game.A256;
     if (this.mv === 0) {
-      this.x = 80 * Math.sin(r) + this.x0;
+      this.pos.x = 80 * Math.sin(r) + this.x0;
     } else {
-      this.x = -80 * Math.sin(r) + this.x0;
+      this.pos.x = -80 * Math.sin(r) + this.x0;
     }
-    this.y -= 2;
+    this.pos.y -= 2;
     if (this.frm % 32 === 0) {
-      game.spawnEnemyShot(0, this.x, this.y - 60, game.DIR_DOWN);
+      game.spawnEnemyShot(0, this.pos.x, this.pos.y - 60, game.DIR_DOWN);
     }
     this.cx = (Math.floor(this.frm / 4) & 7) * 80;
-    if (this.y < -game.BOUNDS.ENEMY_FAR) {
+    if (this.pos.y < -game.BOUNDS.ENEMY_FAR) {
       this.destroy();
     }
   }
@@ -315,16 +310,16 @@ game.Enemy8 = class extends game.Enemy {
         r = game.DIR_UP + this.angleStep * game.A256;
       }
     }
-    this.x += Math.cos(r) * 5;
-    this.y += Math.sin(r) * 5;
+    this.pos.x += Math.cos(r) * 5;
+    this.pos.y += Math.sin(r) * 5;
     this.cx = (Math.floor(Math.cos(r) * 3) + 3) * 80;
     if (this.frm === 60) {
-      const dir = game.CollisionSystem.calcDir(this.x, this.y, ply.x, ply.y);
-      game.spawnEnemyShot(0, this.x, this.y, dir);
-      game.spawnEnemyShot(0, this.x, this.y, dir + Math.PI / 8);
-      game.spawnEnemyShot(0, this.x, this.y, dir - Math.PI / 8);
+      const dir = game.CollisionSystem.calcDir(this.pos.x, this.pos.y, ply.pos.x, ply.pos.y);
+      game.spawnEnemyShot(0, this.pos.x, this.pos.y, dir);
+      game.spawnEnemyShot(0, this.pos.x, this.pos.y, dir + Math.PI / 8);
+      game.spawnEnemyShot(0, this.pos.x, this.pos.y, dir - Math.PI / 8);
     }
-    if (this.x < -game.BOUNDS.ENEMY || game.BOUNDS.ENEMY < this.x) {
+    if (this.pos.x < -game.BOUNDS.ENEMY || game.BOUNDS.ENEMY < this.pos.x) {
       this.destroy();
     }
   }
@@ -344,18 +339,18 @@ game.Enemy9 = class extends game.Enemy {
     if (this.frm % 100 === 0) {
       this.moveDir = -this.moveDir;
     }
-    this.x += this.moveDir * 1;
-    this.y -= 1;
+    this.pos.x += this.moveDir * 1;
+    this.pos.y -= 1;
     if (this.frm > 100 && this.frm < 592 && this.frm % 8 === 0) {
       const baseAngle = this.bulletAngle * game.A256;
-      game.spawnEnemyShot(1, this.x, this.y + 20, baseAngle);
-      game.spawnEnemyShot(1, this.x, this.y + 20, baseAngle + game.DIR_DOWN);
-      game.spawnEnemyShot(1, this.x, this.y + 20, baseAngle + Math.PI);
-      game.spawnEnemyShot(1, this.x, this.y + 20, baseAngle + game.DIR_UP);
+      game.spawnEnemyShot(1, this.pos.x, this.pos.y + 20, baseAngle);
+      game.spawnEnemyShot(1, this.pos.x, this.pos.y + 20, baseAngle + game.DIR_DOWN);
+      game.spawnEnemyShot(1, this.pos.x, this.pos.y + 20, baseAngle + Math.PI);
+      game.spawnEnemyShot(1, this.pos.x, this.pos.y + 20, baseAngle + game.DIR_UP);
       this.bulletAngle -= 4;
     }
     this.cx = (Math.floor(this.frm / 4) & 7) * 120;
-    if (this.y < -game.BOUNDS.ENEMY_FAR) {
+    if (this.pos.y < -game.BOUNDS.ENEMY_FAR) {
       this.destroy();
     }
   }

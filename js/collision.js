@@ -24,22 +24,22 @@ game.CollisionSystem = class {
   }
 
   // ショット vs ターゲット群の共通処理
-  // targets: getHitPos()とonHitByShot()を持つ対象リスト
+  // targets: onHitByShot() を持つ対象リスト
   static _checkShotsVsTargets(targets) {
     const sd = game.PlayerShot.DATA;
     const shots = game.objectsOf(game.PlayerShot);
     for (const target of targets) {
       const d = target.constructor.DATA;
-      const pos = target.getHitPos();
+      const pos = target.pos;
       for (const s of shots) {
         if (s.destroyed) continue;
         if (game.CollisionSystem.checkAABB(
           d.hitX1 + pos.x, d.hitY1 + pos.y, d.hitX2 + pos.x, d.hitY2 + pos.y,
-          sd.hitX1 + s.x, sd.hitY1 + s.y, sd.hitX2 + s.x, sd.hitY2 + s.y
+          sd.hitX1 + s.pos.x, sd.hitY1 + s.pos.y, sd.hitX2 + s.pos.x, sd.hitY2 + s.pos.y
         )) {
           game.ctx.score += game.SCORE_SHOT_HIT;
           s.destroy();
-          game.spawnHitSpark(s.x, s.y);
+          game.spawnHitSpark(s.pos.x, s.pos.y);
           if (target.onHitByShot()) break;
         }
       }
@@ -61,8 +61,8 @@ game.CollisionSystem = class {
       const d = e.constructor.DATA;
 
       if (game.CollisionSystem.checkAABB(
-        d.hitX1 + e.x, d.hitY1 + e.y, d.hitX2 + e.x, d.hitY2 + e.y,
-        pd.hitX1 + ply.x, pd.hitY1 + ply.y, pd.hitX2 + ply.x, pd.hitY2 + ply.y
+        d.hitX1 + e.pos.x, d.hitY1 + e.pos.y, d.hitX2 + e.pos.x, d.hitY2 + e.pos.y,
+        pd.hitX1 + ply.pos.x, pd.hitY1 + ply.pos.y, pd.hitX2 + ply.pos.x, pd.hitY2 + ply.pos.y
       )) {
         e.onContactPlayer();
         ply.takeDamage(5);
@@ -88,11 +88,11 @@ game.CollisionSystem = class {
       const d = es.constructor.DATA;
 
       if (game.CollisionSystem.checkAABB(
-        d.hitX1 + es.x, d.hitY1 + es.y, d.hitX2 + es.x, d.hitY2 + es.y,
-        pd.hitX1 + ply.x, pd.hitY1 + ply.y, pd.hitX2 + ply.x, pd.hitY2 + ply.y
+        d.hitX1 + es.pos.x, d.hitY1 + es.pos.y, d.hitX2 + es.pos.x, d.hitY2 + es.pos.y,
+        pd.hitX1 + ply.pos.x, pd.hitY1 + ply.pos.y, pd.hitX2 + ply.pos.x, pd.hitY2 + ply.pos.y
       )) {
         es.destroy();
-        game.spawnHitSparks(es.x, es.y, 2);
+        game.spawnHitSparks(es.pos.x, es.pos.y, 2);
         ply.takeDamage(3);
         break;
       }
