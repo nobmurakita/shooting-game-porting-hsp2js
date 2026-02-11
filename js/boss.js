@@ -129,17 +129,13 @@ game.Boss = class {
         }
         // 照準弾発射
         if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 8 === 0) {
-          if (this.flg === game.BOSS_BATTLE) {
-            let dir = game.CollisionSystem.calcDir(this.x, this.y, ctx.player.x, ctx.player.y);
-            game.spawnEnemyShot(ctx, 1, this.x, this.y + 40, dir);
-          }
+          let dir = game.CollisionSystem.calcDir(this.x, this.y, ctx.player.x, ctx.player.y);
+          game.spawnEnemyShot(ctx, 1, this.x, this.y + 40, dir);
         }
         // 通常弾発射
         if ((this.frm - 400) % 64 === 63) {
-          if (this.flg === game.BOSS_BATTLE) {
-            game.spawnEnemyShot(ctx, 0, -10 + this.x, this.y - 50, game.DIR_DOWN);
-            game.spawnEnemyShot(ctx, 0, 10 + this.x, this.y - 50, game.DIR_DOWN);
-          }
+          game.spawnEnemyShot(ctx, 0, -10 + this.x, this.y - 50, game.DIR_DOWN);
+          game.spawnEnemyShot(ctx, 0, 10 + this.x, this.y - 50, game.DIR_DOWN);
         }
       }
       this.frm++;

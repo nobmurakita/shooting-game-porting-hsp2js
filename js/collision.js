@@ -51,7 +51,7 @@ game.CollisionSystem = class {
   // プレイヤー vs 敵（接触ダメージ）
   static checkPlayerVsEnemies(ctx) {
     const ply = ctx.player;
-    if (ply.hitCnt !== 0) return;
+    if (!ply.alive || ply.hitCnt !== 0) return;
     const pd = game.Player.DATA;
 
     for (const e of ctx.enemies) {
@@ -122,7 +122,7 @@ game.CollisionSystem = class {
   // 敵ショット vs プレイヤー
   static checkEnemyShotsVsPlayer(ctx) {
     const ply = ctx.player;
-    if (ply.hitCnt !== 0) return;
+    if (!ply.alive || ply.hitCnt !== 0) return;
     const pd = game.Player.DATA;
 
     for (const es of ctx.enemyShots) {

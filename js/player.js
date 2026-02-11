@@ -107,6 +107,7 @@ game.Laser = class {
   // 衝突判定 + ダメージ + 撃破 + 方向更新
   checkHit(ctx) {
     if (this.sta !== game.LSR_TRACKING) return;
+    if (!this.trg.alive) { this.sta = game.LSR_DYING; return; }
 
     if (ctx.boss.flg !== game.BOSS_BATTLE) {
       // --- 敵モード ---
