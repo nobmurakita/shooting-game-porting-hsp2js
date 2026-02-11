@@ -1,10 +1,20 @@
 //////////ボスパーツクラス//////////
-game.BossPart = class {
+game.BossPart = class extends game.GameObject {
   constructor() {
-    this.alive = true;
+    super(vec2(), 5);  // renderOrder=5、位置はBossの子として自動設定
+    this.alive = true;  // 破壊されても描画は継続（損傷スプライトに切替）
     this.shield = this.constructor.DATA.shield;
     this.cx = 0;
     this.lckOn = 0;
+  }
+
+  render() {
+    const ctx = game.ctx;
+    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
+    if (!this.parent || this.parent.flg === game.BOSS_NONE) return;
+    const d = this.constructor.DATA;
+    const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
+    drawTile(this.pos, ti.drawSize, ti);
   }
 };
 
@@ -24,21 +34,28 @@ game.BossPart2 = class extends game.BossPart {
 };
 
 //////////ボスクラス//////////
-game.Boss = class {
+game.Boss = class extends game.GameObject {
   static MAX_PARTS = 3;
 
   constructor() {
+    super(vec2(0, 500), 5);  // renderOrder=5（敵=0の上、PlayerShot=10の下）
     this.flg = game.BOSS_NONE;
     this.shield = 500;
     this.x = 0;
     this.y = 500;
-    this.frm = 0;
     this.aprFrm = 4900;
     this.parts = [new game.BossPart0(), new game.BossPart1(), new game.BossPart2()];
+    for (const prt of this.parts) {
+      this.addChild(prt, vec2(prt.constructor.DATA.x, prt.constructor.DATA.y));
+    }
   }
 
   // ボス移動（旧MovBoss）
-  update(ctx) {
+  // ※frmはBOSS_DESTROY開始時にリセットされるため、super.update()は使わず手動管理
+  update() {
+    const ctx = game.ctx;
+    if (ctx.gameSta !== game.STA_PLAY) return;
+
     // 破壊演出（flg==2）
     if (this.flg === game.BOSS_DESTROY) {
       for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
@@ -68,6 +85,8 @@ game.Boss = class {
         this.flg = game.BOSS_NONE;
         ctx.gameSta = game.STA_CLEAR;
       }
+      this.pos.x = this.x;
+      this.pos.y = this.y;
       return;
     }
 
@@ -113,21 +132,9 @@ game.Boss = class {
       }
       this.frm++;
     }
-
+    this.pos.x = this.x;
+    this.pos.y = this.y;
   }
 
-  // ボス描画（旧DrwBoss）
-  draw(ctx) {
-    if (this.flg === game.BOSS_NONE) return;
-
-    if (ctx.stage === 1) {
-      for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
-        const prt = this.parts[i];
-        const d = prt.constructor.DATA;
-        const ti = game.tile(prt.cx, d.texCy, d.sx, d.sy, d.tex);
-        drawTile(vec2(this.x + d.x, this.y + d.y), ti.drawSize, ti);
-      }
-    }
-  }
-
+  // パーツは子EngineObjectとして自動描画
 };

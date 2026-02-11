@@ -35,11 +35,8 @@ game.gameUpdatePost = () => {
 };
 
 //////////ゲーム要素描画//////////
-game.renderObjects = (ctx) => {
+game.renderObjects = () => {
   game.drawBackground();
-  if (ctx.boss.flg !== game.BOSS_NONE) {
-    ctx.boss.draw(ctx);
-  }
   game.drawStatusUI();
 };
 
@@ -70,11 +67,9 @@ game.gameUpdate = () => {
       if (game.ctx.boss.flg === game.BOSS_NONE && game.ctx.boss.aprFrm === game.ctx.frame) {
         game.ctx.boss.flg = game.BOSS_BATTLE;
       }
-      // 敵/ボス更新
+      // 敵出現（ボス未登場時のみ）
       if (game.ctx.boss.flg === game.BOSS_NONE) {
         game.Enemy.appear(game.ctx);
-      } else {
-        game.ctx.boss.update(game.ctx);
       }
       game.updateBackground(game.ctx);
       game.ctx.frame++;
@@ -112,9 +107,9 @@ game.gameRender = () => {
     drawTile(vec2(0, 0), ti.drawSize, ti);
   } else if (game.ctx.gameSta === game.STA_PLAY ||
              game.ctx.gameSta === game.STA_CLEAR) {
-    game.renderObjects(game.ctx);
+    game.renderObjects();
   } else if (game.ctx.gameSta === game.STA_PAUSE) {
-    game.renderObjects(game.ctx);
+    game.renderObjects();
     const p = game.UI_SPRITES.pauseLabel;
     game.drawUI(0, 0,
       game.tile(p.cx, p.cy, p.sx, p.sy, game.TEX.UI));

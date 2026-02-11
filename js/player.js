@@ -163,8 +163,8 @@ game.Laser = class extends game.GameObject {
       // 衝突判定（点 vs 矩形）
       const hit = game.CollisionSystem.checkAABB(
         this.x[0], this.y[0], this.x[0], this.y[0],
-        (pd.x + pd.hitX1) + boss.x, (pd.y + pd.hitY1) + boss.y,
-        (pd.x + pd.hitX2) + boss.x, (pd.y + pd.hitY2) + boss.y
+        pd.hitX1 + p.pos.x, pd.hitY1 + p.pos.y,
+        pd.hitX2 + p.pos.x, pd.hitY2 + p.pos.y
       );
 
       if (hit) {
@@ -188,7 +188,7 @@ game.Laser = class extends game.GameObject {
         if (p.shield <= 0) {
           p.alive = false;
           p.cx = pd.sx;
-          game.spawnExplosion(pd.x + boss.x, pd.y + boss.y, pd.sx, pd.sy, 3);
+          game.spawnExplosion(p.pos.x, p.pos.y, pd.sx, pd.sy, 3);
         }
       }
 
@@ -196,8 +196,8 @@ game.Laser = class extends game.GameObject {
       if (this.frm % 2 === 0) {
         this.dir = game.CollisionSystem.calcDir(
           this.x[0], this.y[0],
-          pd.x + boss.x,
-          pd.y + boss.y
+          p.pos.x,
+          p.pos.y
         );
       }
     }
@@ -424,11 +424,11 @@ game.Player = class extends game.GameObject {
         // }
 
         // 距離が近いパーツを優先
-        let tx = boss.x + trg.constructor.DATA.x - this.x; tx = tx * tx;
-        let ty = boss.y + trg.constructor.DATA.y - this.y; ty = ty * ty;
+        let tx = trg.pos.x - this.x; tx = tx * tx;
+        let ty = trg.pos.y - this.y; ty = ty * ty;
         const rd = tx + ty;
-        let ix = boss.x + p.constructor.DATA.x - this.x; ix = ix * ix;
-        let iy = boss.y + p.constructor.DATA.y - this.y; iy = iy * iy;
+        let ix = p.pos.x - this.x; ix = ix * ix;
+        let iy = p.pos.y - this.y; iy = iy * iy;
         if (rd > ix + iy) {
           trg = p;
         }

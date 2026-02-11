@@ -96,8 +96,8 @@ game.CollisionSystem = class {
         if (!(s instanceof game.PlayerShot) || s.destroyed) continue;
 
         if (game.CollisionSystem.checkAABB(
-          boss.x + d.x + d.hitX1, boss.y + d.y + d.hitY1,
-          boss.x + d.x + d.hitX2, boss.y + d.y + d.hitY2,
+          prt.pos.x + d.hitX1, prt.pos.y + d.hitY1,
+          prt.pos.x + d.hitX2, prt.pos.y + d.hitY2,
           sd.hitX1 + s.x, sd.hitY1 + s.y,
           sd.hitX2 + s.x, sd.hitY2 + s.y
         )) {
@@ -113,7 +113,7 @@ game.CollisionSystem = class {
           if (prt.shield <= 0) {
             prt.alive = false;
             prt.cx = d.sx;
-            game.spawnExplosion(d.x + boss.x, d.y + boss.y, d.sx, d.sy, 5);
+            game.spawnExplosion(prt.pos.x, prt.pos.y, d.sx, d.sy, 5);
             break;
           }
         }
