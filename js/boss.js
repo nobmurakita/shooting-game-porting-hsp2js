@@ -140,16 +140,16 @@ game.Boss = class extends game.GameObject {
       let y = game.rnd(100) - 50;
       game.spawnEffect(0, this.pos.x + x, this.pos.y + y, 0);
     }
-    let x = game.rnd(1024) / 256 - 2;
-    let y = game.rnd(256) / 256 - 0.5;
+    const x = game.rnd(1024) / 256 - 2;
+    const y = game.rnd(256) / 256 - 0.5;
     this.pos.x += x;
     this.pos.y -= (y + 1);
     if (elapsed === 100) {
       for (let i = 0; i < 3; i++) {
-        let a = (i + 1) * 50;
-        let t = -i * 2;
+        const a = (i + 1) * 50;
+        const t = -i * 2;
         for (let j = 0; j < 16; j++) {
-          let r = j * Math.PI / 8;
+          const r = j * Math.PI / 8;
           game.spawnEffect(0, a * Math.cos(r) + this.pos.x, a * Math.sin(r) + this.pos.y, t);
         }
       }
@@ -168,7 +168,7 @@ game.Boss = class extends game.GameObject {
   // 移動パターン＆攻撃パターン
   updateBattle() {
     const ctx = game.ctx;
-    let a = Math.floor((this.frame - 400) / 256) % 4;
+    const a = Math.floor((this.frame - 400) / 256) % 4;
 
     if (a === 0 || a === 3) {
       this.pos.x -= 1;
@@ -176,7 +176,7 @@ game.Boss = class extends game.GameObject {
       this.pos.x += 1;
     }
 
-    let r = this.frame * 0.5 * game.A256;
+    const r = this.frame * 0.5 * game.A256;
     this.pos.y -= Math.sin(r) * 1;
 
     // 誘導弾発射（パーツ1,2）
@@ -190,7 +190,7 @@ game.Boss = class extends game.GameObject {
     }
     // 照準弾発射
     if ((this.frame - 400) % 256 < 64 && (this.frame - 400) % 8 === 0) {
-      let dir = game.calcDir(this.pos, game.Player.instance.pos);
+      const dir = game.calcDir(this.pos, game.Player.instance.pos);
       game.spawnEnemyShot(1, this.pos.x, this.pos.y + 40, dir);
     }
     // 通常弾発射

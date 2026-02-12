@@ -45,9 +45,6 @@ game.gameUpdatePost = () => {
 };
 
 //////////ゲーム要素描画//////////
-game.renderBackground = () => {
-  game.drawBackground();
-};
 
 //////////ゲーム更新//////////
 game.gameUpdate = () => {
@@ -115,7 +112,7 @@ game.gameRender = () => {
     const ti = game.tile(0, 0, 600, 600, game.TEX.TITLE);
     drawTile(vec2(0, 0), ti.drawSize, ti);
   } else if (game.ctx.isPlaying()) {
-    game.renderBackground();
+    game.drawBackground();
   }
 };
 
