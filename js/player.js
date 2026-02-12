@@ -115,7 +115,7 @@ game.Laser = class extends game.GameObject {
     const ctx = game.ctx;
     if (this.sta === game.LSR_TRACKING && (this.trg === null || !this.trg.alive)) {
       // ターゲット喪失時にlckOnをデクリメント（発射時の++と対応）
-      if (this.trg !== null) {
+      if (this.trg !== null && this.trg.lckOn > 0) {
         this.trg.lckOn--;
       }
       this.sta = game.LSR_NO_TARGET;
@@ -163,7 +163,8 @@ game.Laser = class extends game.GameObject {
   }
 
   // レーザー描画（オフスクリーンCanvas→加算合成）
-  // 各レーザーを個別にオフスクリーン描画→転写することで、レーザー同士の重なりも加算合成される
+  // レーザー1本ごとにオフスクリーン描画→加算転写する。
+  // まとめて描画すると、Canvas上でレーザー同士が通常合成され加算効果が失われるため個別転写が必須。
   render() {
     const c2d = game.laserCtx2d;
     const W = game.SCREEN_W;

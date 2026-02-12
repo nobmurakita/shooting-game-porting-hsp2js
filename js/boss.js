@@ -148,8 +148,8 @@ game.Boss = class extends game.GameObject {
       }
     }
     if (elapsed === 120) {
-      this.flg = game.BOSS_NONE;
       ctx.gameSta = game.STA_CLEAR;
+      this.destroy();
     }
   }
 
