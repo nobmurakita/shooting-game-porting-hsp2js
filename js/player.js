@@ -108,7 +108,9 @@ game.Laser = class extends game.GameObject {
       this.sta = game.LSR_NO_TARGET;
     }
     if (this.sta === game.LSR_NO_TARGET) {
-      const newTrg = ctx.player.searchTarget();
+      const isBoss = ctx.boss.flg === game.BOSS_BATTLE;
+      const candidates = isBoss ? game.objectsOf(game.BossPart) : game.objectsOf(game.Enemy);
+      const newTrg = ctx.player.searchTarget(candidates, !isBoss);
       if (newTrg !== null) {
         this.sta = game.LSR_TRACKING;
         this.trg = newTrg;
@@ -292,8 +294,10 @@ game.Player = class extends game.GameObject {
       if (game.keyIsDown(game.KEY_LASER)) {
         if (this.lsrPow >= game.Player.CONFIG.laserThreshold) {
           const count = Math.min(Math.floor(this.lsrPow / game.Player.CONFIG.laserThreshold), game.Player.LSR_DIR.length);
+          const isBoss = game.ctx.boss.flg === game.BOSS_BATTLE;
+          const candidates = isBoss ? game.objectsOf(game.BossPart) : game.objectsOf(game.Enemy);
           for (let i = 0; i < count; i++) {
-            const trg = this.searchTarget();
+            const trg = this.searchTarget(candidates, !isBoss);
             if (trg !== null) { trg.lckOn++; }
             const rad = game.Player.LSR_DIR[i];
             const vx = Math.cos(rad) * 16;
@@ -342,72 +346,30 @@ game.Player = class extends game.GameObject {
   }
 
   // ロックオンする敵をサーチ（旧SearchTrget）
+  // candidates: 候補オブジェクトのリスト
+  // useLockOn: trueならロックオン数が少ない候補を優先
   // 戻り値: ターゲットオブジェクト参照（null=なし）
-  searchTarget() {
-    const ctx = game.ctx;
+  searchTarget(candidates, useLockOn) {
     let trg = null;
+    for (const c of candidates) {
+      if (!c.alive) continue;
+      if (trg === null) { trg = c; continue; }
 
-    if (ctx.boss.flg !== game.BOSS_BATTLE) {
-      // 敵モード
-      for (const e of game.objectsOf(game.Enemy)) {
-
-        if (trg === null) {
-          trg = e;
-          continue;
-        }
-
-        // ロックオン数が少ない敵を優先
-        if (trg.lckOn > e.lckOn) {
-          trg = e;
-          continue;
-        }
-        if (trg.lckOn < e.lckOn) {
-          continue;
-        }
-
-        // ロックオン数が同じなら距離が近い方
-        let tx = trg.pos.x - this.pos.x; tx = tx * tx;
-        let ty = trg.pos.y - this.pos.y; ty = ty * ty;
-        const rd = tx + ty;
-        let ix = e.pos.x - this.pos.x; ix = ix * ix;
-        let iy = e.pos.y - this.pos.y; iy = iy * iy;
-        if (rd > ix + iy) {
-          trg = e;
-        }
+      if (useLockOn) {
+        if (trg.lckOn > c.lckOn) { trg = c; continue; }
+        if (trg.lckOn < c.lckOn) { continue; }
       }
-    } else {
-      // ボスモード
-      const boss = ctx.boss;
-      for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
-        const p = boss.parts[i];
-        if (!p.alive) continue;
 
-        if (trg === null) {
-          trg = p;
-          continue;
-        }
-
-        // コメントアウト: 有効にするとレーザーがボスの各パーツに分散する
-        // if (trg.lckOn > p.lckOn) {
-        //   trg = p;
-        //   continue;
-        // }
-        // if (trg.lckOn < p.lckOn) {
-        //   continue;
-        // }
-
-        // 距離が近いパーツを優先
-        let tx = trg.pos.x - this.pos.x; tx = tx * tx;
-        let ty = trg.pos.y - this.pos.y; ty = ty * ty;
-        const rd = tx + ty;
-        let ix = p.pos.x - this.pos.x; ix = ix * ix;
-        let iy = p.pos.y - this.pos.y; iy = iy * iy;
-        if (rd > ix + iy) {
-          trg = p;
-        }
+      // 距離が近い方を優先
+      let tx = trg.pos.x - this.pos.x; tx = tx * tx;
+      let ty = trg.pos.y - this.pos.y; ty = ty * ty;
+      const rd = tx + ty;
+      let ix = c.pos.x - this.pos.x; ix = ix * ix;
+      let iy = c.pos.y - this.pos.y; iy = iy * iy;
+      if (rd > ix + iy) {
+        trg = c;
       }
     }
-
     return trg;
   }
 

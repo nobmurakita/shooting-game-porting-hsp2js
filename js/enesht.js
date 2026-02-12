@@ -6,7 +6,7 @@ game.EnemyShot = class extends game.GameObject {
     super(vec2(x, y), 40);  // renderOrder=40（レーザー=50の下）
     this.dir = dir;
     this.cx = 0;
-    this.initAI();
+    this.init();
   }
 
   // プレイヤーに命中
@@ -16,14 +16,7 @@ game.EnemyShot = class extends game.GameObject {
   }
 
   // サブクラスでオーバーライド
-  initAI() {}
-  updateAI() {}
-
-  update() {
-    if (!game.ctx.canUpdate()) return;
-    this.updateAI();
-    this.frm++;
-  }
+  init() {}
 
   render() {
     if (!game.ctx.canRender()) return;
@@ -40,16 +33,18 @@ game.EnemyShot0 = class extends game.EnemyShot {
   static DATA = { sx: 40, sy: 40, tex: game.TEX.ENESHT, texCy: 0 };
   static HIT = { x1: -10, y1: -10, x2: 10, y2: 10 };
 
-  initAI() {
+  init() {
     this.cx = game.radToSpriteFrameHalf(this.dir, 16, 40);
   }
 
-  updateAI() {
+  update() {
+    if (!game.ctx.canUpdate()) return;
     this.pos.x += Math.cos(this.dir) * 7;
     this.pos.y += Math.sin(this.dir) * 7;
     if (game.isOutOfBounds(this.pos.x, this.pos.y, game.BOUNDS.SHOT)) {
       this.destroy();
     }
+    this.frm++;
   }
 };
 
@@ -58,13 +53,15 @@ game.EnemyShot1 = class extends game.EnemyShot {
   static DATA = { sx: 40, sy: 40, tex: game.TEX.ENESHT, texCy: 0 };
   static HIT = { x1: -10, y1: -10, x2: 10, y2: 10 };
 
-  updateAI() {
+  update() {
+    if (!game.ctx.canUpdate()) return;
     this.pos.x += Math.cos(this.dir) * 5;
     this.pos.y += Math.sin(this.dir) * 5;
     this.cx = (Math.floor(this.frm / 2) % 16) * 40 + 640;
     if (game.isOutOfBounds(this.pos.x, this.pos.y, game.BOUNDS.SHOT)) {
       this.destroy();
     }
+    this.frm++;
   }
 };
 
@@ -73,7 +70,7 @@ game.EnemyShot2 = class extends game.EnemyShot {
   static DATA = { sx: 40, sy: 40, tex: game.TEX.ENESHT, texCy: 40 };
   static HIT = { x1: -10, y1: -10, x2: 10, y2: 10 };
 
-  initAI() {
+  init() {
     this.vx = 0;
     this.vy = 0;
   }
@@ -86,7 +83,8 @@ game.EnemyShot2 = class extends game.EnemyShot {
     return true;
   }
 
-  updateAI() {
+  update() {
+    if (!game.ctx.canUpdate()) return;
     const ply = game.ctx.player;
 
     if (this.frm % 2 === 0) {
@@ -113,6 +111,7 @@ game.EnemyShot2 = class extends game.EnemyShot {
         this.destroy();
       }
     }
+    this.frm++;
   }
 };
 
