@@ -1,7 +1,3 @@
-// レーザー充填
-game.LSR_CHARGE_OFF = 0;
-game.LSR_CHARGE_ON  = 1;
-
 //////////プレーヤークラス//////////
 game.Player = class extends game.GameObject {
   static instance = null;
@@ -42,7 +38,7 @@ game.Player = class extends game.GameObject {
     this.frame = 0;
     this.shotCooldown = 0;
     this.shotLevel = 1;
-    this.laserCharge = game.LSR_CHARGE_OFF;
+    this.laserCharge = false;
     this.laserPower = 0;
     this.laserPowerDisplay = 0;
   }
@@ -114,7 +110,7 @@ game.Player = class extends game.GameObject {
 
   // レーザーチャージ＆発射
   updateLaser() {
-    if (this.laserCharge === game.LSR_CHARGE_ON) {
+    if (this.laserCharge) {
       if (game.keyIsDown(game.KEY_LASER)) {
         if (this.laserPower >= game.Player.CONFIG.laserThreshold) {
           const count = Math.min(Math.floor(this.laserPower / game.Player.CONFIG.laserThreshold), game.Player.LSR_DIR.length);

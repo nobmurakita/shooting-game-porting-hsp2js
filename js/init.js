@@ -86,9 +86,9 @@ game.gameUpdatePost = () => {
   // レーザー充填判定（Player.update後に実行する必要がある）
   if (game.ctx.isPlaying() && !game.ctx.isPaused()) {
     if (game.Laser.all.size > 0) {
-      game.Player.instance.laserCharge = game.LSR_CHARGE_OFF;
+      game.Player.instance.laserCharge = false;
     } else if (game.Player.instance.laserPower <= 0) {
-      game.Player.instance.laserCharge = game.LSR_CHARGE_ON;
+      game.Player.instance.laserCharge = true;
     }
   }
   if (game.ctx.gameSta === game.STA_PLAY) {
