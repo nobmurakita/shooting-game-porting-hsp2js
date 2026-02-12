@@ -140,6 +140,8 @@ game.GameObject = class extends EngineObject {
     this.frame = 0;
     this.alive = true;
   }
+  update() {}
+  render() {}
   destroy() {
     this.alive = false;
     super.destroy();
@@ -148,8 +150,6 @@ game.GameObject = class extends EngineObject {
     const h = this.constructor.HIT;
     return [h.x1 + this.pos.x, h.y1 + this.pos.y, h.x2 + this.pos.x, h.y2 + this.pos.y];
   }
-  update() {}
-  render() {}
 };
 
 //////////ゲーム共有状態//////////

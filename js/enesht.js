@@ -11,6 +11,15 @@ game.EnemyShot = class extends game.GameObject {
     this.init();
   }
 
+  // サブクラスでオーバーライド
+  init() {}
+
+  render() {
+    const d = this.constructor.DATA;
+    const ti = game.tile(this.animX, d.texCy, d.sx, d.sy, d.tex);
+    drawTile(this.pos, ti.drawSize, ti);
+  }
+
   destroy() {
     game.EnemyShot.all.delete(this);
     super.destroy();
@@ -20,15 +29,6 @@ game.EnemyShot = class extends game.GameObject {
   onHitPlayer() {
     game.spawnHitSparks(this.pos.x, this.pos.y);
     this.destroy();
-  }
-
-  // サブクラスでオーバーライド
-  init() {}
-
-  render() {
-    const d = this.constructor.DATA;
-    const ti = game.tile(this.animX, d.texCy, d.sx, d.sy, d.tex);
-    drawTile(this.pos, ti.drawSize, ti);
   }
 };
 
@@ -82,22 +82,9 @@ game.EnemyShot2 = class extends game.EnemyShot {
     game.EnemyShot2.all.add(this);
   }
 
-  destroy() {
-    game.EnemyShot2.all.delete(this);
-    super.destroy();
-  }
-
   init() {
     this.vx = 0;
     this.vy = 0;
-  }
-
-  // プレイヤーショットで撃破可能な誘導弾
-  onHitByShot() {
-    const d = this.constructor.DATA;
-    game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 2);
-    this.destroy();
-    return true;
   }
 
   update() {
@@ -129,6 +116,19 @@ game.EnemyShot2 = class extends game.EnemyShot {
       }
     }
     this.frame++;
+  }
+
+  destroy() {
+    game.EnemyShot2.all.delete(this);
+    super.destroy();
+  }
+
+  // プレイヤーショットで撃破可能な誘導弾
+  onHitByShot() {
+    const d = this.constructor.DATA;
+    game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 2);
+    this.destroy();
+    return true;
   }
 };
 

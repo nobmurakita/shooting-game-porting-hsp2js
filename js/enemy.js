@@ -14,11 +14,6 @@ game.Enemy = class extends game.GameObject {
     this.init();
   }
 
-  destroy() {
-    game.Enemy.all.delete(this);
-    super.destroy();
-  }
-
   // サブクラスでオーバーライド
   init() {}
 
@@ -26,6 +21,11 @@ game.Enemy = class extends game.GameObject {
     const d = this.constructor.DATA;
     const ti = game.tile(this.animX, d.texCy, d.sx, d.sy, d.tex);
     drawTile(this.pos, ti.drawSize, ti);
+  }
+
+  destroy() {
+    game.Enemy.all.delete(this);
+    super.destroy();
   }
 
   // プレイヤーショットによる被弾。撃破時trueを返す
@@ -60,7 +60,7 @@ game.Enemy = class extends game.GameObject {
   }
 
   // 敵出現処理（旧AprEne）
-  // ※ボス出現判定は start.js 側で実行
+  // ※ボス出現判定は init.js 側で実行
   static appear() {
     const ctx = game.ctx;
     while (true) {

@@ -2,46 +2,6 @@
 game.LSR_CHARGE_OFF = 0;
 game.LSR_CHARGE_ON  = 1;
 
-//////////プレーヤーショットクラス//////////
-game.PlayerShot = class extends game.GameObject {
-  static all = new Set();
-  static CONFIG = { speed: 16, offscreenY: 340, hitScore: 10 };
-  static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: game.TEX.PLAYER };
-  static HIT = { x1: -10, y1: -20, x2: 10, y2: 20 };
-
-  constructor(x, y) {
-    super(vec2(x, y), 10);  // renderOrder=10
-    game.PlayerShot.all.add(this);
-  }
-
-  destroy() {
-    game.PlayerShot.all.delete(this);
-    super.destroy();
-  }
-
-  // ターゲットに命中
-  onHit() {
-    game.ctx.score += game.PlayerShot.CONFIG.hitScore;
-    game.spawnHitSparks(this.pos.x, this.pos.y);
-    this.destroy();
-  }
-
-  update() {
-    if (game.ctx.isPaused()) return;
-    this.pos.y += game.PlayerShot.CONFIG.speed;
-    if (this.pos.y > game.PlayerShot.CONFIG.offscreenY) {
-      this.destroy();
-    }
-    this.frame++;
-  }
-
-  render() {
-    const d = game.PlayerShot.DATA;
-    const ti = game.tile(d.cx, d.cy, d.sx, d.sy, d.tex);
-    drawTile(this.pos, ti.drawSize, ti);
-  }
-};
-
 //////////プレーヤークラス//////////
 game.Player = class extends game.GameObject {
   static instance = null;
@@ -69,11 +29,6 @@ game.Player = class extends game.GameObject {
     super(vec2(game.Player.CONFIG.initX, game.Player.CONFIG.initY), 20); // renderOrder=20
     game.Player.instance = this;
     this.init();
-  }
-
-  destroy() {
-    game.Player.instance = null;
-    super.destroy();
   }
 
   // プレーヤー初期化（旧IniPly）
@@ -189,31 +144,6 @@ game.Player = class extends game.GameObject {
     }
   }
 
-  // レーザーバー表示値の追従
-  updateLaserDisplay() {
-    this.laserPowerDisplay = Math.max(this.laserPower, this.laserPowerDisplay - game.Player.CONFIG.laserDecay);
-  }
-
-  // 被弾無敵カウンタ
-  updateHitCounter() {
-    if (this.hitCnt !== 0) {
-      this.hitCnt--;
-    }
-  }
-
-  // 被弾処理
-  onHit() {
-    this.hitCnt = game.Player.CONFIG.hitInvincible;
-    this.shield--;
-    if (this.shield <= 0) {
-      this.alive = false;
-      const d = game.Player.DATA;
-      game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 5);
-    } else {
-      game.spawnHitSparks(this.pos.x, this.pos.y);
-    }
-  }
-
   // ロックオンする敵をサーチ（旧SearchTrget）
   // candidates: 候補オブジェクトのリスト
   // useLockOn: trueならロックオン数が少ない候補を優先
@@ -239,6 +169,18 @@ game.Player = class extends game.GameObject {
     return trg;
   }
 
+  // レーザーバー表示値の追従
+  updateLaserDisplay() {
+    this.laserPowerDisplay = Math.max(this.laserPower, this.laserPowerDisplay - game.Player.CONFIG.laserDecay);
+  }
+
+  // 被弾無敵カウンタ
+  updateHitCounter() {
+    if (this.hitCnt !== 0) {
+      this.hitCnt--;
+    }
+  }
+
   // プレーヤー描画（旧DrwPly）
   render() {
     if (!this.alive) return;
@@ -249,4 +191,62 @@ game.Player = class extends game.GameObject {
     drawTile(this.pos, ti.drawSize, ti);
   }
 
+  destroy() {
+    game.Player.instance = null;
+    super.destroy();
+  }
+
+  // 被弾処理
+  onHit() {
+    this.hitCnt = game.Player.CONFIG.hitInvincible;
+    this.shield--;
+    if (this.shield <= 0) {
+      this.alive = false;
+      const d = game.Player.DATA;
+      game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 5);
+    } else {
+      game.spawnHitSparks(this.pos.x, this.pos.y);
+    }
+  }
+
+};
+
+//////////プレーヤーショットクラス//////////
+game.PlayerShot = class extends game.GameObject {
+  static all = new Set();
+  static CONFIG = { speed: 16, offscreenY: 340, hitScore: 10 };
+  static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: game.TEX.PLAYER };
+  static HIT = { x1: -10, y1: -20, x2: 10, y2: 20 };
+
+  constructor(x, y) {
+    super(vec2(x, y), 10);  // renderOrder=10
+    game.PlayerShot.all.add(this);
+  }
+
+  update() {
+    if (game.ctx.isPaused()) return;
+    this.pos.y += game.PlayerShot.CONFIG.speed;
+    if (this.pos.y > game.PlayerShot.CONFIG.offscreenY) {
+      this.destroy();
+    }
+    this.frame++;
+  }
+
+  render() {
+    const d = game.PlayerShot.DATA;
+    const ti = game.tile(d.cx, d.cy, d.sx, d.sy, d.tex);
+    drawTile(this.pos, ti.drawSize, ti);
+  }
+
+  destroy() {
+    game.PlayerShot.all.delete(this);
+    super.destroy();
+  }
+
+  // ターゲットに命中
+  onHit() {
+    game.ctx.score += game.PlayerShot.CONFIG.hitScore;
+    game.spawnHitSparks(this.pos.x, this.pos.y);
+    this.destroy();
+  }
 };

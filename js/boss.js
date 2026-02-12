@@ -3,87 +3,6 @@ game.BOSS_NONE    = 0;  // 未出現
 game.BOSS_BATTLE  = 1;  // 戦闘中
 game.BOSS_DESTROY = 2;  // 破壊演出中
 
-//////////ボスパーツクラス//////////
-game.BossPart = class extends game.GameObject {
-  static all = new Set();
-
-  constructor() {
-    super(vec2(), 5);  // renderOrder=5、位置はBossの子として自動設定
-    game.BossPart.all.add(this);
-    this.shield = this.constructor.DATA.shield;
-    this.animX = 0;
-    this.lockOnCount = 0;
-  }
-
-  destroy() {
-    game.BossPart.all.delete(this);
-    super.destroy();
-  }
-
-  // プレイヤーショットによる被弾。パーツ破壊時trueを返す
-  onHitByShot() {
-    const boss = this.parent;
-    boss.shield--;
-    this.shield--;
-    if (boss.shield <= 0) {
-      boss.flg = game.BOSS_DESTROY;
-      boss.destroyFrame = boss.frame;
-    }
-    if (this.shield <= 0) {
-      this.alive = false;
-      const d = this.constructor.DATA;
-      this.animX = d.sx;
-      game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 5);
-      return true;
-    }
-    return false;
-  }
-
-  // レーザーによる被弾
-  onHitByLaser(damage) {
-    const boss = this.parent;
-    boss.shield -= damage;
-    this.shield -= damage;
-    this.lockOnCount--;
-    if (boss.shield <= 0) {
-      boss.shield = 0;
-      boss.flg = game.BOSS_DESTROY;
-      boss.destroyFrame = boss.frame;
-    }
-    if (this.shield <= 0) {
-      this.alive = false;
-      const d = this.constructor.DATA;
-      this.animX = d.sx;
-      game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 3);
-    }
-  }
-
-  render() {
-    if (!this.parent || this.parent.flg === game.BOSS_NONE) return;
-    const d = this.constructor.DATA;
-    const ti = game.tile(this.animX, d.texCy, d.sx, d.sy, d.tex);
-    drawTile(this.pos, ti.drawSize, ti);
-  }
-};
-
-// パーツ0: 本体
-game.BossPart0 = class extends game.BossPart {
-  static DATA = { shield: 500, x: 0, y: 14, sx: 140, sy: 150, tex: game.TEX.BOSS0, texCy: 0 };
-  static HIT = { x1: -50, y1: -12, x2: 50, y2: 60 };
-};
-
-// パーツ1: 左翼
-game.BossPart1 = class extends game.BossPart {
-  static DATA = { shield: 200, x: -80, y: 0, sx: 40, sy: 224, tex: game.TEX.BOSS1, texCy: 0 };
-  static HIT = { x1: -20, y1: -112, x2: 20, y2: 112 };
-};
-
-// パーツ2: 右翼
-game.BossPart2 = class extends game.BossPart {
-  static DATA = { shield: 200, x: 80, y: 0, sx: 40, sy: 224, tex: game.TEX.BOSS1, texCy: 0 };
-  static HIT = { x1: -20, y1: -112, x2: 20, y2: 112 };
-};
-
 //////////ボスクラス//////////
 game.Boss = class extends game.GameObject {
   static instance = null;
@@ -100,11 +19,6 @@ game.Boss = class extends game.GameObject {
     for (const prt of this.parts) {
       this.addChild(prt, vec2(prt.constructor.DATA.x, prt.constructor.DATA.y));
     }
-  }
-
-  destroy() {
-    game.Boss.instance = null;
-    super.destroy();
   }
 
   // ボス移動（旧MovBoss）
@@ -205,5 +119,91 @@ game.Boss = class extends game.GameObject {
     }
   }
 
+  destroy() {
+    game.Boss.instance = null;
+    super.destroy();
+  }
+
   // パーツは子EngineObjectとして自動描画
+};
+
+//////////ボスパーツクラス//////////
+game.BossPart = class extends game.GameObject {
+  static all = new Set();
+
+  constructor() {
+    super(vec2(), 5);  // renderOrder=5、位置はBossの子として自動設定
+    game.BossPart.all.add(this);
+    this.shield = this.constructor.DATA.shield;
+    this.animX = 0;
+    this.lockOnCount = 0;
+  }
+
+  render() {
+    if (!this.parent || this.parent.flg === game.BOSS_NONE) return;
+    const d = this.constructor.DATA;
+    const ti = game.tile(this.animX, d.texCy, d.sx, d.sy, d.tex);
+    drawTile(this.pos, ti.drawSize, ti);
+  }
+
+  destroy() {
+    game.BossPart.all.delete(this);
+    super.destroy();
+  }
+
+  // プレイヤーショットによる被弾。パーツ破壊時trueを返す
+  onHitByShot() {
+    const boss = this.parent;
+    boss.shield--;
+    this.shield--;
+    if (boss.shield <= 0) {
+      boss.flg = game.BOSS_DESTROY;
+      boss.destroyFrame = boss.frame;
+    }
+    if (this.shield <= 0) {
+      this.alive = false;
+      const d = this.constructor.DATA;
+      this.animX = d.sx;
+      game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 5);
+      return true;
+    }
+    return false;
+  }
+
+  // レーザーによる被弾
+  onHitByLaser(damage) {
+    const boss = this.parent;
+    boss.shield -= damage;
+    this.shield -= damage;
+    this.lockOnCount--;
+    if (boss.shield <= 0) {
+      boss.shield = 0;
+      boss.flg = game.BOSS_DESTROY;
+      boss.destroyFrame = boss.frame;
+    }
+    if (this.shield <= 0) {
+      this.alive = false;
+      const d = this.constructor.DATA;
+      this.animX = d.sx;
+      game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 3);
+    }
+  }
+};
+
+// パーツ0: 本体
+game.BossPart0 = class extends game.BossPart {
+  static DATA = { shield: 500, x: 0, y: 14, sx: 140, sy: 150, tex: game.TEX.BOSS0, texCy: 0 };
+  static HIT = { x1: -50, y1: -12, x2: 50, y2: 60 };
+};
+
+// パーツ1: 左翼
+game.BossPart1 = class extends game.BossPart {
+  static DATA = { shield: 200, x: -80, y: 0, sx: 40, sy: 224, tex: game.TEX.BOSS1, texCy: 0 };
+  static HIT = { x1: -20, y1: -112, x2: 20, y2: 112 };
+};
+
+// パーツ2: 右翼
+game.BossPart2 = class extends game.BossPart {
+  static DATA = { shield: 200, x: 80, y: 0, sx: 40, sy: 224, tex: game.TEX.BOSS1, texCy: 0 };
+  static HIT = { x1: -20, y1: -112, x2: 20, y2: 112 };
 };

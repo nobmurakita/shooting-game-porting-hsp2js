@@ -24,13 +24,19 @@ game.Laser = class extends game.GameObject {
     this.dir = game.DIR_UP;
   }
 
-  destroy() {
-    game.Laser.all.delete(this);
-    super.destroy();
-  }
+  update() {
+    if (game.ctx.isPaused()) return;
+    this.updateMovement();
+    this.updateTargeting();
+    this.updateDirection();
 
-  hitBox() {
-    return [this.pos.x, this.pos.y, this.pos.x, this.pos.y];
+    // ターゲットなし状態で画面外に出たら消滅開始
+    if (this.sta === game.LSR_NO_TARGET) {
+      if (game.isOutOfBounds(this.pos.x, this.pos.y, game.BOUNDS.LASER)) {
+        this.sta = game.LSR_DYING;
+      }
+    }
+    this.frame++;
   }
 
   // 節シフト + 加速・減衰 + 消滅収束
@@ -105,28 +111,6 @@ game.Laser = class extends game.GameObject {
     }
   }
 
-  // ターゲットに命中
-  onHit() {
-    game.ctx.score += game.Laser.CONFIG.hitScore;
-    game.spawnHitSparks(this.pos.x, this.pos.y, 2);
-    this.sta = game.LSR_DYING;
-  }
-
-  update() {
-    if (game.ctx.isPaused()) return;
-    this.updateMovement();
-    this.updateTargeting();
-    this.updateDirection();
-
-    // ターゲットなし状態で画面外に出たら消滅開始
-    if (this.sta === game.LSR_NO_TARGET) {
-      if (game.isOutOfBounds(this.pos.x, this.pos.y, game.BOUNDS.LASER)) {
-        this.sta = game.LSR_DYING;
-      }
-    }
-    this.frame++;
-  }
-
   // レーザー描画（オフスクリーンCanvas→加算合成）
   // レーザー1本ごとにオフスクリーン描画→加算転写する。
   // まとめて描画すると、Canvas上でレーザー同士が通常合成され加算効果が失われるため個別転写が必須。
@@ -155,5 +139,21 @@ game.Laser = class extends game.GameObject {
     drawTile(vec2(0, 0), vec2(W, H), game.laserTile, game.color(1, 1, 1, 0.8));
     glFlush();
     setBlendMode();
+  }
+
+  destroy() {
+    game.Laser.all.delete(this);
+    super.destroy();
+  }
+
+  hitBox() {
+    return [this.pos.x, this.pos.y, this.pos.x, this.pos.y];
+  }
+
+  // ターゲットに命中
+  onHit() {
+    game.ctx.score += game.Laser.CONFIG.hitScore;
+    game.spawnHitSparks(this.pos.x, this.pos.y, 2);
+    this.sta = game.LSR_DYING;
   }
 };
