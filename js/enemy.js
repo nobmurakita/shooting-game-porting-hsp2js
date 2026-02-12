@@ -41,8 +41,8 @@ game.Enemy = class extends game.GameObject {
   }
 
   // レーザーによる被弾
-  onHitByLaser(damage) {
-    this.shield -= damage;
+  onHitByLaser() {
+    this.shield -= 5;
     this.lockOnCount--;
     if (this.shield <= 0) {
       const d = this.constructor.DATA;
@@ -52,7 +52,7 @@ game.Enemy = class extends game.GameObject {
   }
 
   // プレイヤーとの接触
-  onContactPlayer() {
+  onHitByPlayer() {
     const d = this.constructor.DATA;
     game.spawnHitSparks(this.pos.x, this.pos.y, 2);
     game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 3);

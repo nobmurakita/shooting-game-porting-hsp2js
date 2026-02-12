@@ -32,10 +32,10 @@ game.CollisionSystem = {
 
     // プレイヤー攻撃（先に敵を撃破することで被弾を回避できる）
     for (const lsr of game.Laser.all) {
-      if (lsr.sta !== game.LSR_TRACKING || !lsr.trg.alive) continue;
+      if (lsr.sta !== game.Laser.STATE_TRACKING || !lsr.trg.alive) continue;
       if (this.checkAABB(lsr, lsr.trg)) {
         lsr.onHit();
-        lsr.trg.onHitByLaser(game.Laser.CONFIG.damage);
+        lsr.trg.onHitByLaser();
       }
     }
     this._checkShotsVsTargets(game.PlayerShot.all, game.EnemyShot2.all);
@@ -46,7 +46,7 @@ game.CollisionSystem = {
     if (ply.alive && ply.hitCnt === 0) {
       for (const e of game.Enemy.all) {
         if (this.checkAABB(e, ply)) {
-          e.onContactPlayer();
+          e.onHitByPlayer();
           ply.onHit();
           break;
         }
@@ -63,7 +63,7 @@ game.CollisionSystem = {
       if (ply.alive && ply.hitCnt === 0) {
         for (const es of game.EnemyShot.all) {
           if (this.checkAABB(es, ply)) {
-            es.onHitPlayer();
+            es.onHit();
             ply.onHit();
             break;
           }

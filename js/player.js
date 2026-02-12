@@ -1,19 +1,6 @@
 //////////プレーヤークラス//////////
 game.Player = class extends game.GameObject {
   static instance = null;
-  static CONFIG = {
-    moveSpeed: 5.5,
-    shotInterval: 6,
-    laserChargeShot: 0.5,
-    laserChargeIdle: 1.5,
-    laserMax: 320,
-    laserDecay: 12.5,
-    laserThreshold: 40,
-    initShield: 5,
-    initX: 0,
-    initY: -220,
-    hitInvincible: 100,
-  };
   static DATA = { sx: 80, sy: 80, baseX: 240, normalY: 0, hitY: 80, tex: game.TEX.PLAYER };
   static HIT = { x1: -10, y1: -10, x2: 10, y2: 10 };
   // ショット発射位置テーブル（ラジアン、旧DatShtDir後半6要素）
@@ -22,7 +9,7 @@ game.Player = class extends game.GameObject {
   static LSR_DIR = [187, 197, 177, 207, 167, 217, 157, 227].map(a => -a * Math.PI / 128);
 
   constructor() {
-    super(vec2(game.Player.CONFIG.initX, game.Player.CONFIG.initY), 20); // renderOrder=20
+    super(vec2(0, -220), 20); // renderOrder=20
     game.Player.instance = this;
     this.init();
   }
@@ -30,9 +17,9 @@ game.Player = class extends game.GameObject {
   // プレーヤー初期化（旧IniPly）
   init() {
     this.alive = true;
-    this.shield = game.Player.CONFIG.initShield;
-    this.pos.x = game.Player.CONFIG.initX;
-    this.pos.y = game.Player.CONFIG.initY;
+    this.shield = 5;
+    this.pos.x = 0;
+    this.pos.y = -220;
     this.hitCnt = 0;
     this.tilt = 0;
     this.frame = 0;
@@ -70,8 +57,8 @@ game.Player = class extends game.GameObject {
 
     if (dx || dy) {
       const r = Math.atan2(dy, dx);
-      this.pos.x += Math.cos(r) * game.Player.CONFIG.moveSpeed;
-      this.pos.y += Math.sin(r) * game.Player.CONFIG.moveSpeed;
+      this.pos.x += Math.cos(r) * 5.5;
+      this.pos.y += Math.sin(r) * 5.5;
     }
 
     // 傾きアニメーション
@@ -97,7 +84,7 @@ game.Player = class extends game.GameObject {
       this.shotCooldown--;
     } else {
       if (game.keyIsDown(game.KEY_SHOT)) {
-        this.shotCooldown = game.Player.CONFIG.shotInterval;
+        this.shotCooldown = 6;
         for (let i = 0; i < this.shotLevel * 2; i++) {
           const posRad = game.Player.SHT_POS[i];
           const x = Math.cos(posRad) * 40 + this.pos.x;
@@ -112,9 +99,9 @@ game.Player = class extends game.GameObject {
   updateLaser() {
     if (this.laserCharge) {
       if (game.keyIsDown(game.KEY_LASER)) {
-        if (this.laserPower >= game.Player.CONFIG.laserThreshold) {
-          const count = Math.min(Math.floor(this.laserPower / game.Player.CONFIG.laserThreshold), game.Player.LSR_DIR.length);
-          const isBoss = game.Boss.instance.flg === game.BOSS_BATTLE;
+        if (this.laserPower >= 40) {
+          const count = Math.min(Math.floor(this.laserPower / 40), game.Player.LSR_DIR.length);
+          const isBoss = game.Boss.instance.flg === game.Boss.STATE_BATTLE;
           const candidates = isBoss ? game.BossPart.all : game.Enemy.all;
           for (let i = 0; i < count; i++) {
             const trg = this.searchTarget(candidates, !isBoss);
@@ -127,13 +114,13 @@ game.Player = class extends game.GameObject {
           this.laserPower = 0;
         }
       } else {
-        this.laserPower += (game.keyIsDown(game.KEY_SHOT) ? game.Player.CONFIG.laserChargeShot : game.Player.CONFIG.laserChargeIdle);
-        if (this.laserPower > game.Player.CONFIG.laserMax) {
-          this.laserPower = game.Player.CONFIG.laserMax;
+        this.laserPower += (game.keyIsDown(game.KEY_SHOT) ? 0.5 : 1.5);
+        if (this.laserPower > 320) {
+          this.laserPower = 320;
         }
       }
     } else {
-      this.laserPower -= game.Player.CONFIG.laserDecay;
+      this.laserPower -= 12.5;
       if (this.laserPower < 0) {
         this.laserPower = 0;
       }
@@ -167,7 +154,7 @@ game.Player = class extends game.GameObject {
 
   // レーザーバー表示値の追従
   updateLaserDisplay() {
-    this.laserPowerDisplay = Math.max(this.laserPower, this.laserPowerDisplay - game.Player.CONFIG.laserDecay);
+    this.laserPowerDisplay = Math.max(this.laserPower, this.laserPowerDisplay - 12.5);
   }
 
   // 被弾無敵カウンタ
@@ -194,7 +181,7 @@ game.Player = class extends game.GameObject {
 
   // 被弾処理
   onHit() {
-    this.hitCnt = game.Player.CONFIG.hitInvincible;
+    this.hitCnt = 100;
     this.shield--;
     if (this.shield <= 0) {
       this.alive = false;
@@ -210,7 +197,6 @@ game.Player = class extends game.GameObject {
 //////////プレーヤーショットクラス//////////
 game.PlayerShot = class extends game.GameObject {
   static all = new Set();
-  static CONFIG = { speed: 16, offscreenY: 340, hitScore: 10 };
   static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: game.TEX.PLAYER };
   static HIT = { x1: -10, y1: -20, x2: 10, y2: 20 };
 
@@ -221,8 +207,8 @@ game.PlayerShot = class extends game.GameObject {
 
   update() {
     if (game.ctx.isPaused()) return;
-    this.pos.y += game.PlayerShot.CONFIG.speed;
-    if (this.pos.y > game.PlayerShot.CONFIG.offscreenY) {
+    this.pos.y += 16;
+    if (this.pos.y > 340) {
       this.destroy();
     }
     this.frame++;
@@ -241,7 +227,7 @@ game.PlayerShot = class extends game.GameObject {
 
   // ターゲットに命中
   onHit() {
-    game.ctx.score += game.PlayerShot.CONFIG.hitScore;
+    game.ctx.score += 10;
     game.spawnHitSparks(this.pos.x, this.pos.y);
     this.destroy();
   }

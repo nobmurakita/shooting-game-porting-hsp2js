@@ -23,61 +23,8 @@ game.gameInit = () => {
 
 //////////ゲーム更新//////////
 game.gameUpdate = () => {
-  if (game.ctx.gameSta === game.STA_OPENING) {
-    game.ctx.stage = 0;
-    game.ctx.score = 0;
-    game.ctx.gameSta = game.STA_TITLE;
-  } else if (game.ctx.gameSta === game.STA_TITLE) {
-    if (game.keyWasPressed(game.KEY_LASER) || game.keyWasPressed(game.KEY_SHOT) || game.keyWasPressed(game.KEY_SHIFT)) {
-      game.ctx.gameSta = game.STA_INIT;
-    }
-  } else if (game.ctx.gameSta === game.STA_INIT) {
-    game.ctx.stage++;
-    if (game.ctx.stage <= game.MAX_STAGE) {
-      game.ctx.initStage(game.ctx.stage);
-      game.ctx.gameSta = game.STA_PLAY;
-    } else {
-      game.ctx.gameSta = game.STA_ENDING;
-    }
-  } else if (game.ctx.gameSta === game.STA_PLAY) {
-    // TODO: プレイヤー死亡時のゲームオーバー処理（現状はalive=falseのまま継続）
-    if (game.keyWasPressed(game.KEY_ESC)) {
-      game.ctx.goToOpening();
-    } else {
-      // ボス出現判定（Enemy.appear()の外で常に判定）
-      if (game.Boss.instance.flg === game.BOSS_NONE && game.Boss.instance.appearFrame === game.ctx.frame) {
-        game.Boss.instance.flg = game.BOSS_BATTLE;
-      }
-      // 敵出現（ボス未登場時のみ）
-      if (game.Boss.instance.flg === game.BOSS_NONE) {
-        game.Enemy.appear();
-      }
-      game.updateBackground();
-      game.ctx.frame++;
-      if (game.keyWasPressed(game.KEY_SHIFT)) {
-        game.ctx.gameSta = game.STA_PAUSE;
-      }
-    }
-  } else if (game.ctx.gameSta === game.STA_CLEAR) {
-    if (game.keyWasPressed(game.KEY_ESC)) {
-      game.ctx.goToOpening();
-    }
-    if (game.Player.instance.pos.y < 340) {
-      game.Player.instance.pos.y += 7;
-    } else {
-      game.ctx.gameSta = game.STA_INIT;
-    }
-    game.updateBackground();
-  } else if (game.ctx.gameSta === game.STA_ENDING) {
-    game.ctx.goToOpening();
-  } else if (game.ctx.gameSta === game.STA_PAUSE) {
-    if (game.keyWasPressed(game.KEY_ESC)) {
-      game.ctx.goToOpening();
-    } else if (game.keyWasPressed(game.KEY_SHIFT)) {
-      game.ctx.gameSta = game.STA_PLAY;
-    }
-  }
-
+  const handler = game.stateHandlers[game.ctx.gameSta];
+  if (handler) handler();
   game.ctx.hiScore = Math.max(game.ctx.score, game.ctx.hiScore);
 };
 

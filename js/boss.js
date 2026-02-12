@@ -1,17 +1,16 @@
-// ボス状態
-game.BOSS_NONE    = 0;  // 未出現
-game.BOSS_BATTLE  = 1;  // 戦闘中
-game.BOSS_DESTROY = 2;  // 破壊演出中
-
 //////////ボスクラス//////////
 game.Boss = class extends game.GameObject {
   static instance = null;
   static MAX_PARTS = 3;
+  // ボス状態
+  static STATE_NONE    = 0;  // 未出現
+  static STATE_BATTLE  = 1;  // 戦闘中
+  static STATE_DESTROY = 2;  // 破壊演出中
 
   constructor() {
     super(vec2(0, 500), 5);  // renderOrder=5（敵=0の上、PlayerShot=10の下）
     game.Boss.instance = this;
-    this.flg = game.BOSS_NONE;
+    this.flg = game.Boss.STATE_NONE;
     this.shield = 500;
     this.appearFrame = 4900;
     this.destroyFrame = 0;  // 破壊演出開始時のframe（経過フレーム算出用）
@@ -27,13 +26,13 @@ game.Boss = class extends game.GameObject {
     if (ctx.gameSta !== game.STA_PLAY) return;
 
     // 破壊演出（flg==2）
-    if (this.flg === game.BOSS_DESTROY) {
+    if (this.flg === game.Boss.STATE_DESTROY) {
       this.frame++; // 破壊演出は旧コードでfrm先行インクリメントのため先に実行
       this.updateDestroy();
       return;
     }
 
-    if (this.flg !== game.BOSS_BATTLE) return;
+    if (this.flg !== game.Boss.STATE_BATTLE) return;
 
     // ステージ1のボスAI
     if (game.ctx.stage === 1) {
@@ -140,7 +139,7 @@ game.BossPart = class extends game.GameObject {
   }
 
   render() {
-    if (!this.parent || this.parent.flg === game.BOSS_NONE) return;
+    if (!this.parent || this.parent.flg === game.Boss.STATE_NONE) return;
     const d = this.constructor.DATA;
     const ti = game.tile(this.animX, d.texCy, d.sx, d.sy, d.tex);
     drawTile(this.pos, ti.drawSize, ti);
@@ -157,7 +156,7 @@ game.BossPart = class extends game.GameObject {
     boss.shield--;
     this.shield--;
     if (boss.shield <= 0) {
-      boss.flg = game.BOSS_DESTROY;
+      boss.flg = game.Boss.STATE_DESTROY;
       boss.destroyFrame = boss.frame;
     }
     if (this.shield <= 0) {
@@ -171,14 +170,14 @@ game.BossPart = class extends game.GameObject {
   }
 
   // レーザーによる被弾
-  onHitByLaser(damage) {
+  onHitByLaser() {
     const boss = this.parent;
-    boss.shield -= damage;
-    this.shield -= damage;
+    boss.shield -= 5;
+    this.shield -= 5;
     this.lockOnCount--;
     if (boss.shield <= 0) {
       boss.shield = 0;
-      boss.flg = game.BOSS_DESTROY;
+      boss.flg = game.Boss.STATE_DESTROY;
       boss.destroyFrame = boss.frame;
     }
     if (this.shield <= 0) {
