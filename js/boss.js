@@ -81,10 +81,12 @@ game.BossPart2 = class extends game.BossPart {
 
 //////////ボスクラス//////////
 game.Boss = class extends game.GameObject {
+  static instance = null;
   static MAX_PARTS = 3;
 
   constructor() {
     super(vec2(0, 500), 5);  // renderOrder=5（敵=0の上、PlayerShot=10の下）
+    game.Boss.instance = this;
     this.flg = game.BOSS_NONE;
     this.shield = 500;
     this.appearFrame = 4900;
@@ -93,6 +95,11 @@ game.Boss = class extends game.GameObject {
     for (const prt of this.parts) {
       this.addChild(prt, vec2(prt.constructor.DATA.x, prt.constructor.DATA.y));
     }
+  }
+
+  destroy() {
+    game.Boss.instance = null;
+    super.destroy();
   }
 
   // ボス移動（旧MovBoss）
@@ -183,7 +190,7 @@ game.Boss = class extends game.GameObject {
     }
     // 照準弾発射
     if ((this.frame - 400) % 256 < 64 && (this.frame - 400) % 8 === 0) {
-      let dir = game.calcDir(this.pos, ctx.player.pos);
+      let dir = game.calcDir(this.pos, game.Player.instance.pos);
       game.spawnEnemyShot(1, this.pos.x, this.pos.y + 40, dir);
     }
     // 通常弾発射

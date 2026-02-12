@@ -149,7 +149,7 @@ game.Enemy2 = class extends game.Enemy {
 
   update() {
     if (game.ctx.isPaused()) return;
-    const ply = game.ctx.player;
+    const ply = game.Player.instance;
     let r = this.trackDir;
     if (this.frame % 2 === 0) {
       if ((this.frame <= 160 && ply.alive) || this.frame === 0) {
@@ -185,7 +185,7 @@ game.Enemy3 = class extends game.Enemy {
 
   update() {
     if (game.ctx.isPaused()) return;
-    const ply = game.ctx.player;
+    const ply = game.Player.instance;
     this.pos.y -= 4;
     if (this.frame === 40 || this.frame === 80 || this.frame === 120 || this.frame === 160) {
       const dir = game.calcDir(this.pos, ply.pos);
@@ -233,7 +233,7 @@ game.Enemy5 = class extends game.Enemy {
 
   update() {
     if (game.ctx.isPaused()) return;
-    const ply = game.ctx.player;
+    const ply = game.Player.instance;
     let r;
     if (this.moveType === 0) {
       r = this.frame * game.A256;
@@ -262,7 +262,7 @@ game.Enemy6 = class extends game.Enemy {
 
   update() {
     if (game.ctx.isPaused()) return;
-    const ply = game.ctx.player;
+    const ply = game.Player.instance;
     let r = this.frame * game.A256;
     this.pos.y -= Math.cos(r) * 6;
     this.animX = (Math.floor(-Math.cos(r) * 4) + 4) * 80;
@@ -314,7 +314,7 @@ game.Enemy8 = class extends game.Enemy {
 
   update() {
     if (game.ctx.isPaused()) return;
-    const ply = game.ctx.player;
+    const ply = game.Player.instance;
     let r;
     if (this.frame < 60) {
       r = game.DIR_UP;

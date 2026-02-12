@@ -34,9 +34,9 @@ game.gameUpdatePost = () => {
   // レーザー充填判定（Player.update後に実行する必要がある）
   if (game.ctx.isPlaying() && !game.ctx.isPaused()) {
     if (game.Laser.all.size > 0) {
-      game.ctx.player.laserCharge = game.LSR_CHARGE_OFF;
-    } else if (game.ctx.player.laserPower <= 0) {
-      game.ctx.player.laserCharge = game.LSR_CHARGE_ON;
+      game.Player.instance.laserCharge = game.LSR_CHARGE_OFF;
+    } else if (game.Player.instance.laserPower <= 0) {
+      game.Player.instance.laserCharge = game.LSR_CHARGE_ON;
     }
   }
   if (game.ctx.gameSta === game.STA_PLAY) {
@@ -73,11 +73,11 @@ game.gameUpdate = () => {
       game.ctx.goToOpening();
     } else {
       // ボス出現判定（Enemy.appear()の外で常に判定）
-      if (game.ctx.boss.flg === game.BOSS_NONE && game.ctx.boss.appearFrame === game.ctx.frame) {
-        game.ctx.boss.flg = game.BOSS_BATTLE;
+      if (game.Boss.instance.flg === game.BOSS_NONE && game.Boss.instance.appearFrame === game.ctx.frame) {
+        game.Boss.instance.flg = game.BOSS_BATTLE;
       }
       // 敵出現（ボス未登場時のみ）
-      if (game.ctx.boss.flg === game.BOSS_NONE) {
+      if (game.Boss.instance.flg === game.BOSS_NONE) {
         game.Enemy.appear();
       }
       game.updateBackground();
@@ -90,8 +90,8 @@ game.gameUpdate = () => {
     if (game.keyWasPressed(game.KEY_ESC)) {
       game.ctx.goToOpening();
     }
-    if (game.ctx.player.pos.y < 340) {
-      game.ctx.player.pos.y += 7;
+    if (game.Player.instance.pos.y < 340) {
+      game.Player.instance.pos.y += 7;
     } else {
       game.ctx.gameSta = game.STA_INIT;
     }

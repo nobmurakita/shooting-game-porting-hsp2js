@@ -121,9 +121,9 @@ game.Laser = class extends game.GameObject {
       this.sta = game.LSR_NO_TARGET;
     }
     if (this.sta === game.LSR_NO_TARGET) {
-      const isBoss = ctx.boss.flg === game.BOSS_BATTLE;
+      const isBoss = game.Boss.instance.flg === game.BOSS_BATTLE;
       const candidates = isBoss ? game.BossPart.all : game.Enemy.all;
-      const newTrg = ctx.player.searchTarget(candidates, !isBoss);
+      const newTrg = game.Player.instance.searchTarget(candidates, !isBoss);
       if (newTrg !== null) {
         this.sta = game.LSR_TRACKING;
         this.trg = newTrg;
@@ -195,6 +195,7 @@ game.Laser = class extends game.GameObject {
 
 //////////プレーヤークラス//////////
 game.Player = class extends game.GameObject {
+  static instance = null;
   static CONFIG = {
     moveSpeed: 5.5,
     shotInterval: 6,
@@ -217,7 +218,13 @@ game.Player = class extends game.GameObject {
 
   constructor() {
     super(vec2(game.Player.CONFIG.initX, game.Player.CONFIG.initY), 20); // renderOrder=20
+    game.Player.instance = this;
     this.init();
+  }
+
+  destroy() {
+    game.Player.instance = null;
+    super.destroy();
   }
 
   // プレーヤー初期化（旧IniPly）
@@ -307,7 +314,7 @@ game.Player = class extends game.GameObject {
       if (game.keyIsDown(game.KEY_LASER)) {
         if (this.laserPower >= game.Player.CONFIG.laserThreshold) {
           const count = Math.min(Math.floor(this.laserPower / game.Player.CONFIG.laserThreshold), game.Player.LSR_DIR.length);
-          const isBoss = game.ctx.boss.flg === game.BOSS_BATTLE;
+          const isBoss = game.Boss.instance.flg === game.BOSS_BATTLE;
           const candidates = isBoss ? game.BossPart.all : game.Enemy.all;
           for (let i = 0; i < count; i++) {
             const trg = this.searchTarget(candidates, !isBoss);

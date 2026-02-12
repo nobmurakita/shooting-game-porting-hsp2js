@@ -53,8 +53,6 @@ game.GameContext = class {
     this.frame = 0;
 
     this.bg1 = 0;
-    this.player = null;
-    this.boss = null;
   }
 
   // ゲームセッション中か（PLAY/CLEAR/PAUSE）
@@ -77,10 +75,10 @@ game.GameContext = class {
   initStage(stageNum) {
     this.stage = stageNum;
     [...engineObjects].forEach(o => o.destroy());
-    this.player = new game.Player();
+    new game.Player();
     this.enemyTable = game.Stages[stageNum];
     this.enemyTableIndex = 0;
-    this.boss = new game.Boss();
+    new game.Boss();
     this.frame = 0;
   }
 };
@@ -180,16 +178,16 @@ game.drawStatusUI = () => {
   // レーザー
   game.drawUI(-260, -284, game.tile(ui.laserLabel.cx, ui.laserLabel.cy, ui.laserLabel.sx, ui.laserLabel.sy, tex));
   game.drawUI(-140, -288, game.tile(ui.laserBarBg.cx, ui.laserBarBg.cy, ui.laserBarBg.sx, ui.laserBarBg.sy, tex));
-  const barW = Math.floor(game.ctx.player.laserPowerDisplay * ui.laserBarBg.sx / game.Player.CONFIG.laserMax);
+  const barW = Math.floor(game.Player.instance.laserPowerDisplay * ui.laserBarBg.sx / game.Player.CONFIG.laserMax);
   if (barW > 0) {
     game.drawUI(barW / 2 - 220, -288, game.tile(ui.laserBarFg.cx, ui.laserBarFg.cy, barW, ui.laserBarFg.sy, tex));
   }
 
   // シールド
   game.drawUI(145, -284, game.tile(ui.shieldLabel.cx, ui.shieldLabel.cy, ui.shieldLabel.sx, ui.shieldLabel.sy, tex));
-  if (game.ctx.player.shield !== 0) {
+  if (game.Player.instance.shield !== 0) {
     const shieldTi = game.tile(ui.shieldIcon.cx, ui.shieldIcon.cy, ui.shieldIcon.sx, ui.shieldIcon.sy, tex);
-    for (let i = 0; i < game.ctx.player.shield; i++) {
+    for (let i = 0; i < game.Player.instance.shield; i++) {
       game.drawUI(i * 16 + 198, -284, shieldTi);
     }
   }

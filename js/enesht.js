@@ -102,7 +102,7 @@ game.EnemyShot2 = class extends game.EnemyShot {
 
   update() {
     if (game.ctx.isPaused()) return;
-    const ply = game.ctx.player;
+    const ply = game.Player.instance;
 
     if (this.frame % 2 === 0) {
       if ((this.frame < 160 && ply.alive) || this.frame === 0) {

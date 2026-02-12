@@ -28,7 +28,7 @@ game.CollisionSystem = {
 
   // 全衝突判定を一括実行（プレイヤー攻撃→敵攻撃の順で判定）
   checkAllCollisions() {
-    const ply = game.ctx.player;
+    const ply = game.Player.instance;
 
     // プレイヤー攻撃（先に敵を撃破することで被弾を回避できる）
     for (const lsr of game.Laser.all) {
