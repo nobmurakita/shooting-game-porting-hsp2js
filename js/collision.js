@@ -29,12 +29,12 @@ game.CollisionSystem = class {
   // 全衝突判定を一括実行（プレイヤー攻撃→敵攻撃の順で判定）
   static checkAllCollisions() {
     const ply = game.ctx.player;
-    const shots = game.objectsOf(game.PlayerShot);
-    const enemies = game.objectsOf(game.Enemy);
-    const lasers = game.objectsOf(game.Laser);
-    const enemyShots = game.objectsOf(game.EnemyShot);
-    const breakableShots = game.objectsOf(game.EnemyShot2);
-    const bossParts = game.objectsOf(game.BossPart);
+    const shots = game.PlayerShot.all;
+    const enemies = game.Enemy.all;
+    const lasers = game.Laser.all;
+    const enemyShots = game.EnemyShot.all;
+    const breakableShots = game.EnemyShot2.all;
+    const bossParts = game.BossPart.all;
 
     // プレイヤー攻撃（先に敵を撃破することで被弾を回避できる）
     for (const lsr of lasers) {

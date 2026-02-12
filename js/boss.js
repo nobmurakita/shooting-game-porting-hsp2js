@@ -1,10 +1,18 @@
 //////////ボスパーツクラス//////////
 game.BossPart = class extends game.GameObject {
+  static all = new Set();
+
   constructor() {
     super(vec2(), 5);  // renderOrder=5、位置はBossの子として自動設定
+    game.BossPart.all.add(this);
     this.shield = this.constructor.DATA.shield;
     this.cx = 0;
     this.lckOn = 0;
+  }
+
+  destroy() {
+    game.BossPart.all.delete(this);
+    super.destroy();
   }
 
   // プレイヤーショットによる被弾。パーツ破壊時trueを返す

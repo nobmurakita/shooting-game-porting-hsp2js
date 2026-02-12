@@ -1,15 +1,22 @@
 //////////敵基底クラス//////////
 game.Enemy = class extends game.GameObject {
+  static all = new Set();
   static CLASS_MAP = [];    // ki → サブクラスのマッピング（ファイル末尾で設定）
 
   constructor(mv, x, y) {
     super(vec2(x, y), 0);  // renderOrder=0
+    game.Enemy.all.add(this);
     this.shield = this.constructor.DATA.shield;
     this.mv = mv;
     this.x0 = x;
     this.cx = 0;
     this.lckOn = 0;
     this.init();
+  }
+
+  destroy() {
+    game.Enemy.all.delete(this);
+    super.destroy();
   }
 
   // サブクラスでオーバーライド

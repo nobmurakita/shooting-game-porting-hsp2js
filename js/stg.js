@@ -103,10 +103,6 @@ game.color = (r, g, b, a = 1) => {
 //////////乱数ヘルパー（hsp.rnd置き換え）//////////
 game.rnd = (max) => Math.floor(Math.random() * max);
 
-//////////EngineObjectフィルタヘルパー//////////
-// 指定クラスの生存中インスタンスを配列で返す
-game.objectsOf = (cls) => engineObjects.filter(o => o instanceof cls && !o.destroyed);
-
 //////////UI描画ヘルパー//////////
 // ワールド座標（Y↑中心原点、スプライト中心）で描画
 game.drawUI = (x, y, tileInfo) => {

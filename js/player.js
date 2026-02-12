@@ -1,11 +1,18 @@
 //////////プレーヤーショットクラス//////////
 game.PlayerShot = class extends game.GameObject {
+  static all = new Set();
   static CONFIG = { speed: 16, offscreenY: 340, hitScore: 10 };
   static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: game.TEX.PLAYER };
   static HIT = { x1: -10, y1: -20, x2: 10, y2: 20 };
 
   constructor(x, y) {
     super(vec2(x, y), 10);  // renderOrder=10
+    game.PlayerShot.all.add(this);
+  }
+
+  destroy() {
+    game.PlayerShot.all.delete(this);
+    super.destroy();
   }
 
   // ターゲットに命中
@@ -33,6 +40,7 @@ game.PlayerShot = class extends game.GameObject {
 
 //////////レーザークラス//////////
 game.Laser = class extends game.GameObject {
+  static all = new Set();
   static CONFIG = { accel: 5.0, damping: 0.8, damage: 5, hitScore: 100 };
   static DRAW = {
     segments: 14,
@@ -42,12 +50,18 @@ game.Laser = class extends game.GameObject {
 
   constructor(px, py, vx, vy, trg) {
     super(vec2(px, py), 50); // renderOrder=50（最前面）
+    game.Laser.all.add(this);
     this.trg = trg;
     this.sta = trg ? game.LSR_TRACKING : game.LSR_NO_TARGET;
     this.trail = Array.from({length: 15}, () => vec2(px, py));
     this.vx = vx;
     this.vy = vy;
     this.dir = game.DIR_UP;
+  }
+
+  destroy() {
+    game.Laser.all.delete(this);
+    super.destroy();
   }
 
   hitBox() {
@@ -108,7 +122,7 @@ game.Laser = class extends game.GameObject {
     }
     if (this.sta === game.LSR_NO_TARGET) {
       const isBoss = ctx.boss.flg === game.BOSS_BATTLE;
-      const candidates = isBoss ? game.objectsOf(game.BossPart) : game.objectsOf(game.Enemy);
+      const candidates = isBoss ? game.BossPart.all : game.Enemy.all;
       const newTrg = ctx.player.searchTarget(candidates, !isBoss);
       if (newTrg !== null) {
         this.sta = game.LSR_TRACKING;
@@ -293,7 +307,7 @@ game.Player = class extends game.GameObject {
         if (this.lsrPow >= game.Player.CONFIG.laserThreshold) {
           const count = Math.min(Math.floor(this.lsrPow / game.Player.CONFIG.laserThreshold), game.Player.LSR_DIR.length);
           const isBoss = game.ctx.boss.flg === game.BOSS_BATTLE;
-          const candidates = isBoss ? game.objectsOf(game.BossPart) : game.objectsOf(game.Enemy);
+          const candidates = isBoss ? game.BossPart.all : game.Enemy.all;
           for (let i = 0; i < count; i++) {
             const trg = this.searchTarget(candidates, !isBoss);
             if (trg !== null) { trg.lckOn++; }
