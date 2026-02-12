@@ -115,7 +115,7 @@ game.Enemy1 = class extends game.Enemy {
   update() {
     if (game.ctx.isPaused()) return;
     if (Math.floor(this.frame / 4) <= 64) {
-      this.angleStep = this.frame >> 2;
+      this.angleStep = Math.floor(this.frame / 4);
     }
     let r;
     if (this.moveType === 0) {
@@ -295,7 +295,7 @@ game.Enemy7 = class extends game.Enemy {
     if (this.frame % 32 === 0) {
       game.spawnEnemyShot(0, this.pos.x, this.pos.y - 60, game.DIR_DOWN);
     }
-    this.animX = (Math.floor(this.frame / 4) & 7) * 80;
+    this.animX = (Math.floor(this.frame / 4) % 8) * 80;
     if (this.pos.y < -game.BOUNDS.ENEMY_FAR) {
       this.destroy();
     }
@@ -370,7 +370,7 @@ game.Enemy9 = class extends game.Enemy {
       game.spawnEnemyShot(1, this.pos.x, this.pos.y + 20, baseAngle + game.DIR_UP);
       this.bulletAngle -= 4;
     }
-    this.animX = (Math.floor(this.frame / 4) & 7) * 120;
+    this.animX = (Math.floor(this.frame / 4) % 8) * 120;
     if (this.pos.y < -game.BOUNDS.ENEMY_FAR) {
       this.destroy();
     }

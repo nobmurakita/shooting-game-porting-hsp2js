@@ -374,12 +374,9 @@ game.Player = class extends game.GameObject {
       }
 
       // 距離が近い方を優先
-      let tx = trg.pos.x - this.pos.x; tx = tx * tx;
-      let ty = trg.pos.y - this.pos.y; ty = ty * ty;
-      const rd = tx + ty;
-      let ix = c.pos.x - this.pos.x; ix = ix * ix;
-      let iy = c.pos.y - this.pos.y; iy = iy * iy;
-      if (rd > ix + iy) {
+      const trgDist2 = (trg.pos.x - this.pos.x) ** 2 + (trg.pos.y - this.pos.y) ** 2;
+      const candDist2 = (c.pos.x - this.pos.x) ** 2 + (c.pos.y - this.pos.y) ** 2;
+      if (trgDist2 > candDist2) {
         trg = c;
       }
     }

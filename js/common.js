@@ -149,10 +149,10 @@ game.UI_SPRITES = {
 // x: 最右桁の中心X（ワールド座標）、y: 中心Y（ワールド座標）
 game.drawNumber = (value, x, y) => {
   let a = value;
-  let numCx = 0;     // 数字の基準X
-  let numCy = 0;     // 数字のY
-  let blankCx = 128; // 空白の基準X
-  let blankCy = 32;  // 空白のY
+  const numCx = 0;     // 数字の基準X
+  const numCy = 0;     // 数字のY
+  const blankCx = 128; // 空白の基準X
+  const blankCy = 32;  // 空白のY
   let cx = numCx, cy = numCy;
   const tex = game.TEX.UI;
   for (let i = 0; i < 8; i++) {
