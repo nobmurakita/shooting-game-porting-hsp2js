@@ -9,6 +9,12 @@ game.EnemyShot = class extends game.GameObject {
     this.initAI();
   }
 
+  // プレイヤーに命中
+  onHitPlayer() {
+    game.spawnHitSparks(this.pos.x, this.pos.y, 2);
+    this.destroy();
+  }
+
   // サブクラスでオーバーライド
   initAI() {}
   updateAI() {}
@@ -75,8 +81,8 @@ game.EnemyShot2 = class extends game.EnemyShot {
   // プレイヤーショットで撃破可能な誘導弾
   onHitByShot() {
     const d = this.constructor.DATA;
-    this.destroy();
     game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 2);
+    this.destroy();
     return true;
   }
 

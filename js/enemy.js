@@ -34,8 +34,8 @@ game.Enemy = class extends game.GameObject {
     this.shield--;
     if (this.shield <= 0) {
       const d = this.constructor.DATA;
-      this.destroy();
       game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 5);
+      this.destroy();
       return true;
     }
     return false;
@@ -47,17 +47,17 @@ game.Enemy = class extends game.GameObject {
     this.lckOn--;
     if (this.shield <= 0) {
       const d = this.constructor.DATA;
-      this.destroy();
       game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 3);
+      this.destroy();
     }
   }
 
   // プレイヤーとの接触
   onContactPlayer() {
     const d = this.constructor.DATA;
-    this.destroy();
     game.spawnHitSparks(this.pos.x, this.pos.y, 2);
     game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 3);
+    this.destroy();
   }
 
   // 敵出現処理（旧AprEne）

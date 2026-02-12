@@ -1,5 +1,3 @@
-game.SCORE_SHOT_HIT = 10;
-
 //////////衝突判定システム//////////
 game.CollisionSystem = class {
   // AABB衝突判定（stg_clash）
@@ -25,79 +23,15 @@ game.CollisionSystem = class {
   }
 
   // ショット vs ターゲット群の共通処理
-  // targets: onHitByShot() を持つ対象リスト
-  static _checkShotsVsTargets(targets) {
-    const shots = game.objectsOf(game.PlayerShot);
+  // shots: PlayerShotリスト, targets: onHitByShot() を持つ対象リスト
+  static _checkShotsVsTargets(shots, targets) {
     for (const target of targets) {
       for (const s of shots) {
         if (s.destroyed) continue;
         if (game.CollisionSystem.checkAABB(target, s)) {
-          game.ctx.score += game.SCORE_SHOT_HIT;
-          s.destroy();
-          game.spawnHitSpark(s.pos.x, s.pos.y);
+          s.onHit();
           if (target.onHitByShot()) break;
         }
-      }
-    }
-  }
-
-  // プレイヤーショット vs 敵
-  static checkPlayerShotsVsEnemies() {
-    game.CollisionSystem._checkShotsVsTargets(game.objectsOf(game.Enemy));
-  }
-
-  // プレイヤー vs 敵（接触ダメージ）
-  static checkPlayerVsEnemies() {
-    const ply = game.ctx.player;
-    if (!ply.alive || ply.hitCnt !== 0) return;
-
-    for (const e of game.objectsOf(game.Enemy)) {
-      if (game.CollisionSystem.checkAABB(e, ply)) {
-        e.onContactPlayer();
-        ply.takeDamage(5);
-        break;
-      }
-    }
-  }
-
-  // プレイヤーショット vs ボスパーツ
-  static checkPlayerShotsVsBoss() {
-    const boss = game.ctx.boss;
-    if (boss.flg !== game.BOSS_BATTLE) return;
-    game.CollisionSystem._checkShotsVsTargets(boss.parts.filter(p => p.alive));
-  }
-
-  // 敵ショット vs プレイヤー
-  static checkEnemyShotsVsPlayer() {
-    const ply = game.ctx.player;
-    if (!ply.alive || ply.hitCnt !== 0) return;
-
-    for (const es of game.objectsOf(game.EnemyShot)) {
-      if (game.CollisionSystem.checkAABB(es, ply)) {
-        es.destroy();
-        game.spawnHitSparks(es.pos.x, es.pos.y, 2);
-        ply.takeDamage(3);
-        break;
-      }
-    }
-  }
-
-  // プレイヤーショット vs 誘導弾（EnemyShot2）
-  static checkPlayerShotsVsEnemyShots() {
-    game.CollisionSystem._checkShotsVsTargets(game.objectsOf(game.EnemyShot2));
-  }
-
-  // レーザー vs ターゲット
-  static checkLasersVsTargets() {
-    for (const lsr of game.objectsOf(game.Laser)) {
-      if (lsr.sta !== game.LSR_TRACKING) continue;
-      if (lsr.trg.alive === false || lsr.trg.destroyed) { lsr.sta = game.LSR_DYING; continue; }
-
-      if (game.CollisionSystem.checkAABB(lsr, lsr.trg)) {
-        game.ctx.score += game.Laser.CONFIG.hitScore;
-        lsr.sta = game.LSR_DYING;
-        game.spawnHitSparks(lsr.pos.x, lsr.pos.y, 2);
-        lsr.trg.onHitByLaser(game.Laser.CONFIG.damage);
       }
     }
   }
@@ -105,15 +39,46 @@ game.CollisionSystem = class {
   // 全衝突判定を一括実行（プレイヤー攻撃→敵攻撃の順で判定）
   static checkAllCollisions() {
     const ctx = game.ctx;
+    const ply = ctx.player;
+    const shots = game.objectsOf(game.PlayerShot);
+    const enemies = game.objectsOf(game.Enemy);
+    const lasers = game.objectsOf(game.Laser);
+    const enemyShots = game.objectsOf(game.EnemyShot);
+    const breakableShots = game.objectsOf(game.EnemyShot2);
+
     // プレイヤー攻撃（先に敵を撃破することで被弾を回避できる）
-    game.CollisionSystem.checkPlayerShotsVsEnemies();
-    if (ctx.boss.flg === game.BOSS_BATTLE) {
-      game.CollisionSystem.checkPlayerShotsVsBoss();
+    for (const lsr of lasers) {
+      if (lsr.sta !== game.LSR_TRACKING) continue;
+      if (lsr.trg.alive === false || lsr.trg.destroyed) { lsr.sta = game.LSR_DYING; continue; }
+      if (game.CollisionSystem.checkAABB(lsr, lsr.trg)) {
+        lsr.onHit();
+        lsr.trg.onHitByLaser(game.Laser.CONFIG.damage);
+      }
     }
-    game.CollisionSystem.checkLasersVsTargets();
-    game.CollisionSystem.checkPlayerShotsVsEnemyShots();
+    game.CollisionSystem._checkShotsVsTargets(shots, breakableShots);
+    game.CollisionSystem._checkShotsVsTargets(shots, enemies);
+    if (ctx.boss.flg === game.BOSS_BATTLE) {
+      game.CollisionSystem._checkShotsVsTargets(shots, ctx.boss.parts.filter(p => p.alive));
+    }
+
     // 敵攻撃
-    game.CollisionSystem.checkPlayerVsEnemies();
-    game.CollisionSystem.checkEnemyShotsVsPlayer();
+    if (ply.alive && ply.hitCnt === 0) {
+      for (const e of enemies) {
+        if (game.CollisionSystem.checkAABB(e, ply)) {
+          e.onContactPlayer();
+          ply.takeDamage(5);
+          break;
+        }
+      }
+      if (ply.alive && ply.hitCnt === 0) {
+        for (const es of enemyShots) {
+          if (game.CollisionSystem.checkAABB(es, ply)) {
+            es.onHitPlayer();
+            ply.takeDamage(3);
+            break;
+          }
+        }
+      }
+    }
   }
 };

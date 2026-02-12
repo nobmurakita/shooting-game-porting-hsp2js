@@ -1,11 +1,18 @@
 //////////プレーヤーショットクラス//////////
 game.PlayerShot = class extends game.GameObject {
-  static CONFIG = { speed: 16, offscreenY: 340 };
+  static CONFIG = { speed: 16, offscreenY: 340, hitScore: 10 };
   static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: game.TEX.PLAYER };
   static HIT = { x1: -10, y1: -20, x2: 10, y2: 20 };
 
   constructor(x, y) {
     super(vec2(x, y), 10);  // renderOrder=10
+  }
+
+  // ターゲットに命中
+  onHit() {
+    game.ctx.score += game.PlayerShot.CONFIG.hitScore;
+    game.spawnHitSpark(this.pos.x, this.pos.y);
+    this.destroy();
   }
 
   update() {
@@ -116,6 +123,13 @@ game.Laser = class extends game.GameObject {
     if (this.frm % 2 === 0) {
       this.dir = game.CollisionSystem.calcDir(this.pos, this.trg.pos);
     }
+  }
+
+  // ターゲットに命中
+  onHit() {
+    game.ctx.score += game.Laser.CONFIG.hitScore;
+    game.spawnHitSparks(this.pos.x, this.pos.y, 2);
+    this.sta = game.LSR_DYING;
   }
 
   update() {
