@@ -32,7 +32,7 @@ game.gameInit = () => {
 //////////ゲーム更新後処理（レーザー充填・衝突判定）//////////
 game.gameUpdatePost = () => {
   // レーザー充填判定（Player.update後に実行する必要がある）
-  if (game.ctx.gameSta === game.STA_PLAY || game.ctx.gameSta === game.STA_CLEAR) {
+  if (game.ctx.isPlaying() && !game.ctx.isPaused()) {
     if (game.objectsOf(game.Laser).length > 0) {
       game.ctx.player.lsrF = game.LSR_CHARGE_OFF;
     } else if (game.ctx.player.lsrPow <= 0) {
@@ -52,7 +52,6 @@ game.renderObjects = () => {
 //////////ゲーム更新//////////
 game.gameUpdate = () => {
   if (game.ctx.gameSta === game.STA_OPENING) {
-    [...engineObjects].forEach(o => o.destroy());
     game.ctx.stage = 0;
     game.ctx.score = 0;
     game.ctx.gameSta = game.STA_TITLE;
@@ -71,7 +70,7 @@ game.gameUpdate = () => {
   } else if (game.ctx.gameSta === game.STA_PLAY) {
     // TODO: プレイヤー死亡時のゲームオーバー処理（現状はalive=falseのまま継続）
     if (game.keyWasPressed(game.KEY_ESC)) {
-      game.ctx.gameSta = game.STA_OPENING;
+      game.ctx.goToOpening();
     } else {
       // ボス出現判定（Enemy.appear()の外で常に判定）
       if (game.ctx.boss.flg === game.BOSS_NONE && game.ctx.boss.aprFrm === game.ctx.frame) {
@@ -89,7 +88,7 @@ game.gameUpdate = () => {
     }
   } else if (game.ctx.gameSta === game.STA_CLEAR) {
     if (game.keyWasPressed(game.KEY_ESC)) {
-      game.ctx.gameSta = game.STA_OPENING;
+      game.ctx.goToOpening();
     }
     if (game.ctx.player.pos.y < 340) {
       game.ctx.player.pos.y += 7;
@@ -98,10 +97,10 @@ game.gameUpdate = () => {
     }
     game.updateBackground();
   } else if (game.ctx.gameSta === game.STA_ENDING) {
-    game.ctx.gameSta = game.STA_OPENING;
+    game.ctx.goToOpening();
   } else if (game.ctx.gameSta === game.STA_PAUSE) {
     if (game.keyWasPressed(game.KEY_ESC)) {
-      game.ctx.gameSta = game.STA_OPENING;
+      game.ctx.goToOpening();
     } else if (game.keyWasPressed(game.KEY_SHIFT)) {
       game.ctx.gameSta = game.STA_PLAY;
     }
@@ -115,23 +114,18 @@ game.gameRender = () => {
   if (game.ctx.gameSta === game.STA_TITLE) {
     const ti = game.tile(0, 0, 600, 600, game.TEX.TITLE);
     drawTile(vec2(0, 0), ti.drawSize, ti);
-  } else if (game.ctx.gameSta === game.STA_PLAY ||
-             game.ctx.gameSta === game.STA_CLEAR) {
-    game.renderObjects();
-  } else if (game.ctx.gameSta === game.STA_PAUSE) {
+  } else if (game.ctx.isPlaying()) {
     game.renderObjects();
   }
 };
 
 game.gameRenderPost = () => {
-  if (game.ctx.gameSta === game.STA_PLAY ||
-      game.ctx.gameSta === game.STA_CLEAR) {
+  if (game.ctx.isPlaying()) {
     game.drawStatusUI();
-  } else if (game.ctx.gameSta === game.STA_PAUSE) {
-    game.drawStatusUI();
-    const p = game.UI_SPRITES.pauseLabel;
-    game.drawUI(0, 0,
-      game.tile(p.cx, p.cy, p.sx, p.sy, game.TEX.UI));
+    if (game.ctx.gameSta === game.STA_PAUSE) {
+      const p = game.UI_SPRITES.pauseLabel;
+      game.drawUI(0, 0, game.tile(p.cx, p.cy, p.sx, p.sy, game.TEX.UI));
+    }
   }
 };
 

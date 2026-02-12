@@ -16,7 +16,7 @@ game.PlayerShot = class extends game.GameObject {
   }
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     this.pos.y += game.PlayerShot.CONFIG.speed;
     if (this.pos.y > game.PlayerShot.CONFIG.offscreenY) {
       this.destroy();
@@ -25,7 +25,6 @@ game.PlayerShot = class extends game.GameObject {
   }
 
   render() {
-    if (!game.ctx.canRender()) return;
     const d = game.PlayerShot.DATA;
     const ti = game.tile(d.cx, d.cy, d.sx, d.sy, d.tex);
     drawTile(this.pos, ti.drawSize, ti);
@@ -123,7 +122,7 @@ game.Laser = class extends game.GameObject {
   updateDirection() {
     if (this.sta !== game.LSR_TRACKING) return;
     if (this.frm % 2 === 0) {
-      this.dir = game.CollisionSystem.calcDir(this.pos, this.trg.pos);
+      this.dir = game.calcDir(this.pos, this.trg.pos);
     }
   }
 
@@ -135,7 +134,7 @@ game.Laser = class extends game.GameObject {
   }
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     this.updateMovement();
     this.updateTargeting();
     this.updateDirection();
@@ -152,7 +151,6 @@ game.Laser = class extends game.GameObject {
   // レーザー描画（オフスクリーンCanvas→加算合成）
   // 各レーザーを個別にオフスクリーン描画→転写することで、レーザー同士の重なりも加算合成される
   render() {
-    if (!game.ctx.canRender()) return;
     const c2d = game.laserCtx2d;
     const W = game.SCREEN_W;
     const H = game.SCREEN_H;
@@ -375,7 +373,6 @@ game.Player = class extends game.GameObject {
 
   // プレーヤー描画（旧DrwPly）
   render() {
-    if (!game.ctx.canRender()) return;
     if (!this.alive) return;
     const d = game.Player.DATA;
     const frameX = Math.floor(this.gra / 2) * d.sx + d.baseX;

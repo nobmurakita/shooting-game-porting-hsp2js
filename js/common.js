@@ -57,14 +57,20 @@ game.GameContext = class {
     this.boss = null;
   }
 
-  // ゲームオブジェクトが更新されるべき状態か（PLAY/CLEAR）
-  canUpdate() {
-    return this.gameSta === game.STA_PLAY || this.gameSta === game.STA_CLEAR;
+  // ゲームセッション中か（PLAY/CLEAR/PAUSE）
+  isPlaying() {
+    return this.gameSta === game.STA_PLAY || this.gameSta === game.STA_CLEAR || this.gameSta === game.STA_PAUSE;
   }
 
-  // ゲームオブジェクトが描画されるべき状態か（PLAY/CLEAR/PAUSE）
-  canRender() {
-    return this.gameSta === game.STA_PLAY || this.gameSta === game.STA_CLEAR || this.gameSta === game.STA_PAUSE;
+  // オープニングに戻る（全オブジェクト破棄）
+  goToOpening() {
+    [...engineObjects].forEach(o => o.destroy());
+    this.gameSta = game.STA_OPENING;
+  }
+
+  // ポーズ中か
+  isPaused() {
+    return this.gameSta === game.STA_PAUSE;
   }
 
   // ステージ初期化

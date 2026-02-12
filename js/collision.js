@@ -11,17 +11,6 @@ game.CollisionSystem = class {
     return true;
   }
 
-  // 方向計算（stg_dir）
-  // (x0,y0)から(x1,y1)への向きをラジアンで返す
-  static calcDir(from, to) {
-    let dx = to.x - from.x;
-    let dy = to.y - from.y;
-    if (dx !== 0 || dy !== 0) {
-      return Math.atan2(dy, dx);
-    }
-    return 0;
-  }
-
   // ショット vs ターゲット群の共通処理
   // shots: PlayerShotリスト, targets: onHitByShot() を持つ対象リスト
   static _checkShotsVsTargets(shots, targets) {

@@ -46,7 +46,6 @@ game.BossPart = class extends game.GameObject {
   }
 
   render() {
-    if (!game.ctx.canRender()) return;
     if (!this.parent || this.parent.flg === game.BOSS_NONE) return;
     const d = this.constructor.DATA;
     const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
@@ -176,7 +175,7 @@ game.Boss = class extends game.GameObject {
     }
     // 照準弾発射
     if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 8 === 0) {
-      let dir = game.CollisionSystem.calcDir(this.pos, ctx.player.pos);
+      let dir = game.calcDir(this.pos, ctx.player.pos);
       game.spawnEnemyShot(1, this.pos.x, this.pos.y + 40, dir);
     }
     // 通常弾発射

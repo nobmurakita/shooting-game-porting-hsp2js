@@ -16,7 +16,6 @@ game.Enemy = class extends game.GameObject {
   init() {}
 
   render() {
-    if (!game.ctx.canRender()) return;
     const d = this.constructor.DATA;
     const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
     drawTile(this.pos, ti.drawSize, ti);
@@ -81,7 +80,7 @@ game.Enemy0 = class extends game.Enemy {
   static HIT = { x1: -10, y1: -30, x2: 10, y2: 30 };
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     let r = 1.5 * this.frm * game.A256;
     if (this.mv === 0) {
       this.pos.x = 80 * Math.sin(r) + this.x0;
@@ -107,7 +106,7 @@ game.Enemy1 = class extends game.Enemy {
   }
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     if (Math.floor(this.frm / 4) <= 64) {
       this.angleStep = this.frm >> 2;
     }
@@ -142,12 +141,12 @@ game.Enemy2 = class extends game.Enemy {
   }
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     const ply = game.ctx.player;
     let r = this.trackDir;
     if (this.frm % 2 === 0) {
       if ((this.frm <= 160 && ply.alive) || this.frm === 0) {
-        r = game.CollisionSystem.calcDir(this.pos, ply.pos);
+        r = game.calcDir(this.pos, ply.pos);
         this.trackDir = r;
       }
       this.vx += Math.cos(r) * 0.5;
@@ -178,11 +177,11 @@ game.Enemy3 = class extends game.Enemy {
   static HIT = { x1: -40, y1: -40, x2: 40, y2: 40 };
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     const ply = game.ctx.player;
     this.pos.y -= 4;
     if (this.frm === 40 || this.frm === 80 || this.frm === 120 || this.frm === 160) {
-      const dir = game.CollisionSystem.calcDir(this.pos, ply.pos);
+      const dir = game.calcDir(this.pos, ply.pos);
       game.spawnEnemyShot(1, this.pos.x, this.pos.y - 60, dir);
     }
     this.cx = 0;
@@ -203,7 +202,7 @@ game.Enemy4 = class extends game.Enemy {
   }
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     let r = this.frm * 0.5 * game.A256;
     this.pos.y += 1;
     this.pos.x = Math.sin(r) * 16 + this.x0;
@@ -226,7 +225,7 @@ game.Enemy5 = class extends game.Enemy {
   static HIT = { x1: -30, y1: -30, x2: 30, y2: 30 };
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     const ply = game.ctx.player;
     let r;
     if (this.mv === 0) {
@@ -237,7 +236,7 @@ game.Enemy5 = class extends game.Enemy {
     this.pos.x = Math.cos(r) * 300;
     this.pos.y = -Math.sin(r) * 300 + 300;
     // プレイヤー方向に上書き
-    r = game.CollisionSystem.calcDir(this.pos, ply.pos);
+    r = game.calcDir(this.pos, ply.pos);
     if (this.frm === 32 || this.frm === 96) {
       game.spawnEnemyShot(0, Math.cos(r) * 40 + this.pos.x, Math.sin(r) * 40 + this.pos.y, r);
     }
@@ -255,13 +254,13 @@ game.Enemy6 = class extends game.Enemy {
   static HIT = { x1: -30, y1: -20, x2: 30, y2: 20 };
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     const ply = game.ctx.player;
     let r = this.frm * game.A256;
     this.pos.y -= Math.cos(r) * 6;
     this.cx = (Math.floor(-Math.cos(r) * 4) + 4) * 80;
     if (this.frm === 50) {
-      const dir = game.CollisionSystem.calcDir(this.pos, ply.pos);
+      const dir = game.calcDir(this.pos, ply.pos);
       game.spawnEnemyShot(2, this.pos.x + 20, this.pos.y - 50, dir);
       game.spawnEnemyShot(2, this.pos.x - 20, this.pos.y - 50, dir);
     }
@@ -278,7 +277,7 @@ game.Enemy7 = class extends game.Enemy {
   static HIT = { x1: -30, y1: -50, x2: 30, y2: 50 };
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     let r = this.frm * 2 * game.A256;
     if (this.mv === 0) {
       this.pos.x = 80 * Math.sin(r) + this.x0;
@@ -307,7 +306,7 @@ game.Enemy8 = class extends game.Enemy {
   }
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     const ply = game.ctx.player;
     let r;
     if (this.frm < 60) {
@@ -326,7 +325,7 @@ game.Enemy8 = class extends game.Enemy {
     this.pos.y += Math.sin(r) * 5;
     this.cx = (Math.floor(Math.cos(r) * 3) + 3) * 80;
     if (this.frm === 60) {
-      const dir = game.CollisionSystem.calcDir(this.pos, ply.pos);
+      const dir = game.calcDir(this.pos, ply.pos);
       game.spawnEnemyShot(0, this.pos.x, this.pos.y, dir);
       game.spawnEnemyShot(0, this.pos.x, this.pos.y, dir + Math.PI / 8);
       game.spawnEnemyShot(0, this.pos.x, this.pos.y, dir - Math.PI / 8);
@@ -350,7 +349,7 @@ game.Enemy9 = class extends game.Enemy {
   }
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     if (this.frm % 100 === 0) {
       this.moveDir = -this.moveDir;
     }

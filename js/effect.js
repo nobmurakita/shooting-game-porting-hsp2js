@@ -12,14 +12,13 @@ game.Effect = class extends game.GameObject {
   updateAI() {}
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     this.frm++;
     if (this.frm <= 0) return;
     this.updateAI();
   }
 
   render() {
-    if (!game.ctx.canRender()) return;
     if (this.frm <= 0) return;
     const d = this.constructor.DATA;
     const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);

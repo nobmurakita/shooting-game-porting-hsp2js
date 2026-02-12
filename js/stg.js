@@ -112,3 +112,14 @@ game.objectsOf = (cls) => engineObjects.filter(o => o instanceof cls && !o.destr
 game.drawUI = (x, y, tileInfo) => {
   drawTile(vec2(x, y), tileInfo.drawSize, tileInfo);
 };
+
+//////////方向計算（stg_dir）//////////
+// fromからtoへの向きをラジアンで返す
+game.calcDir = (from, to) => {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  if (dx !== 0 || dy !== 0) {
+    return Math.atan2(dy, dx);
+  }
+  return 0;
+};

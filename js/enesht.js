@@ -19,7 +19,6 @@ game.EnemyShot = class extends game.GameObject {
   init() {}
 
   render() {
-    if (!game.ctx.canRender()) return;
     const d = this.constructor.DATA;
     const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
     drawTile(this.pos, ti.drawSize, ti);
@@ -38,7 +37,7 @@ game.EnemyShot0 = class extends game.EnemyShot {
   }
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     this.pos.x += Math.cos(this.dir) * 7;
     this.pos.y += Math.sin(this.dir) * 7;
     if (game.isOutOfBounds(this.pos.x, this.pos.y, game.BOUNDS.SHOT)) {
@@ -54,7 +53,7 @@ game.EnemyShot1 = class extends game.EnemyShot {
   static HIT = { x1: -10, y1: -10, x2: 10, y2: 10 };
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     this.pos.x += Math.cos(this.dir) * 5;
     this.pos.y += Math.sin(this.dir) * 5;
     this.cx = (Math.floor(this.frm / 2) % 16) * 40 + 640;
@@ -84,12 +83,12 @@ game.EnemyShot2 = class extends game.EnemyShot {
   }
 
   update() {
-    if (!game.ctx.canUpdate()) return;
+    if (game.ctx.isPaused()) return;
     const ply = game.ctx.player;
 
     if (this.frm % 2 === 0) {
       if ((this.frm < 160 && ply.alive) || this.frm === 0) {
-        this.dir = game.CollisionSystem.calcDir(this.pos, ply.pos);
+        this.dir = game.calcDir(this.pos, ply.pos);
       }
       this.vx += Math.cos(this.dir) * 2 / 3;
       this.vy += Math.sin(this.dir) * 2 / 3;
