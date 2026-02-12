@@ -201,7 +201,7 @@ game.Player = class extends game.GameObject {
     laserChargeShot: 0.5,
     laserChargeIdle: 1.5,
     laserMax: 320,
-    laserDecay: 6.5,
+    laserDecay: 12.5,
     laserThreshold: 40,
     initShield: 5,
     initX: 0,
