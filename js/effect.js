@@ -2,19 +2,19 @@
 game.Effect = class extends game.GameObject {
   static CLASS_MAP = [];  // ki → サブクラスのマッピング（ファイル末尾で設定）
 
-  constructor(x, y, startFrm) {
+  constructor(x, y, startFrame) {
     super(vec2(x, y), 30);  // renderOrder=30
-    this.frm = startFrm;
-    this.cx = 0;
+    this.frame = startFrame;
+    this.animX = 0;
   }
 
   update() {}
 
 
   render() {
-    if (this.frm <= 0) return;
+    if (this.frame <= 0) return;
     const d = this.constructor.DATA;
-    const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
+    const ti = game.tile(this.animX, d.texCy, d.sx, d.sy, d.tex);
     setBlendMode(true);
     drawTile(this.pos, ti.drawSize, ti, game.color(1, 1, 1, 0.8));
     setBlendMode();
@@ -29,13 +29,13 @@ game.Effect0 = class extends game.Effect {
 
   update() {
     if (game.ctx.isPaused()) return;
-    this.frm++;
-    if (this.frm <= 0) return;
-    if (this.frm >= 16) {
+    this.frame++;
+    if (this.frame <= 0) return;
+    if (this.frame >= 16) {
       this.pos.y -= 7;
     }
-    this.cx = Math.floor(this.frm / 6) % 6 * 80;
-    if (this.frm === 34) {
+    this.animX = Math.floor(this.frame / 6) % 6 * 80;
+    if (this.frame === 34) {
       this.destroy();
     }
   }
@@ -47,10 +47,10 @@ game.Effect1 = class extends game.Effect {
 
   update() {
     if (game.ctx.isPaused()) return;
-    this.frm++;
-    if (this.frm <= 0) return;
-    this.cx = Math.floor(this.frm / 6) % 6 * 20 + 120;
-    if (this.frm === 34) {
+    this.frame++;
+    if (this.frame <= 0) return;
+    this.animX = Math.floor(this.frame / 6) % 6 * 20 + 120;
+    if (this.frame === 34) {
       this.destroy();
     }
   }
@@ -62,10 +62,10 @@ game.Effect2 = class extends game.Effect {
 
   update() {
     if (game.ctx.isPaused()) return;
-    this.frm++;
-    if (this.frm <= 0) return;
-    this.cx = Math.floor(this.frm / 6) % 6 * 20;
-    if (this.frm === 34) {
+    this.frame++;
+    if (this.frame <= 0) return;
+    this.animX = Math.floor(this.frame / 6) % 6 * 20;
+    if (this.frame === 34) {
       this.destroy();
     }
   }
@@ -77,10 +77,10 @@ game.Effect.CLASS_MAP = [
 ];
 
 // エフェクト生成ヘルパー
-game.spawnEffect = (ki, x, y, startFrm) => {
+game.spawnEffect = (ki, x, y, startFrame) => {
   const EffectClass = game.Effect.CLASS_MAP[ki];
   if (!EffectClass) return;
-  new EffectClass(x, y, startFrm);
+  new EffectClass(x, y, startFrame);
 };
 
 // 火花エフェクト — ヒット時の小さな火花（複数時はずらして生成）

@@ -6,8 +6,8 @@ game.BossPart = class extends game.GameObject {
     super(vec2(), 5);  // renderOrder=5、位置はBossの子として自動設定
     game.BossPart.all.add(this);
     this.shield = this.constructor.DATA.shield;
-    this.cx = 0;
-    this.lckOn = 0;
+    this.animX = 0;
+    this.lockOnCount = 0;
   }
 
   destroy() {
@@ -22,12 +22,12 @@ game.BossPart = class extends game.GameObject {
     this.shield--;
     if (boss.shield <= 0) {
       boss.flg = game.BOSS_DESTROY;
-      boss.destroyFrm = boss.frm;
+      boss.destroyFrame = boss.frame;
     }
     if (this.shield <= 0) {
       this.alive = false;
       const d = this.constructor.DATA;
-      this.cx = d.sx;
+      this.animX = d.sx;
       game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 5);
       return true;
     }
@@ -39,16 +39,16 @@ game.BossPart = class extends game.GameObject {
     const boss = this.parent;
     boss.shield -= damage;
     this.shield -= damage;
-    this.lckOn--;
+    this.lockOnCount--;
     if (boss.shield <= 0) {
       boss.shield = 0;
       boss.flg = game.BOSS_DESTROY;
-      boss.destroyFrm = boss.frm;
+      boss.destroyFrame = boss.frame;
     }
     if (this.shield <= 0) {
       this.alive = false;
       const d = this.constructor.DATA;
-      this.cx = d.sx;
+      this.animX = d.sx;
       game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 3);
     }
   }
@@ -56,7 +56,7 @@ game.BossPart = class extends game.GameObject {
   render() {
     if (!this.parent || this.parent.flg === game.BOSS_NONE) return;
     const d = this.constructor.DATA;
-    const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
+    const ti = game.tile(this.animX, d.texCy, d.sx, d.sy, d.tex);
     drawTile(this.pos, ti.drawSize, ti);
   }
 };
@@ -87,8 +87,8 @@ game.Boss = class extends game.GameObject {
     super(vec2(0, 500), 5);  // renderOrder=5（敵=0の上、PlayerShot=10の下）
     this.flg = game.BOSS_NONE;
     this.shield = 500;
-    this.aprFrm = 4900;
-    this.destroyFrm = 0;  // 破壊演出開始時のfrm（経過フレーム算出用）
+    this.appearFrame = 4900;
+    this.destroyFrame = 0;  // 破壊演出開始時のframe（経過フレーム算出用）
     this.parts = [new game.BossPart0(), new game.BossPart1(), new game.BossPart2()];
     for (const prt of this.parts) {
       this.addChild(prt, vec2(prt.constructor.DATA.x, prt.constructor.DATA.y));
@@ -102,7 +102,7 @@ game.Boss = class extends game.GameObject {
 
     // 破壊演出（flg==2）
     if (this.flg === game.BOSS_DESTROY) {
-      this.frm++; // 破壊演出は旧コードでfrm先行インクリメントのため先に実行
+      this.frame++; // 破壊演出は旧コードでfrm先行インクリメントのため先に実行
       this.updateDestroy();
       return;
     }
@@ -111,22 +111,22 @@ game.Boss = class extends game.GameObject {
 
     // ステージ1のボスAI
     if (game.ctx.stage === 1) {
-      if (this.frm < 400) {
+      if (this.frame < 400) {
         this.updateApproach();
       } else {
         this.updateBattle();
       }
     }
 
-    this.frm++;
+    this.frame++;
   }
 
   // 破壊演出（爆発・揺れ・クリア遷移）
   updateDestroy() {
     const ctx = game.ctx;
-    const elapsed = this.frm - this.destroyFrm;
+    const elapsed = this.frame - this.destroyFrame;
     for (let i = 0; i < game.Boss.MAX_PARTS; i++) {
-      this.parts[i].cx = this.parts[i].constructor.DATA.sx;
+      this.parts[i].animX = this.parts[i].constructor.DATA.sx;
     }
     if (elapsed % 6 === 0) {
       let x = game.rnd(100) - 50;
@@ -161,7 +161,7 @@ game.Boss = class extends game.GameObject {
   // 移動パターン＆攻撃パターン
   updateBattle() {
     const ctx = game.ctx;
-    let a = Math.floor((this.frm - 400) / 256) % 4;
+    let a = Math.floor((this.frame - 400) / 256) % 4;
 
     if (a === 0 || a === 3) {
       this.pos.x -= 1;
@@ -169,11 +169,11 @@ game.Boss = class extends game.GameObject {
       this.pos.x += 1;
     }
 
-    let r = this.frm * 0.5 * game.A256;
+    let r = this.frame * 0.5 * game.A256;
     this.pos.y -= Math.sin(r) * 1;
 
     // 誘導弾発射（パーツ1,2）
-    if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 16 === 0) {
+    if ((this.frame - 400) % 256 < 64 && (this.frame - 400) % 16 === 0) {
       if (this.parts[1].alive) {
         game.spawnEnemyShot(2, -80 + this.pos.x, this.pos.y, r);
       }
@@ -182,12 +182,12 @@ game.Boss = class extends game.GameObject {
       }
     }
     // 照準弾発射
-    if ((this.frm - 400) % 256 < 64 && (this.frm - 400) % 8 === 0) {
+    if ((this.frame - 400) % 256 < 64 && (this.frame - 400) % 8 === 0) {
       let dir = game.calcDir(this.pos, ctx.player.pos);
       game.spawnEnemyShot(1, this.pos.x, this.pos.y + 40, dir);
     }
     // 通常弾発射
-    if ((this.frm - 400) % 64 === 63) {
+    if ((this.frame - 400) % 64 === 63) {
       game.spawnEnemyShot(0, -10 + this.pos.x, this.pos.y - 50, game.DIR_DOWN);
       game.spawnEnemyShot(0, 10 + this.pos.x, this.pos.y - 50, game.DIR_DOWN);
     }

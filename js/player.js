@@ -28,7 +28,7 @@ game.PlayerShot = class extends game.GameObject {
     if (this.pos.y > game.PlayerShot.CONFIG.offscreenY) {
       this.destroy();
     }
-    this.frm++;
+    this.frame++;
   }
 
   render() {
@@ -81,13 +81,13 @@ game.Laser = class extends game.GameObject {
       // HSP版1フレーム(加速→移動→減衰)を半ステップ分割:
       // 偶数フレーム: 加速→半移動、奇数フレーム: 半移動→減衰
       const dir = this.dir;
-      if (this.frm % 2 === 0) {
+      if (this.frame % 2 === 0) {
         this.vx += Math.cos(dir) * game.Laser.CONFIG.accel;
         this.vy += Math.sin(dir) * game.Laser.CONFIG.accel;
       }
       this.pos.x += this.vx;
       this.pos.y += this.vy;
-      if (this.frm % 2 !== 0) {
+      if (this.frame % 2 !== 0) {
         this.vx = this.vx * game.Laser.CONFIG.damping;
         this.vy = this.vy * game.Laser.CONFIG.damping;
       }
@@ -115,8 +115,8 @@ game.Laser = class extends game.GameObject {
     const ctx = game.ctx;
     if (this.sta === game.LSR_TRACKING && (this.trg === null || !this.trg.alive)) {
       // ターゲット喪失時にlckOnをデクリメント（発射時の++と対応）
-      if (this.trg !== null && this.trg.lckOn > 0) {
-        this.trg.lckOn--;
+      if (this.trg !== null && this.trg.lockOnCount > 0) {
+        this.trg.lockOnCount--;
       }
       this.sta = game.LSR_NO_TARGET;
     }
@@ -127,7 +127,7 @@ game.Laser = class extends game.GameObject {
       if (newTrg !== null) {
         this.sta = game.LSR_TRACKING;
         this.trg = newTrg;
-        newTrg.lckOn++;
+        newTrg.lockOnCount++;
       }
     }
   }
@@ -135,7 +135,7 @@ game.Laser = class extends game.GameObject {
   // ターゲットへの方向を更新（2フレームに1回）
   updateDirection() {
     if (this.sta !== game.LSR_TRACKING) return;
-    if (this.frm % 2 === 0) {
+    if (this.frame % 2 === 0) {
       this.dir = game.calcDir(this.pos, this.trg.pos);
     }
   }
@@ -159,7 +159,7 @@ game.Laser = class extends game.GameObject {
         this.sta = game.LSR_DYING;
       }
     }
-    this.frm++;
+    this.frame++;
   }
 
   // レーザー描画（オフスクリーンCanvas→加算合成）
@@ -227,13 +227,13 @@ game.Player = class extends game.GameObject {
     this.pos.x = game.Player.CONFIG.initX;
     this.pos.y = game.Player.CONFIG.initY;
     this.hitCnt = 0;
-    this.gra = 0;
-    this.frm = 0;
-    this.shtCnt = 0;
-    this.shtLV = 1;
-    this.lsrF = game.LSR_CHARGE_OFF;
-    this.lsrPow = 0;
-    this.lsrPowDisplay = 0;
+    this.tilt = 0;
+    this.frame = 0;
+    this.shotCooldown = 0;
+    this.shotLevel = 1;
+    this.laserCharge = game.LSR_CHARGE_OFF;
+    this.laserPower = 0;
+    this.laserPowerDisplay = 0;
   }
 
   // プレーヤー移動（旧MovPly）
@@ -242,7 +242,7 @@ game.Player = class extends game.GameObject {
     if (ctx.gameSta !== game.STA_PLAY) return;
 
     if (!this.alive) {
-      this.lsrPow = 0;
+      this.laserPower = 0;
       this.updateLaserDisplay();
       return;
     }
@@ -253,7 +253,7 @@ game.Player = class extends game.GameObject {
     this.updateLaserDisplay();
     this.updateHitCounter();
 
-    this.frm++;
+    this.frame++;
   }
 
   // 入力→移動→傾き→境界制限
@@ -269,12 +269,12 @@ game.Player = class extends game.GameObject {
 
     // 傾きアニメーション
     if (dx === 0) {
-      if (this.gra < 0) { this.gra++; }
-      if (this.gra > 0) { this.gra--; }
+      if (this.tilt < 0) { this.tilt++; }
+      if (this.tilt > 0) { this.tilt--; }
     } else {
-      this.gra += dx;
-      if (this.gra < -6) { this.gra = -6; }
-      if (this.gra > 6) { this.gra = 6; }
+      this.tilt += dx;
+      if (this.tilt < -6) { this.tilt = -6; }
+      if (this.tilt > 6) { this.tilt = 6; }
     }
 
     // はみ出し制限
@@ -286,12 +286,12 @@ game.Player = class extends game.GameObject {
 
   // ショット発射カウンタ＆生成
   updateShot() {
-    if (this.shtCnt !== 0) {
-      this.shtCnt--;
+    if (this.shotCooldown !== 0) {
+      this.shotCooldown--;
     } else {
       if (game.keyIsDown(game.KEY_SHOT)) {
-        this.shtCnt = game.Player.CONFIG.shotInterval;
-        for (let i = 0; i < this.shtLV * 2; i++) {
+        this.shotCooldown = game.Player.CONFIG.shotInterval;
+        for (let i = 0; i < this.shotLevel * 2; i++) {
           const posRad = game.Player.SHT_POS[i];
           const x = Math.cos(posRad) * 40 + this.pos.x;
           const y = Math.sin(posRad) * 40 + this.pos.y;
@@ -303,39 +303,39 @@ game.Player = class extends game.GameObject {
 
   // レーザーチャージ＆発射
   updateLaser() {
-    if (this.lsrF === game.LSR_CHARGE_ON) {
+    if (this.laserCharge === game.LSR_CHARGE_ON) {
       if (game.keyIsDown(game.KEY_LASER)) {
-        if (this.lsrPow >= game.Player.CONFIG.laserThreshold) {
-          const count = Math.min(Math.floor(this.lsrPow / game.Player.CONFIG.laserThreshold), game.Player.LSR_DIR.length);
+        if (this.laserPower >= game.Player.CONFIG.laserThreshold) {
+          const count = Math.min(Math.floor(this.laserPower / game.Player.CONFIG.laserThreshold), game.Player.LSR_DIR.length);
           const isBoss = game.ctx.boss.flg === game.BOSS_BATTLE;
           const candidates = isBoss ? game.BossPart.all : game.Enemy.all;
           for (let i = 0; i < count; i++) {
             const trg = this.searchTarget(candidates, !isBoss);
-            if (trg !== null) { trg.lckOn++; }
+            if (trg !== null) { trg.lockOnCount++; }
             const rad = game.Player.LSR_DIR[i];
             const vx = Math.cos(rad) * 16;
             const vy = Math.sin(rad) * 16;
             new game.Laser(this.pos.x, this.pos.y + 40, vx, vy, trg);
           }
-          this.lsrPow = 0;
+          this.laserPower = 0;
         }
       } else {
-        this.lsrPow += (game.keyIsDown(game.KEY_SHOT) ? game.Player.CONFIG.laserChargeShot : game.Player.CONFIG.laserChargeIdle);
-        if (this.lsrPow > game.Player.CONFIG.laserMax) {
-          this.lsrPow = game.Player.CONFIG.laserMax;
+        this.laserPower += (game.keyIsDown(game.KEY_SHOT) ? game.Player.CONFIG.laserChargeShot : game.Player.CONFIG.laserChargeIdle);
+        if (this.laserPower > game.Player.CONFIG.laserMax) {
+          this.laserPower = game.Player.CONFIG.laserMax;
         }
       }
     } else {
-      this.lsrPow -= game.Player.CONFIG.laserDecay;
-      if (this.lsrPow < 0) {
-        this.lsrPow = 0;
+      this.laserPower -= game.Player.CONFIG.laserDecay;
+      if (this.laserPower < 0) {
+        this.laserPower = 0;
       }
     }
   }
 
   // レーザーバー表示値の追従
   updateLaserDisplay() {
-    this.lsrPowDisplay = Math.max(this.lsrPow, this.lsrPowDisplay - game.Player.CONFIG.laserDecay);
+    this.laserPowerDisplay = Math.max(this.laserPower, this.laserPowerDisplay - game.Player.CONFIG.laserDecay);
   }
 
   // 被弾無敵カウンタ
@@ -369,8 +369,8 @@ game.Player = class extends game.GameObject {
       if (trg === null) { trg = c; continue; }
 
       if (useLockOn) {
-        if (trg.lckOn > c.lckOn) { trg = c; continue; }
-        if (trg.lckOn < c.lckOn) { continue; }
+        if (trg.lockOnCount > c.lockOnCount) { trg = c; continue; }
+        if (trg.lockOnCount < c.lockOnCount) { continue; }
       }
 
       // 距離が近い方を優先
@@ -390,7 +390,7 @@ game.Player = class extends game.GameObject {
   render() {
     if (!this.alive) return;
     const d = game.Player.DATA;
-    const frameX = Math.floor(this.gra / 2) * d.sx + d.baseX;
+    const frameX = Math.floor(this.tilt / 2) * d.sx + d.baseX;
     const frameY = (Math.floor(this.hitCnt / 6) % 2 === 0) ? d.normalY : d.hitY;
     const ti = game.tile(frameX, frameY, d.sx, d.sy, d.tex);
     drawTile(this.pos, ti.drawSize, ti);

@@ -7,7 +7,7 @@ game.EnemyShot = class extends game.GameObject {
     super(vec2(x, y), 40);  // renderOrder=40（レーザー=50の下）
     game.EnemyShot.all.add(this);
     this.dir = dir;
-    this.cx = 0;
+    this.animX = 0;
     this.init();
   }
 
@@ -27,7 +27,7 @@ game.EnemyShot = class extends game.GameObject {
 
   render() {
     const d = this.constructor.DATA;
-    const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
+    const ti = game.tile(this.animX, d.texCy, d.sx, d.sy, d.tex);
     drawTile(this.pos, ti.drawSize, ti);
   }
 };
@@ -40,7 +40,7 @@ game.EnemyShot0 = class extends game.EnemyShot {
   static HIT = { x1: -10, y1: -10, x2: 10, y2: 10 };
 
   init() {
-    this.cx = game.radToSpriteFrameHalf(this.dir, 16, 40);
+    this.animX = game.radToSpriteFrameHalf(this.dir, 16, 40);
   }
 
   update() {
@@ -50,7 +50,7 @@ game.EnemyShot0 = class extends game.EnemyShot {
     if (game.isOutOfBounds(this.pos.x, this.pos.y, game.BOUNDS.SHOT)) {
       this.destroy();
     }
-    this.frm++;
+    this.frame++;
   }
 };
 
@@ -63,11 +63,11 @@ game.EnemyShot1 = class extends game.EnemyShot {
     if (game.ctx.isPaused()) return;
     this.pos.x += Math.cos(this.dir) * 5;
     this.pos.y += Math.sin(this.dir) * 5;
-    this.cx = (Math.floor(this.frm / 2) % 16) * 40 + 640;
+    this.animX = (Math.floor(this.frame / 2) % 16) * 40 + 640;
     if (game.isOutOfBounds(this.pos.x, this.pos.y, game.BOUNDS.SHOT)) {
       this.destroy();
     }
-    this.frm++;
+    this.frame++;
   }
 };
 
@@ -104,8 +104,8 @@ game.EnemyShot2 = class extends game.EnemyShot {
     if (game.ctx.isPaused()) return;
     const ply = game.ctx.player;
 
-    if (this.frm % 2 === 0) {
-      if ((this.frm < 160 && ply.alive) || this.frm === 0) {
+    if (this.frame % 2 === 0) {
+      if ((this.frame < 160 && ply.alive) || this.frame === 0) {
         this.dir = game.calcDir(this.pos, ply.pos);
       }
       this.vx += Math.cos(this.dir) * 2 / 3;
@@ -113,22 +113,22 @@ game.EnemyShot2 = class extends game.EnemyShot {
     }
     this.pos.x += this.vx;
     this.pos.y += this.vy;
-    if (this.frm % 2 === 0) {
+    if (this.frame % 2 === 0) {
       this.vx = this.vx * 14 / 15;
       this.vy = this.vy * 14 / 15;
     }
-    this.cx = game.radToSpriteFrame(this.dir, 32, 40);
-    if (this.frm % 6 === 0) {
+    this.animX = game.radToSpriteFrame(this.dir, 32, 40);
+    if (this.frame % 6 === 0) {
       let ox = game.rnd(20) - 10;
       let oy = game.rnd(20) - 10;
       game.spawnEffect(2, -Math.cos(this.dir) * 20 + this.pos.x + ox, -Math.sin(this.dir) * 20 + this.pos.y + oy, 0);
     }
-    if (this.frm > 160) {
+    if (this.frame > 160) {
       if (game.isOutOfBounds(this.pos.x, this.pos.y, game.BOUNDS.SHOT)) {
         this.destroy();
       }
     }
-    this.frm++;
+    this.frame++;
   }
 };
 
