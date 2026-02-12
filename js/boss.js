@@ -1,3 +1,8 @@
+// ボス状態
+game.BOSS_NONE    = 0;  // 未出現
+game.BOSS_BATTLE  = 1;  // 戦闘中
+game.BOSS_DESTROY = 2;  // 破壊演出中
+
 //////////ボスパーツクラス//////////
 game.BossPart = class extends game.GameObject {
   static all = new Set();

@@ -1,93 +1,8 @@
-game.STA_OPENING = 0;  // オープニング
-game.STA_TITLE =   1;  // タイトル
-game.STA_INIT =    2;  // ステージ初期化
-game.STA_PLAY =    3;  // ゲームプレー中
-game.STA_CLEAR =   4;  // ゲームクリア
-game.STA_ENDING =  5;  // エンディング
-game.STA_PAUSE =   6;  // ポーズ
+//////////背景//////////
+game.BG_STAR_COUNT   = 300;
+game.BG_SCROLL_SPEED = 1;
 
-game.MAX_STAGE = 1;
-
-//////////キーコード定数（LittleJS v1.18: KeyboardEvent.code文字列）//////////
-game.KEY_LEFT  = 'ArrowLeft';
-game.KEY_UP    = 'ArrowUp';
-game.KEY_RIGHT = 'ArrowRight';
-game.KEY_DOWN  = 'ArrowDown';
-game.KEY_LASER = 'KeyX';
-game.KEY_SHOT  = 'KeyZ';
-game.KEY_SHIFT = 'ShiftLeft';
-game.KEY_ESC   = 'Escape';
-
-//////////入力システム（LittleJS委譲）//////////
-game.keyIsDown = (keyCode) => keyIsDown(keyCode);
-game.keyWasPressed = (keyCode) => keyWasPressed(keyCode);
-
-//////////ゲームオブジェクトベースクラス（EngineObject継承）//////////
-game.GameObject = class extends EngineObject {
-  constructor(pos = vec2(), renderOrder = 0) {
-    super(pos, vec2(1, 1), undefined, 0, game.color(1, 1, 1), renderOrder);
-    this.mass = 0;
-    this.gravityScale = 0;
-    this.frame = 0;
-    this.alive = true;
-  }
-  destroy() {
-    this.alive = false;
-    super.destroy();
-  }
-  hitBox() {
-    const h = this.constructor.HIT;
-    return [h.x1 + this.pos.x, h.y1 + this.pos.y, h.x2 + this.pos.x, h.y2 + this.pos.y];
-  }
-  update() {}
-  render() {}
-};
-
-//////////ゲーム共有状態//////////
-game.GameContext = class {
-  constructor() {
-    this.gameSta = 0;
-    this.stage = 0;
-    this.score = 0;
-    this.hiScore = 0;
-    this.frame = 0;
-
-    this.bg1 = 0;
-  }
-
-  // ゲームセッション中か（PLAY/CLEAR/PAUSE）
-  isPlaying() {
-    return this.gameSta === game.STA_PLAY || this.gameSta === game.STA_CLEAR || this.gameSta === game.STA_PAUSE;
-  }
-
-  // オープニングに戻る（全オブジェクト破棄）
-  goToOpening() {
-    [...engineObjects].forEach(o => o.destroy());
-    this.gameSta = game.STA_OPENING;
-  }
-
-  // ポーズ中か
-  isPaused() {
-    return this.gameSta === game.STA_PAUSE;
-  }
-
-  // ステージ初期化
-  initStage(stageNum) {
-    this.stage = stageNum;
-    [...engineObjects].forEach(o => o.destroy());
-    new game.Player();
-    this.enemyTable = game.Stages[stageNum];
-    this.enemyTableIndex = 0;
-    new game.Boss();
-    this.frame = 0;
-  }
-};
-
-//////////初期設定//////////
-game.initCommon = () => {
-  game.ctx = new game.GameContext();
-
-  // 背景星データ生成（描画時にdrawRectで描画）
+game.initBackground = () => {
   game.bgStars = [];
   for (let i = 0; i < game.BG_STAR_COUNT; i++) {
     game.bgStars.push({
@@ -103,7 +18,6 @@ game.initCommon = () => {
   game.ctx.bg1 = 0;
 };
 
-//////////背景//////////
 game.updateBackground = () => {
   const ctx = game.ctx;
   ctx.bg1 += game.BG_SCROLL_SPEED;

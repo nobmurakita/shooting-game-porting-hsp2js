@@ -1,25 +1,13 @@
 const game = {};
 
+//////////定数//////////
+
 // 方向定数（ラジアン、Y↑座標系）
 game.DIR_UP    = Math.PI / 2;        // 旧256段階: 64（Y↑で上方向）
 game.DIR_DOWN  = 3 * Math.PI / 2;    // 旧256段階: 192（Y↑で下方向）
 
 // 256段階角度1刻みのラジアン値（周期運動のフレームカウンタ用）
 game.A256 = Math.PI / 128;
-
-// ボス状態
-game.BOSS_NONE    = 0;  // 未出現
-game.BOSS_BATTLE  = 1;  // 戦闘中
-game.BOSS_DESTROY = 2;  // 破壊演出中
-
-// レーザー状態
-game.LSR_DYING     = 0;  // 消滅中
-game.LSR_TRACKING  = 1;  // 追跡中
-game.LSR_NO_TARGET = 2;  // ターゲット未設定
-
-// レーザー充填
-game.LSR_CHARGE_OFF = 0;
-game.LSR_CHARGE_ON  = 1;
 
 // 画面サイズ
 game.SCREEN_W = 600;
@@ -34,13 +22,40 @@ game.BOUNDS = {
   LASER: 300,     // レーザー消滅判定（画面端ちょうど）
 };
 
-// 画面外判定ユーティリティ（XY全方向）
+game.MAX_STAGE = 1;
+
+// ゲーム状態
+game.STA_OPENING = 0;  // オープニング
+game.STA_TITLE =   1;  // タイトル
+game.STA_INIT =    2;  // ステージ初期化
+game.STA_PLAY =    3;  // ゲームプレー中
+game.STA_CLEAR =   4;  // ゲームクリア
+game.STA_ENDING =  5;  // エンディング
+game.STA_PAUSE =   6;  // ポーズ
+
+// キーコード（LittleJS v1.18: KeyboardEvent.code文字列）
+game.KEY_LEFT  = 'ArrowLeft';
+game.KEY_UP    = 'ArrowUp';
+game.KEY_RIGHT = 'ArrowRight';
+game.KEY_DOWN  = 'ArrowDown';
+game.KEY_LASER = 'KeyX';
+game.KEY_SHOT  = 'KeyZ';
+game.KEY_SHIFT = 'ShiftLeft';
+game.KEY_ESC   = 'Escape';
+
+// テクスチャインデックス
+game.TEX = {
+  PLAYER: 0, EFFECT: 1, ENESHT: 2, UI: 3,
+  ENEMY0: 4, ENEMY1: 5, ENEMY2: 6, ENEMY3: 7, ENEMY4: 8,
+  ENEMY5: 9, ENEMY6: 10, ENEMY7: 11, ENEMY8: 12, ENEMY9: 13,
+  BOSS0: 14, BOSS1: 15, TITLE: 16,
+};
+
+//////////ユーティリティ//////////
+
+// 画面外判定（XY全方向）
 game.isOutOfBounds = (x, y, bound) =>
   x < -bound || x > bound || y < -bound || y > bound;
-
-// 背景
-game.BG_STAR_COUNT   = 300;
-game.BG_SCROLL_SPEED = 1;
 
 // ラジアンからスプライトフレーム番号を計算（全周: 0〜2π）
 // スプライトシートはY↓前提なので角度を反転
@@ -58,15 +73,7 @@ game.radToSpriteFrameHalf = (rad, divisions, spriteWidth) => {
   return (Math.round(norm * divisions) % divisions) * spriteWidth;
 };
 
-//////////テクスチャインデックス//////////
-game.TEX = {
-  PLAYER: 0, EFFECT: 1, ENESHT: 2, UI: 3,
-  ENEMY0: 4, ENEMY1: 5, ENEMY2: 6, ENEMY3: 7, ENEMY4: 8,
-  ENEMY5: 9, ENEMY6: 10, ENEMY7: 11, ENEMY8: 12, ENEMY9: 13,
-  BOSS0: 14, BOSS1: 15, TITLE: 16,
-};
-
-//////////タイル生成ヘルパー（ピクセル座標版・キャッシュ付き）//////////
+// タイル生成ヘルパー（ピクセル座標版・キャッシュ付き）
 // テクスチャ座標(pixelX, pixelY, w, h)を受け取りTileInfoを返す。
 // 半テクセル内側にインセットし、テクスチャブリーディングを防止。
 // drawSize: 描画サイズ（drawTileの第2引数用）。
@@ -88,7 +95,7 @@ game.tile = (pixelX, pixelY, w, h, texIndex) => {
   return t;
 };
 
-//////////Color生成ヘルパー（キャッシュ付き）//////////
+// Color生成ヘルパー（キャッシュ付き）
 game._colorCache = new Map();
 game.color = (r, g, b, a = 1) => {
   const key = r + ',' + g + ',' + b + ',' + a;
@@ -100,16 +107,16 @@ game.color = (r, g, b, a = 1) => {
   return c;
 };
 
-//////////乱数ヘルパー（hsp.rnd置き換え）//////////
+// 乱数ヘルパー（hsp.rnd置き換え）
 game.rnd = (max) => Math.floor(Math.random() * max);
 
-//////////UI描画ヘルパー//////////
+// UI描画ヘルパー
 // ワールド座標（Y↑中心原点、スプライト中心）で描画
 game.drawUI = (x, y, tileInfo) => {
   drawTile(vec2(x, y), tileInfo.drawSize, tileInfo);
 };
 
-//////////方向計算（stg_dir）//////////
+// 方向計算（stg_dir）
 // fromからtoへの向きをラジアンで返す
 game.calcDir = (from, to) => {
   const dx = to.x - from.x;
@@ -118,4 +125,69 @@ game.calcDir = (from, to) => {
     return Math.atan2(dy, dx);
   }
   return 0;
+};
+
+// 入力システム（LittleJS委譲）
+game.keyIsDown = (keyCode) => keyIsDown(keyCode);
+game.keyWasPressed = (keyCode) => keyWasPressed(keyCode);
+
+//////////ゲームオブジェクトベースクラス（EngineObject継承）//////////
+game.GameObject = class extends EngineObject {
+  constructor(pos = vec2(), renderOrder = 0) {
+    super(pos, vec2(1, 1), undefined, 0, game.color(1, 1, 1), renderOrder);
+    this.mass = 0;
+    this.gravityScale = 0;
+    this.frame = 0;
+    this.alive = true;
+  }
+  destroy() {
+    this.alive = false;
+    super.destroy();
+  }
+  hitBox() {
+    const h = this.constructor.HIT;
+    return [h.x1 + this.pos.x, h.y1 + this.pos.y, h.x2 + this.pos.x, h.y2 + this.pos.y];
+  }
+  update() {}
+  render() {}
+};
+
+//////////ゲーム共有状態//////////
+game.GameContext = class {
+  constructor() {
+    this.gameSta = 0;
+    this.stage = 0;
+    this.score = 0;
+    this.hiScore = 0;
+    this.frame = 0;
+
+    this.bg1 = 0;
+  }
+
+  // ゲームセッション中か（PLAY/CLEAR/PAUSE）
+  isPlaying() {
+    return this.gameSta === game.STA_PLAY || this.gameSta === game.STA_CLEAR || this.gameSta === game.STA_PAUSE;
+  }
+
+  // オープニングに戻る（全オブジェクト破棄）
+  goToOpening() {
+    [...engineObjects].forEach(o => o.destroy());
+    this.gameSta = game.STA_OPENING;
+  }
+
+  // ポーズ中か
+  isPaused() {
+    return this.gameSta === game.STA_PAUSE;
+  }
+
+  // ステージ初期化
+  initStage(stageNum) {
+    this.stage = stageNum;
+    [...engineObjects].forEach(o => o.destroy());
+    new game.Player();
+    this.enemyTable = game.Stages[stageNum];
+    this.enemyTableIndex = 0;
+    new game.Boss();
+    this.frame = 0;
+  }
 };

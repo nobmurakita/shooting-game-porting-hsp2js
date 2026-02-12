@@ -1,12 +1,3 @@
-//////////画像ソース（テクスチャインデックス順）//////////
-game.imageSources = [
-  'img/player.png',  'img/effect.png',  'img/enesht.png', 'img/etc.png',
-  'img/enemy00.png', 'img/enemy01.png', 'img/enemy02.png','img/enemy03.png',
-  'img/enemy04.png', 'img/enemy05.png', 'img/enemy06.png','img/enemy07.png',
-  'img/enemy08.png', 'img/enemy09.png',
-  'img/boss00.png',  'img/boss01.png',  'img/title.png',
-];
-
 //////////ゲーム初期化//////////
 game.gameInit = () => {
   setCanvasFixedSize(vec2(game.SCREEN_W, game.SCREEN_H));
@@ -26,25 +17,9 @@ game.gameInit = () => {
   game.laserTexInfo = new TextureInfo(game.laserCanvas);
   game.laserTile = tile(vec2(), vec2(game.SCREEN_W, game.SCREEN_H), game.laserTexInfo);
 
-  game.initCommon();
+  game.ctx = new game.GameContext();
+  game.initBackground();
 };
-
-//////////ゲーム更新後処理（レーザー充填・衝突判定）//////////
-game.gameUpdatePost = () => {
-  // レーザー充填判定（Player.update後に実行する必要がある）
-  if (game.ctx.isPlaying() && !game.ctx.isPaused()) {
-    if (game.Laser.all.size > 0) {
-      game.Player.instance.laserCharge = game.LSR_CHARGE_OFF;
-    } else if (game.Player.instance.laserPower <= 0) {
-      game.Player.instance.laserCharge = game.LSR_CHARGE_ON;
-    }
-  }
-  if (game.ctx.gameSta === game.STA_PLAY) {
-    game.CollisionSystem.checkAllCollisions();
-  }
-};
-
-//////////ゲーム要素描画//////////
 
 //////////ゲーム更新//////////
 game.gameUpdate = () => {
@@ -106,6 +81,21 @@ game.gameUpdate = () => {
   game.ctx.hiScore = Math.max(game.ctx.score, game.ctx.hiScore);
 };
 
+//////////ゲーム更新後処理（レーザー充填・衝突判定）//////////
+game.gameUpdatePost = () => {
+  // レーザー充填判定（Player.update後に実行する必要がある）
+  if (game.ctx.isPlaying() && !game.ctx.isPaused()) {
+    if (game.Laser.all.size > 0) {
+      game.Player.instance.laserCharge = game.LSR_CHARGE_OFF;
+    } else if (game.Player.instance.laserPower <= 0) {
+      game.Player.instance.laserCharge = game.LSR_CHARGE_ON;
+    }
+  }
+  if (game.ctx.gameSta === game.STA_PLAY) {
+    game.CollisionSystem.checkAllCollisions();
+  }
+};
+
 //////////ゲーム描画//////////
 game.gameRender = () => {
   if (game.ctx.gameSta === game.STA_TITLE) {
@@ -125,6 +115,15 @@ game.gameRenderPost = () => {
     }
   }
 };
+
+//////////画像ソース（テクスチャインデックス順）//////////
+game.imageSources = [
+  'img/player.png',  'img/effect.png',  'img/enesht.png', 'img/etc.png',
+  'img/enemy00.png', 'img/enemy01.png', 'img/enemy02.png','img/enemy03.png',
+  'img/enemy04.png', 'img/enemy05.png', 'img/enemy06.png','img/enemy07.png',
+  'img/enemy08.png', 'img/enemy09.png',
+  'img/boss00.png',  'img/boss01.png',  'img/title.png',
+];
 
 //////////エンジン起動//////////
 engineInit(
