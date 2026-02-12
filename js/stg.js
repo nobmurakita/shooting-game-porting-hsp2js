@@ -95,6 +95,7 @@ game.color = (r, g, b, a = 1) => {
   let c = game._colorCache.get(key);
   if (c) return c;
   c = new Color(r, g, b, a);
+  Object.freeze(c);
   game._colorCache.set(key, c);
   return c;
 };

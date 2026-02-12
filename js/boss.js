@@ -47,8 +47,7 @@ game.BossPart = class extends game.GameObject {
   }
 
   render() {
-    const ctx = game.ctx;
-    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
+    if (!game.ctx.canRender()) return;
     if (!this.parent || this.parent.flg === game.BOSS_NONE) return;
     const d = this.constructor.DATA;
     const ti = game.tile(this.cx, d.texCy, d.sx, d.sy, d.tex);
@@ -97,7 +96,7 @@ game.Boss = class extends game.GameObject {
 
     // 破壊演出（flg==2）
     if (this.flg === game.BOSS_DESTROY) {
-      super.update(); // frm++（破壊演出は旧コードでfrm先行インクリメントのため先に実行）
+      this.frm++; // 破壊演出は旧コードでfrm先行インクリメントのため先に実行
       this.updateDestroy();
       return;
     }
@@ -113,7 +112,7 @@ game.Boss = class extends game.GameObject {
       }
     }
 
-    super.update(); // frm++
+    this.frm++;
   }
 
   // 破壊演出（爆発・揺れ・クリア遷移）

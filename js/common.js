@@ -34,9 +34,7 @@ game.GameObject = class extends EngineObject {
     const h = this.constructor.HIT;
     return [h.x1 + this.pos.x, h.y1 + this.pos.y, h.x2 + this.pos.x, h.y2 + this.pos.y];
   }
-  update() {
-    this.frm++;
-  }
+  update() {}
   render() {}
 };
 
@@ -52,6 +50,16 @@ game.GameContext = class {
     this.bg1 = 0;
     this.player = null;
     this.boss = null;
+  }
+
+  // ゲームオブジェクトが更新されるべき状態か（PLAY/CLEAR）
+  canUpdate() {
+    return this.gameSta === game.STA_PLAY || this.gameSta === game.STA_CLEAR;
+  }
+
+  // ゲームオブジェクトが描画されるべき状態か（PLAY/CLEAR/PAUSE）
+  canRender() {
+    return this.gameSta === game.STA_PLAY || this.gameSta === game.STA_CLEAR || this.gameSta === game.STA_PAUSE;
   }
 
   // ステージ初期化

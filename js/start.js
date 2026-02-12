@@ -69,6 +69,7 @@ game.gameUpdate = () => {
       game.ctx.gameSta = game.STA_ENDING;
     }
   } else if (game.ctx.gameSta === game.STA_PLAY) {
+    // TODO: プレイヤー死亡時のゲームオーバー処理（現状はalive=falseのまま継続）
     if (game.keyWasPressed(game.KEY_ESC)) {
       game.ctx.gameSta = game.STA_OPENING;
     } else {

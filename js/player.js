@@ -8,26 +8,17 @@ game.PlayerShot = class extends game.GameObject {
     super(vec2(x, y), 10);  // renderOrder=10
   }
 
-  // ショット移動（旧MovPlySht内ループ1回分）
   update() {
-    const ctx = game.ctx;
-    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR) return;
-
+    if (!game.ctx.canUpdate()) return;
     this.pos.y += game.PlayerShot.CONFIG.speed;
-
-    // 画面外で消滅
     if (this.pos.y > game.PlayerShot.CONFIG.offscreenY) {
       this.destroy();
-      return;
     }
-
-    super.update(); // frm++
+    this.frm++;
   }
 
-  // ショット描画（旧DrwPlySht内ループ1回分）
   render() {
-    const ctx = game.ctx;
-    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
+    if (!game.ctx.canRender()) return;
     const d = game.PlayerShot.DATA;
     const ti = game.tile(d.cx, d.cy, d.sx, d.sy, d.tex);
     drawTile(this.pos, ti.drawSize, ti);
@@ -46,7 +37,7 @@ game.Laser = class extends game.GameObject {
   constructor(px, py, vx, vy, trg) {
     super(vec2(px, py), 50); // renderOrder=50（最前面）
     this.trg = trg;
-    this.sta = game.LSR_TRACKING;
+    this.sta = trg ? game.LSR_TRACKING : game.LSR_NO_TARGET;
     this.trail = Array.from({length: 15}, () => vec2(px, py));
     this.vx = vx;
     this.vy = vy;
@@ -127,11 +118,8 @@ game.Laser = class extends game.GameObject {
     }
   }
 
-  // レーザー移動・追跡（旧MovLsr内ループ1回分）
   update() {
-    const ctx = game.ctx;
-    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR) return;
-
+    if (!game.ctx.canUpdate()) return;
     this.updateMovement();
     this.updateTargeting();
     this.updateDirection();
@@ -142,15 +130,13 @@ game.Laser = class extends game.GameObject {
         this.sta = game.LSR_DYING;
       }
     }
-
-    super.update(); // frm++
+    this.frm++;
   }
 
   // レーザー描画（オフスクリーンCanvas→加算合成）
+  // 各レーザーを個別にオフスクリーン描画→転写することで、レーザー同士の重なりも加算合成される
   render() {
-    const ctx = game.ctx;
-    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
-
+    if (!game.ctx.canRender()) return;
     const c2d = game.laserCtx2d;
     const W = game.SCREEN_W;
     const H = game.SCREEN_H;
@@ -411,8 +397,7 @@ game.Player = class extends game.GameObject {
 
   // プレーヤー描画（旧DrwPly）
   render() {
-    const ctx = game.ctx;
-    if (ctx.gameSta !== game.STA_PLAY && ctx.gameSta !== game.STA_CLEAR && ctx.gameSta !== game.STA_PAUSE) return;
+    if (!game.ctx.canRender()) return;
     if (!this.alive) return;
     const d = game.Player.DATA;
     const frameX = Math.floor(this.gra / 2) * d.sx + d.baseX;
