@@ -49,8 +49,7 @@ game.CollisionSystem = class {
 
     // プレイヤー攻撃（先に敵を撃破することで被弾を回避できる）
     for (const lsr of lasers) {
-      if (lsr.sta !== game.LSR_TRACKING) continue;
-      if (!lsr.trg.alive) { lsr.sta = game.LSR_DYING; continue; }
+      if (lsr.sta !== game.LSR_TRACKING || !lsr.trg.alive) continue;
       if (game.CollisionSystem.checkAABB(lsr, lsr.trg)) {
         lsr.onHit();
         lsr.trg.onHitByLaser(game.Laser.CONFIG.damage);
