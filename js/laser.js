@@ -109,9 +109,9 @@ game.Laser = class extends game.GameObject {
     }
   }
 
-  // レーザー描画（オフスクリーンCanvas→加算合成）
-  // レーザー1本ごとにオフスクリーン描画→加算転写する。
-  // まとめて描画すると、Canvas上でレーザー同士が通常合成され加算効果が失われるため個別転写が必須。
+  // レーザー描画（個別Canvas→バッチCanvasに蓄積）
+  // 個別CanvasにはSource-overで描画してround capの継ぎ目を正しく処理し、
+  // バッチCanvasへはlighter合成で蓄積する。GPU転写はgameRenderPostで一括実行。
   render() {
     const c2d = game.laserCtx2d;
     const W = game.SCREEN_W;
@@ -121,22 +121,19 @@ game.Laser = class extends game.GameObject {
     const d = game.Laser.DRAW;
     const t = this.trail;
 
-    // オフスクリーンに不透明で描画（round capで継ぎ目なし）
+    // 個別キャンバスにsource-overで描画（round capで継ぎ目なし）
+    // 色はalpha(0.8)を事前乗算済み（GPU転写時のalpha乗算と数学的に等価）
     c2d.clearRect(0, 0, W, H);
     for (let j = d.segments - 1; j >= 0; j--) {
-      c2d.strokeStyle = `rgb(${d.baseR},${d.baseG - j*d.fadeG},${d.baseB - j*d.fadeB})`;
+      c2d.strokeStyle = `rgb(${d.baseR * .8},${(d.baseG - j*d.fadeG) * .8},${(d.baseB - j*d.fadeB) * .8})`;
       c2d.beginPath();
       c2d.moveTo(t[j].x + halfW, halfH - t[j].y);
       c2d.lineTo(t[j+1].x + halfW, halfH - t[j+1].y);
       c2d.stroke();
     }
 
-    // テクスチャ更新→加算合成でゲーム画面に転写
-    game.laserTexInfo.createWebGLTexture();
-    setBlendMode(true);
-    drawTile(vec2(0, 0), vec2(W, H), game.laserTile, game.color(1, 1, 1, 0.8));
-    glFlush();
-    setBlendMode();
+    // バッチキャンバスに加算合成で蓄積
+    game.laserBatchCtx2d.drawImage(game.laserCanvas, 0, 0);
   }
 
   destroy() {

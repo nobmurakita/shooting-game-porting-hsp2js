@@ -14,8 +14,14 @@ game.gameInit = () => {
   game.laserCtx2d = game.laserCanvas.getContext('2d');
   game.laserCtx2d.lineCap = 'round';
   game.laserCtx2d.lineWidth = 6;
-  game.laserTexInfo = new TextureInfo(game.laserCanvas);
-  game.laserTile = tile(vec2(), vec2(game.SCREEN_W, game.SCREEN_H), game.laserTexInfo);
+  // レーザーバッチ用キャンバス（全レーザーをlighter合成で蓄積し、1回のGPU転写で描画）
+  game.laserBatchCanvas = document.createElement('canvas');
+  game.laserBatchCanvas.width = game.SCREEN_W;
+  game.laserBatchCanvas.height = game.SCREEN_H;
+  game.laserBatchCtx2d = game.laserBatchCanvas.getContext('2d');
+  game.laserBatchCtx2d.globalCompositeOperation = 'lighter';
+  game.laserBatchTexInfo = new TextureInfo(game.laserBatchCanvas);
+  game.laserBatchTile = tile(vec2(), vec2(game.SCREEN_W, game.SCREEN_H), game.laserBatchTexInfo);
 
   game.ctx = new game.GameContext();
   game.initBackground();
@@ -49,12 +55,22 @@ game.gameRender = () => {
     const ti = game.tile(0, 0, 600, 600, game.TEX.TITLE);
     drawTile(vec2(0, 0), ti.drawSize, ti);
   } else if (game.ctx.isPlaying()) {
+    // レーザーバッチキャンバスをクリア（EngineObject描画前に必要）
+    game.laserBatchCtx2d.clearRect(0, 0, game.SCREEN_W, game.SCREEN_H);
     game.drawBackground();
   }
 };
 
 game.gameRenderPost = () => {
   if (game.ctx.isPlaying()) {
+    // レーザーバッチ転写（1回のテクスチャアップロードで全レーザーを描画）
+    if (game.Laser.all.size > 0) {
+      game.laserBatchTexInfo.createWebGLTexture();
+      setBlendMode(true);
+      drawTile(vec2(0, 0), vec2(game.SCREEN_W, game.SCREEN_H), game.laserBatchTile, game.color(1, 1, 1, 1));
+      glFlush();
+      setBlendMode();
+    }
     game.drawStatusUI();
     if (game.ctx.gameSta === game.STA_PAUSE) {
       const p = game.UI_SPRITES.pauseLabel;
