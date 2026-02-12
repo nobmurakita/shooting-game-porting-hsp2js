@@ -8,15 +8,8 @@ game.Effect = class extends game.GameObject {
     this.cx = 0;
   }
 
-  // サブクラスでオーバーライド
-  updateAI() {}
+  update() {}
 
-  update() {
-    if (game.ctx.isPaused()) return;
-    this.frm++;
-    if (this.frm <= 0) return;
-    this.updateAI();
-  }
 
   render() {
     if (this.frm <= 0) return;
@@ -34,7 +27,10 @@ game.Effect = class extends game.GameObject {
 game.Effect0 = class extends game.Effect {
   static DATA = { sx: 80, sy: 80, tex: game.TEX.EFFECT, texCy: 0 };
 
-  updateAI() {
+  update() {
+    if (game.ctx.isPaused()) return;
+    this.frm++;
+    if (this.frm <= 0) return;
     if (this.frm >= 16) {
       this.pos.y -= 7;
     }
@@ -49,7 +45,10 @@ game.Effect0 = class extends game.Effect {
 game.Effect1 = class extends game.Effect {
   static DATA = { sx: 20, sy: 20, tex: game.TEX.EFFECT, texCy: 80 };
 
-  updateAI() {
+  update() {
+    if (game.ctx.isPaused()) return;
+    this.frm++;
+    if (this.frm <= 0) return;
     this.cx = Math.floor(this.frm / 6) % 6 * 20 + 120;
     if (this.frm === 34) {
       this.destroy();
@@ -61,7 +60,10 @@ game.Effect1 = class extends game.Effect {
 game.Effect2 = class extends game.Effect {
   static DATA = { sx: 20, sy: 20, tex: game.TEX.EFFECT, texCy: 80 };
 
-  updateAI() {
+  update() {
+    if (game.ctx.isPaused()) return;
+    this.frm++;
+    if (this.frm <= 0) return;
     this.cx = Math.floor(this.frm / 6) % 6 * 20;
     if (this.frm === 34) {
       this.destroy();
@@ -81,15 +83,8 @@ game.spawnEffect = (ki, x, y, startFrm) => {
   new EffectClass(x, y, startFrm);
 };
 
-// 火花エフェクト（単発）— ヒット時の小さな火花
-game.spawnHitSpark = (x, y) => {
-  const ex = game.rnd(20) - 10;
-  const ey = game.rnd(20) - 10;
-  game.spawnEffect(1, x + ex, y + ey, 0);
-};
-
-// 火花エフェクト（複数）— 被弾時の火花散り
-game.spawnHitSparks = (x, y, count) => {
+// 火花エフェクト — ヒット時の小さな火花（複数時はずらして生成）
+game.spawnHitSparks = (x, y, count = 1) => {
   for (let j = 0; j < count; j++) {
     const ex = game.rnd(20) - 10;
     const ey = game.rnd(20) - 10;

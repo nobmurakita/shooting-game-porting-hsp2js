@@ -11,7 +11,7 @@ game.EnemyShot = class extends game.GameObject {
 
   // プレイヤーに命中
   onHitPlayer() {
-    game.spawnHitSpark(this.pos.x, this.pos.y);
+    game.spawnHitSparks(this.pos.x, this.pos.y);
     this.destroy();
   }
 

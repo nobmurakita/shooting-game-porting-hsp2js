@@ -11,7 +11,7 @@ game.PlayerShot = class extends game.GameObject {
   // ターゲットに命中
   onHit() {
     game.ctx.score += game.PlayerShot.CONFIG.hitScore;
-    game.spawnHitSpark(this.pos.x, this.pos.y);
+    game.spawnHitSparks(this.pos.x, this.pos.y);
     this.destroy();
   }
 
@@ -339,7 +339,7 @@ game.Player = class extends game.GameObject {
       const d = game.Player.DATA;
       game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 5);
     } else {
-      game.spawnHitSpark(this.pos.x, this.pos.y);
+      game.spawnHitSparks(this.pos.x, this.pos.y);
     }
   }
 
