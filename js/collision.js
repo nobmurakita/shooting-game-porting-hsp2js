@@ -65,15 +65,24 @@ game.CollisionSystem = class {
       for (const e of enemies) {
         if (game.CollisionSystem.checkAABB(e, ply)) {
           e.onContactPlayer();
-          ply.takeDamage(5);
+          ply.onHit();
           break;
+        }
+      }
+      if (ply.alive && ply.hitCnt === 0) {
+        for (const bp of bossParts) {
+          if (!bp.alive) continue;
+          if (game.CollisionSystem.checkAABB(bp, ply)) {
+            ply.onHit();
+            break;
+          }
         }
       }
       if (ply.alive && ply.hitCnt === 0) {
         for (const es of enemyShots) {
           if (game.CollisionSystem.checkAABB(es, ply)) {
             es.onHitPlayer();
-            ply.takeDamage(3);
+            ply.onHit();
             break;
           }
         }
