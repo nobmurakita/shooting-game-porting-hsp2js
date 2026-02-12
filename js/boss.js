@@ -2,7 +2,6 @@
 game.BossPart = class extends game.GameObject {
   constructor() {
     super(vec2(), 5);  // renderOrder=5、位置はBossの子として自動設定
-    this.alive = true;  // 破壊されても描画は継続（損傷スプライトに切替）
     this.shield = this.constructor.DATA.shield;
     this.cx = 0;
     this.lckOn = 0;

@@ -26,8 +26,9 @@ game.CollisionSystem = class {
   // shots: PlayerShotリスト, targets: onHitByShot() を持つ対象リスト
   static _checkShotsVsTargets(shots, targets) {
     for (const target of targets) {
+      if (!target.alive) continue;
       for (const s of shots) {
-        if (s.destroyed) continue;
+        if (!s.alive) continue;
         if (game.CollisionSystem.checkAABB(target, s)) {
           s.onHit();
           if (target.onHitByShot()) break;
@@ -38,18 +39,18 @@ game.CollisionSystem = class {
 
   // 全衝突判定を一括実行（プレイヤー攻撃→敵攻撃の順で判定）
   static checkAllCollisions() {
-    const ctx = game.ctx;
-    const ply = ctx.player;
+    const ply = game.ctx.player;
     const shots = game.objectsOf(game.PlayerShot);
     const enemies = game.objectsOf(game.Enemy);
     const lasers = game.objectsOf(game.Laser);
     const enemyShots = game.objectsOf(game.EnemyShot);
     const breakableShots = game.objectsOf(game.EnemyShot2);
+    const bossParts = game.objectsOf(game.BossPart);
 
     // プレイヤー攻撃（先に敵を撃破することで被弾を回避できる）
     for (const lsr of lasers) {
       if (lsr.sta !== game.LSR_TRACKING) continue;
-      if (lsr.trg.alive === false || lsr.trg.destroyed) { lsr.sta = game.LSR_DYING; continue; }
+      if (!lsr.trg.alive) { lsr.sta = game.LSR_DYING; continue; }
       if (game.CollisionSystem.checkAABB(lsr, lsr.trg)) {
         lsr.onHit();
         lsr.trg.onHitByLaser(game.Laser.CONFIG.damage);
@@ -57,9 +58,7 @@ game.CollisionSystem = class {
     }
     game.CollisionSystem._checkShotsVsTargets(shots, breakableShots);
     game.CollisionSystem._checkShotsVsTargets(shots, enemies);
-    if (ctx.boss.flg === game.BOSS_BATTLE) {
-      game.CollisionSystem._checkShotsVsTargets(shots, ctx.boss.parts.filter(p => p.alive));
-    }
+    game.CollisionSystem._checkShotsVsTargets(shots, bossParts);
 
     // 敵攻撃
     if (ply.alive && ply.hitCnt === 0) {

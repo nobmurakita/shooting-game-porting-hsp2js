@@ -100,7 +100,7 @@ game.Laser = class extends game.GameObject {
   // ターゲット喪失検知 + 再検索
   updateTargeting() {
     const ctx = game.ctx;
-    if (this.sta === game.LSR_TRACKING && (this.trg === null || this.trg.alive === false || this.trg.destroyed)) {
+    if (this.sta === game.LSR_TRACKING && (this.trg === null || !this.trg.alive)) {
       // ターゲット喪失時にlckOnをデクリメント（発射時の++と対応）
       if (this.trg !== null) {
         this.trg.lckOn--;

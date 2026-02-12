@@ -29,6 +29,11 @@ game.GameObject = class extends EngineObject {
     this.mass = 0;
     this.gravityScale = 0;
     this.frm = 0;
+    this.alive = true;
+  }
+  destroy() {
+    this.alive = false;
+    super.destroy();
   }
   hitBox() {
     const h = this.constructor.HIT;
