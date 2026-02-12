@@ -72,6 +72,14 @@ game.EnemyShot2 = class extends game.EnemyShot {
     this.vy = 0;
   }
 
+  // プレイヤーショットで撃破可能な誘導弾
+  onHitByShot() {
+    const d = this.constructor.DATA;
+    this.destroy();
+    game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 2);
+    return true;
+  }
+
   updateAI() {
     const ply = game.ctx.player;
 
@@ -100,14 +108,6 @@ game.EnemyShot2 = class extends game.EnemyShot {
       }
     }
   }
-};
-
-// EnemyShot2に被弾応答メソッドを追加（プレイヤーショットで撃破可能な誘導弾）
-game.EnemyShot2.prototype.onHitByShot = function() {
-  const d = this.constructor.DATA;
-  this.destroy();
-  game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 2);
-  return true;
 };
 
 // CLASS_MAP 構築
