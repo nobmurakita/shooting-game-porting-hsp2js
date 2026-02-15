@@ -1,395 +1,383 @@
-hsp.MaxEne = 10;
+import { GameObject, ctx, TEX, A256, BOUNDS, DIR_UP, DIR_DOWN, isOutOfBounds, radToSpriteFrame, calcDir, gameTile } from './game.js';
+import { player, enemies } from './registry.js';
+import { spawnEnemyShot } from './enesht.js';
+import { spawnExplosion, spawnHitSparks } from './effect.js';
 
-;//////////敵データ初期化//////////
-hsp.IniDatEne = () => {
-  hsp.buffer(4, 2000, 2000);
-  hsp.picload('img/enemy00.png', 0, 0);
-  hsp.picload('img/enemy01.png', 0, 40);
-  hsp.picload('img/enemy02.png', 0, 80);
-  hsp.picload('img/enemy03.png', 0, 120);
-  hsp.picload('img/enemy04.png', 0, 180);
-  hsp.picload('img/enemy05.png', 0, 240);
-  hsp.picload('img/enemy06.png', 0, 280);
-  hsp.picload('img/enemy07.png', 0, 330);
-  hsp.picload('img/enemy08.png', 0, 390);
-  hsp.picload('img/enemy09.png', 0, 430);
+//////////敵基底クラス//////////
+export class Enemy extends GameObject {
+  static CLASS_MAP = [];    // ki → サブクラスのマッピング（ファイル末尾で設定）
 
-  hsp.DatEne = [
-    // Shield, sx, sy, HitX1, HitY1, HitX2, HitY2, Cy	
-    [2, 20, 40, -5, -15, 5, 15, 0],
-    [2, 40, 40, -10, -10, 10, 10, 40],
-    [4, 40, 40, -15, -15, 15, 15, 80],
-    [4, 40, 60, -20, -20, 20, 20, 120],
-    [40, 120, 60, -50, -10, 50, 15, 180],
-    [3, 40, 40, -15, -15, 15, 15, 240],
-    [4, 40, 50, -15, -10, 15, 10, 280],
-    [2, 40, 60, -15, -25, 15, 25, 330],
-    [4, 40, 40, -15, -15, 15, 15, 390],
-    [40, 60, 60, -25, -25, 25, 25, 430],
-  ];
-};
+  constructor(moveType, x, y) {
+    super(vec2(x, y), 0);  // renderOrder=0
+    enemies.add(this);
+    this.shield = this.constructor.DATA.shield;
+    this.moveType = moveType;
+    this.originX = x;
+    this.animX = 0;
+    this.lockOnCount = 0;
+    this.init();
+  }
 
-;//////////敵初期化//////////
-hsp.IniEne = () => {
-  hsp.EneTable = hsp.Stages[hsp.Stage];
-  hsp.TableIndex = 0;
-  hsp.EneFlg = hsp.dim(hsp.MaxEne);
-  hsp.EneShield = hsp.dim(hsp.MaxEne);
-  hsp.EneFrm = hsp.dim(hsp.MaxEne);
-  hsp.EneKi = hsp.dim(hsp.MaxEne);
-  hsp.EneMv = hsp.dim(hsp.MaxEne);
-  hsp.EneX0 = hsp.dim(hsp.MaxEne);
-  hsp.EneY0 = hsp.dim(hsp.MaxEne);
-  hsp.EneX = hsp.dim(hsp.MaxEne);
-  hsp.EneY = hsp.dim(hsp.MaxEne);
-  hsp.EneCx = hsp.dim(hsp.MaxEne);
-  hsp.EneTmp = hsp.dim(hsp.MaxEne, 8);
-  hsp.EneLckOn = hsp.dim(hsp.MaxEne);
+  // サブクラスでオーバーライド
+  init() {}
+
+  render() {
+    const d = this.constructor.DATA;
+    const ti = gameTile(this.animX, d.texCy, d.sx, d.sy, d.tex);
+    drawTile(this.pos, ti.drawSize, ti);
+  }
+
+  destroy() {
+    enemies.delete(this);
+    super.destroy();
+  }
+
+  // プレイヤーショットによる被弾。撃破時trueを返す
+  onHitByShot() {
+    this.shield--;
+    if (this.shield <= 0) {
+      const d = this.constructor.DATA;
+      spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 5);
+      this.destroy();
+      return true;
+    }
+    return false;
+  }
+
+  // レーザーによる被弾
+  onHitByLaser() {
+    this.shield -= 5;
+    this.lockOnCount--;
+    if (this.shield <= 0) {
+      const d = this.constructor.DATA;
+      spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 3);
+      this.destroy();
+    }
+  }
+
+  // プレイヤーとの接触
+  onHitByPlayer() {
+    const d = this.constructor.DATA;
+    spawnHitSparks(this.pos.x, this.pos.y, 2);
+    spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 3);
+    this.destroy();
+  }
+
+  // 敵出現処理（旧AprEne）
+  // ※ボス出現判定は init.js 側で実行
+  static appear() {
+    while (true) {
+      if (ctx.enemyTableIndex === ctx.enemyTable.length) {
+        return;
+      }
+      if (ctx.enemyTable[ctx.enemyTableIndex][0] === ctx.frame) {
+        const entry = ctx.enemyTable[ctx.enemyTableIndex];
+        const EnemyClass = Enemy.CLASS_MAP[entry[1]];
+        new EnemyClass(entry[2], entry[3], entry[4]);
+        ctx.enemyTableIndex++;
+      } else {
+        return;
+      }
+    }
+  }
 }
 
-;//////////敵発生//////////
-hsp.AprEne = () => {
-  while (true) {
-    if (hsp.BossAprFrm == hsp.Frame) {
-      hsp.BossFlg = 1;
-    }
-    if (hsp.TableIndex == hsp.EneTable.length) {
-      return;
-    }
-    if (hsp.EneTable[hsp.TableIndex][0] == hsp.Frame) {
-      for (let i = 0; i < hsp.MaxEne; i++) {
-        if (hsp.EneFlg[i] != 0) {
-          continue;
-        }
-        hsp.EneFlg[i] = 1;
-        hsp.EneFrm[i] = 0;
-        hsp.EneKi[i] = hsp.EneTable[hsp.TableIndex][1];
-        hsp.EneMv[i] = hsp.EneTable[hsp.TableIndex][2];
-        hsp.EneX0[i] = hsp.EneTable[hsp.TableIndex][3] << 8;
-        hsp.EneY0[i] = hsp.EneTable[hsp.TableIndex][4] << 8;
-        hsp.EneX[i] = hsp.EneX0[i];
-        hsp.EneY[i] = hsp.EneY0[i];
-        hsp.EneLckOn[i] = 0;
-        let ki = hsp.EneKi[i];
-        hsp.EneShield[i] = hsp.DatEne[ki][0];
-        hsp.EneTmp[i] = [0, 0, 0, 0, 0, 0, 0, 0];
-        break;
-      }
-      hsp.TableIndex++;
+//////////敵サブクラス//////////
+
+// ki=0: 蛇行しながら下降する雑魚
+export class Enemy0 extends Enemy {
+  static DATA = { shield: 2, sx: 40, sy: 80, tex: TEX.ENEMY0, texCy: 0 };
+  static HIT = { x1: -10, y1: -30, x2: 10, y2: 30 };
+
+  update() {
+    if (ctx.isPaused()) return;
+    let r = 1.5 * this.frame * A256;
+    if (this.moveType === 0) {
+      this.pos.x = 80 * Math.sin(r) + this.originX;
     } else {
-      return;
+      this.pos.x = -80 * Math.sin(r) + this.originX;
     }
+    this.pos.y -= 2;
+    this.animX = Math.floor(this.frame / 2) % 6 * 40;
+    if (this.pos.y < -BOUNDS.ENEMY) {
+      this.destroy();
+    }
+    this.frame++;
   }
-};
+}
 
-;//////////敵移動//////////
-hsp.MovEne = () => {
-  for (let i = 0; i < hsp.MaxEne; i++) {
-    const ene = i
-    if (hsp.EneFlg[ene] == 0) {
-      continue;
+// ki=1: 螺旋移動する敵
+export class Enemy1 extends Enemy {
+  static DATA = { shield: 2, sx: 80, sy: 80, tex: TEX.ENEMY1, texCy: 0 };
+  static HIT = { x1: -20, y1: -20, x2: 20, y2: 20 };
+
+  init() {
+    this.angleStep = 0;
+  }
+
+  update() {
+    if (ctx.isPaused()) return;
+    if (Math.floor(this.frame / 4) <= 64) {
+      this.angleStep = Math.floor(this.frame / 4);
     }
-    const ki = hsp.EneKi[ene];
-    const mv = hsp.EneMv[ene];
-
-    if (ki == 0) {
-      hsp.r = 3 * hsp.EneFrm[ene] & 255;
-      if (mv == 0) {
-        hsp.EneX[ene] = 40 * hsp.sin[hsp.r] + hsp.EneX0[ene];
-      }
-      if (mv == 1) {
-        hsp.EneX[ene] = -40 * hsp.sin[hsp.r] + hsp.EneX0[ene];
-      }
-      hsp.EneY[ene] += 512;
-      hsp.EneCx[ene] = hsp.EneFrm[ene] % 6 * 20;
-      if (81920 < hsp.EneY[ene]) {
-        hsp.EneFlg[ene] = 0;
-      }
+    let r;
+    if (this.moveType === 0) {
+      r = DIR_DOWN - this.angleStep * A256;
+    } else {
+      r = DIR_DOWN + this.angleStep * A256;
     }
-
-    if (ki == 1) {
-      if (Math.floor(hsp.EneFrm[ene] / 2) <= 64) {
-        hsp.EneTmp[ene][0] = hsp.EneFrm[ene] >> 1;
-      }
-      if (hsp.EneMv[ene] == 0) {
-        hsp.r = 64 + hsp.EneTmp[ene][0];
-      }
-      if (hsp.EneMv[ene] == 1) {
-        hsp.r = 64 - hsp.EneTmp[ene][0];
-      }
-      hsp.EneX[ene] += hsp.cos[hsp.r] * 4;
-      hsp.EneY[ene] += hsp.sin[hsp.r] * 4;
-      hsp.EneCx[ene] = (hsp.cos[hsp.r] * 3 >> 8) + 120;
-      if (hsp.EneFrm[ene] == 32) {
-        hsp.prm = [0, hsp.EneX[ene], hsp.EneY[ene] + 5120, 64];
-        hsp.AprEneSht();
-      }
-      if ((hsp.EneX[ene] < -5120) || (81920 < hsp.EneX[ene])) {
-        hsp.EneFlg[ene] = 0;
-      }
+    this.pos.x += Math.cos(r) * 4;
+    this.pos.y += Math.sin(r) * 4;
+    this.animX = (Math.floor(Math.cos(r) * 3) + 3) * 80;
+    if (this.frame === 64) {
+      spawnEnemyShot(0, this.pos.x, this.pos.y - 40, DIR_DOWN);
     }
-
-    if (ki == 2) {
-      hsp.r = hsp.EneTmp[ene][0];
-      if ((hsp.EneFrm[ene] <= 80 && hsp.PlyFlg == 1) || hsp.EneFrm[ene] == 0) {
-        hsp.prm = [hsp.EneX[ene], hsp.EneY[ene], hsp.PlyX, hsp.PlyY];
-        hsp.stg_dir();
-        hsp.EneTmp[ene][0] = hsp.r;
-      }
-      hsp.EneTmp[ene][1] += hsp.cos[hsp.r] >> 1;
-      hsp.EneTmp[ene][2] += hsp.sin[hsp.r] >> 1;
-      hsp.EneX[ene] += hsp.EneTmp[ene][1];
-      hsp.EneY[ene] += hsp.EneTmp[ene][2];
-      hsp.EneTmp[ene][1] = Math.floor(hsp.EneTmp[ene][1] * 19 / 20);
-      hsp.EneTmp[ene][2] = Math.floor(hsp.EneTmp[ene][2] * 19 / 20);
-      if (hsp.EneFrm[ene] != 0 && hsp.EneFrm[ene] % 30 == 0) {
-        hsp.prm = [0, hsp.cos[hsp.r] * 20 + hsp.EneX[ene], hsp.sin[hsp.r] * 20 + hsp.EneY[ene], hsp.r];
-        hsp.AprEneSht();
-      }
-      hsp.EneCx[ene] = Math.floor((hsp.r + 4 & 255) * 31 / 255) * 40;
-      if (hsp.EneFrm[ene] > 80) {
-        if (hsp.EneX[ene] < -5120 || hsp.EneX[ene] > 81920 || hsp.EneY[ene] < -5120 || hsp.EneY[ene] > 81920) {
-          hsp.EneFlg[ene] = 0;
-        }
-      }
+    if ((this.pos.x < -BOUNDS.ENEMY) || (BOUNDS.ENEMY < this.pos.x)) {
+      this.destroy();
     }
+    this.frame++;
+  }
+}
 
-    if (ki == 3) {
-      hsp.EneY[ene] += 1024;
-      if (hsp.EneFrm[ene] == 20 || hsp.EneFrm[ene] == 40 || hsp.EneFrm[ene] == 60 || hsp.EneFrm[ene] == 80) {
-        hsp.prm = [hsp.EneX[ene], hsp.EneY[ene], hsp.PlyX, hsp.PlyY];
-        hsp.stg_dir();
-        hsp.prm = [1, hsp.EneX[ene], 7680 + hsp.EneY[ene], hsp.r];
-        hsp.AprEneSht();
+// ki=2: プレイヤー追尾型
+export class Enemy2 extends Enemy {
+  static DATA = { shield: 4, sx: 80, sy: 80, tex: TEX.ENEMY2, texCy: 0 };
+  static HIT = { x1: -30, y1: -30, x2: 30, y2: 30 };
+
+  init() {
+    this.trackDir = 0;
+    this.vx = 0;
+    this.vy = 0;
+  }
+
+  update() {
+    if (ctx.isPaused()) return;
+    let r = this.trackDir;
+    if (this.frame % 2 === 0) {
+      if ((this.frame <= 160 && player.alive) || this.frame === 0) {
+        r = calcDir(this.pos, player.pos);
+        this.trackDir = r;
       }
-      hsp.EneCx[ene] = 0;
-      if (hsp.EneY[ene] > 84480) {
-        hsp.EneFlg[ene] = 0;
+      this.vx += Math.cos(r) * 0.5;
+      this.vy += Math.sin(r) * 0.5;
+    }
+    this.pos.x += this.vx;
+    this.pos.y += this.vy;
+    if (this.frame % 2 === 0) {
+      this.vx = this.vx * 19 / 20;
+      this.vy = this.vy * 19 / 20;
+    }
+    if (this.frame !== 0 && this.frame % 60 === 0) {
+      spawnEnemyShot(0, Math.cos(r) * 40 + this.pos.x, Math.sin(r) * 40 + this.pos.y, r);
+    }
+    this.animX = radToSpriteFrame(r, 32, 80);
+    if (this.frame > 160) {
+      if (isOutOfBounds(this.pos.x, this.pos.y, BOUNDS.ENEMY)) {
+        this.destroy();
       }
     }
+    this.frame++;
+  }
+}
 
-    if (ki == 4) {
-      hsp.r = hsp.EneFrm[ene] & 255;
-      hsp.EneY[ene] -= 256;
-      hsp.EneX[ene] = (hsp.sin[hsp.r] << 3) + hsp.EneX0[ene]
-      if (hsp.EneFrm[ene] > 50 && hsp.r % 8 == 0) {
-        hsp.prm = [1, hsp.EneX[ene] + 2560, hsp.EneY[ene] - 512, 64 - hsp.EneTmp[ene][0] & 255];
-        hsp.AprEneSht();
-        hsp.prm = [1, hsp.EneX[ene] - 2560, hsp.EneY[ene] - 512, 64 + hsp.EneTmp[ene][0] & 255];
-        hsp.EneTmp[ene][0] += 8;
-        hsp.AprEneSht();
-      }
-      hsp.EneCx[ene] = 0;
-      if (hsp.EneY[ene] < -7680) {
-        hsp.EneFlg[ene] = 0;
-      }
+// ki=3: 直進しながら弾を撃つ
+export class Enemy3 extends Enemy {
+  static DATA = { shield: 4, sx: 80, sy: 120, tex: TEX.ENEMY3, texCy: 0 };
+  static HIT = { x1: -40, y1: -40, x2: 40, y2: 40 };
+
+  update() {
+    if (ctx.isPaused()) return;
+    this.pos.y -= 4;
+    if (this.frame === 40 || this.frame === 80 || this.frame === 120 || this.frame === 160) {
+      const dir = calcDir(this.pos, player.pos);
+      spawnEnemyShot(1, this.pos.x, this.pos.y - 60, dir);
     }
+    this.animX = 0;
+    if (this.pos.y < -BOUNDS.ENEMY_FAR) {
+      this.destroy();
+    }
+    this.frame++;
+  }
+}
 
-    if (ki == 5) {
-      if (mv == 0) {
-        hsp.r = hsp.EneFrm[ene] << 1;
+// ki=4: 上昇しながら扇状弾を撃つ
+export class Enemy4 extends Enemy {
+  static DATA = { shield: 40, sx: 240, sy: 120, tex: TEX.ENEMY4, texCy: 0 };
+  static HIT = { x1: -100, y1: -30, x2: 100, y2: 20 };
+
+  init() {
+    this.fanAngle = 0;
+  }
+
+  update() {
+    if (ctx.isPaused()) return;
+    let r = this.frame * 0.5 * A256;
+    this.pos.y += 1;
+    this.pos.x = Math.sin(r) * 16 + this.originX;
+    if (this.frame > 100 && this.frame % 16 === 0) {
+      spawnEnemyShot(1, this.pos.x + 20, this.pos.y + 4, DIR_DOWN + this.fanAngle * A256);
+      spawnEnemyShot(1, this.pos.x - 20, this.pos.y + 4, DIR_DOWN - this.fanAngle * A256);
+      this.fanAngle += 4;
+    }
+    this.animX = 0;
+    if (this.pos.y > BOUNDS.ENEMY_FAR) {
+      this.destroy();
+    }
+    this.frame++;
+  }
+}
+
+// ki=5: 円運動する敵
+export class Enemy5 extends Enemy {
+  static DATA = { shield: 3, sx: 80, sy: 80, tex: TEX.ENEMY5, texCy: 0 };
+  static HIT = { x1: -30, y1: -30, x2: 30, y2: 30 };
+
+  update() {
+    if (ctx.isPaused()) return;
+    let r;
+    if (this.moveType === 0) {
+      r = this.frame * A256;
+    } else {
+      r = (-this.frame + 128) * A256;
+    }
+    this.pos.x = Math.cos(r) * 300;
+    this.pos.y = -Math.sin(r) * 300 + 300;
+    // プレイヤー方向に上書き
+    r = calcDir(this.pos, player.pos);
+    if (this.frame === 32 || this.frame === 96) {
+      spawnEnemyShot(0, Math.cos(r) * 40 + this.pos.x, Math.sin(r) * 40 + this.pos.y, r);
+    }
+    this.animX = radToSpriteFrame(r, 32, 80);
+    if (this.frame === 128) {
+      this.destroy();
+    }
+    this.frame++;
+  }
+}
+
+// ki=6: 上下に揺れながら弾を撃つ
+export class Enemy6 extends Enemy {
+  static DATA = { shield: 4, sx: 80, sy: 100, tex: TEX.ENEMY6, texCy: 0 };
+  static HIT = { x1: -30, y1: -20, x2: 30, y2: 20 };
+
+  update() {
+    if (ctx.isPaused()) return;
+    let r = this.frame * A256;
+    this.pos.y -= Math.cos(r) * 6;
+    this.animX = (Math.floor(-Math.cos(r) * 4) + 4) * 80;
+    if (this.frame === 50) {
+      const dir = calcDir(this.pos, player.pos);
+      spawnEnemyShot(2, this.pos.x + 20, this.pos.y - 50, dir);
+      spawnEnemyShot(2, this.pos.x - 20, this.pos.y - 50, dir);
+    }
+    if (this.frame >= 256) {
+      this.destroy();
+    }
+    this.frame++;
+  }
+}
+
+// ki=7: 蛇行しながら下降、定期的に弾を撃つ
+export class Enemy7 extends Enemy {
+  static DATA = { shield: 2, sx: 80, sy: 120, tex: TEX.ENEMY7, texCy: 0 };
+  static HIT = { x1: -30, y1: -50, x2: 30, y2: 50 };
+
+  update() {
+    if (ctx.isPaused()) return;
+    let r = this.frame * 2 * A256;
+    if (this.moveType === 0) {
+      this.pos.x = 80 * Math.sin(r) + this.originX;
+    } else {
+      this.pos.x = -80 * Math.sin(r) + this.originX;
+    }
+    this.pos.y -= 2;
+    if (this.frame % 32 === 0) {
+      spawnEnemyShot(0, this.pos.x, this.pos.y - 60, DIR_DOWN);
+    }
+    this.animX = (Math.floor(this.frame / 4) % 8) * 80;
+    if (this.pos.y < -BOUNDS.ENEMY_FAR) {
+      this.destroy();
+    }
+    this.frame++;
+  }
+}
+
+// ki=8: 直進後に分岐する敵
+export class Enemy8 extends Enemy {
+  static DATA = { shield: 4, sx: 80, sy: 80, tex: TEX.ENEMY8, texCy: 0 };
+  static HIT = { x1: -30, y1: -30, x2: 30, y2: 30 };
+
+  init() {
+    this.angleStep = 0;
+  }
+
+  update() {
+    if (ctx.isPaused()) return;
+    let r;
+    if (this.frame < 60) {
+      r = DIR_UP;
+    } else {
+      if (this.frame < 92) {
+        this.angleStep = Math.floor((this.frame - 60) / 2) * 2;
+      }
+      if (this.moveType === 0) {
+        r = DIR_UP - this.angleStep * A256;
       } else {
-        hsp.r = (-hsp.EneFrm[ene] << 1) + 128;
-      }
-      hsp.EneX[ene] = hsp.cos[hsp.r] * 150 + 38400;
-      hsp.EneY[ene] = hsp.sin[hsp.r] * 150;
-      hsp.prm = [hsp.EneX[ene], hsp.EneY[ene], hsp.PlyX, hsp.PlyY];
-      hsp.stg_dir();
-      if (hsp.EneFrm[ene] == 16 || hsp.EneFrm[ene] == 48) {
-        hsp.prm = [0, hsp.cos[hsp.r] * 20 + hsp.EneX[ene], hsp.sin[hsp.r] * 20 + hsp.EneY[ene], hsp.r];
-        hsp.AprEneSht();
-      }
-      hsp.EneCx[ene] = Math.floor((hsp.r + 4 & 255) * 31 / 255) * 40;
-      if (hsp.EneFrm[ene] == 64) {
-        hsp.EneFlg[ene] = 0;
+        r = DIR_UP + this.angleStep * A256;
       }
     }
-
-    if (ki == 6) {
-      hsp.r = hsp.EneFrm[ene] * 2;
-      hsp.EneY[ene] += hsp.cos[hsp.r] * 6;
-      hsp.EneCx[ene] = ((-hsp.cos[hsp.r] >> 6) + 4) * 40;
-      if (hsp.EneFrm[ene] == 25) {
-        hsp.prm = [hsp.EneX[ene], hsp.EneY[ene], hsp.PlyX, hsp.PlyY];
-        hsp.stg_dir();
-        hsp.prm = [2, hsp.EneX[ene] + 2560, hsp.EneY[ene] + 6400, hsp.r];
-        hsp.AprEneSht();
-        hsp.prm = [2, hsp.EneX[ene] - 2560, hsp.EneY[ene] + 6400, hsp.r];
-        hsp.AprEneSht();
-      }
-      if (hsp.EneY[ene] == hsp.EneY0[ene]) {
-        hsp.EneFlg[ene] = 0;
-      }
+    this.pos.x += Math.cos(r) * 5;
+    this.pos.y += Math.sin(r) * 5;
+    this.animX = (Math.floor(Math.cos(r) * 3) + 3) * 80;
+    if (this.frame === 60) {
+      const dir = calcDir(this.pos, player.pos);
+      spawnEnemyShot(0, this.pos.x, this.pos.y, dir);
+      spawnEnemyShot(0, this.pos.x, this.pos.y, dir + Math.PI / 8);
+      spawnEnemyShot(0, this.pos.x, this.pos.y, dir - Math.PI / 8);
     }
-
-    if (ki == 7) {
-      hsp.r = (hsp.EneFrm[ene] << 2) & 255;
-      if (mv == 0) {
-        hsp.EneX[ene] = 40 * hsp.sin[hsp.r] + hsp.EneX0[ene];
-      }
-      if (mv == 1) {
-        hsp.EneX[ene] = -40 * hsp.sin[hsp.r] + hsp.EneX0[ene];
-      }
-      hsp.EneY[ene] += 512;
-      if (hsp.r % 64 == 0) {
-        hsp.prm = [0, hsp.EneX[ene], hsp.EneY[ene] + 7680, 64];
-        hsp.AprEneSht();
-      }
-      hsp.EneCx[ene] = (Math.floor(hsp.EneFrm[ene] / 2) & 7) * 40;
-      if (hsp.EneY[ene] > 84480) {
-        hsp.EneFlg[ene] = 0;
-      }
+    if (this.pos.x < -BOUNDS.ENEMY || BOUNDS.ENEMY < this.pos.x) {
+      this.destroy();
     }
-
-    if (ki == 8) {
-      if (hsp.EneFrm[ene] < 30) {
-        hsp.r = 192;
-      } else {
-        if (hsp.EneFrm[ene] < 46) {
-          hsp.EneTmp[ene][0] = hsp.EneFrm[ene] - 30 * 2;
-        }
-        if (hsp.EneMv[ene] == 0) {
-          hsp.r = 192 + hsp.EneTmp[ene][0];
-        }
-        if (hsp.EneMv[ene] == 1) {
-          hsp.r = 192 - hsp.EneTmp[ene][0];
-        }
-      }
-      hsp.EneX[ene] += hsp.cos[hsp.r] * 5;
-      hsp.EneY[ene] += hsp.sin[hsp.r] * 5;
-      hsp.EneCx[ene] = (((hsp.cos[hsp.r] * 3) >> 8) + 3) * 40;
-      if (hsp.EneFrm[ene] == 30) {
-        hsp.prm = [hsp.EneX[ene], hsp.EneY[ene], hsp.PlyX, hsp.PlyY];
-        hsp.stg_dir();
-        let t = hsp.r
-        hsp.prm = [0, hsp.EneX[ene], hsp.EneY[ene], t];
-        hsp.AprEneSht();
-        hsp.prm = [0, hsp.EneX[ene], hsp.EneY[ene], t + 16 & 255];
-        hsp.AprEneSht();
-        hsp.prm = [0, hsp.EneX[ene], hsp.EneY[ene], t + 240 & 255];
-        hsp.AprEneSht();
-      }
-      if (hsp.EneX[ene] < -5120 || 81920 < hsp.EneX[ene]) {
-        hsp.EneFlg[ene] = 0;
-      }
-    }
-
-    if (ki == 9) {
-      if (hsp.EneFrm[ene] == 0) {
-        hsp.EneTmp[ene][0] = 256;
-      }
-      if (hsp.EneFrm[ene] % 50 == 0) {
-        hsp.EneTmp[ene][0] = -hsp.EneTmp[ene][0];
-      }
-      hsp.EneX[ene] += hsp.EneTmp[ene][0];
-      hsp.EneY[ene] += 256;
-      if (hsp.EneFrm[ene] > 50 && hsp.EneFrm[ene] < 296 && hsp.EneFrm[ene] % 4 == 0) {
-        hsp.prm = [1, hsp.EneX[ene], hsp.EneY[ene] - 2560, hsp.EneTmp[ene][1] & 255];
-        hsp.AprEneSht();
-        hsp.prm = [1, hsp.EneX[ene], hsp.EneY[ene] - 2560, hsp.EneTmp[ene][1] + 64 & 255];
-        hsp.AprEneSht();
-        hsp.prm = [1, hsp.EneX[ene], hsp.EneY[ene] - 2560, hsp.EneTmp[ene][1] + 128 & 255];
-        hsp.AprEneSht();
-        hsp.prm = [1, hsp.EneX[ene], hsp.EneY[ene] - 2560, hsp.EneTmp[ene][1] + 192 & 255];
-        hsp.AprEneSht();
-        hsp.EneTmp[ene][1] += 4;
-      }
-      hsp.EneCx[ene] = (Math.floor(hsp.EneFrm[ene] / 2) & 7) * 60;
-      if (hsp.EneY[ene] > 84480) {
-        hsp.EneFlg[ene] = 0;
-      }
-    }
-
-    hsp.EneFrm[ene]++;
-
-    for (let j = 0; j < hsp.MaxPlySht; j++) {
-      if (hsp.PlyShtFlg[j] == 0) {
-        continue;
-      }
-      hsp.prm = [
-        (hsp.DatEne[ki][3] << 8) + hsp.EneX[ene],
-        (hsp.DatEne[ki][4] << 8) + hsp.EneY[ene],
-        (hsp.DatEne[ki][5] << 8) + hsp.EneX[ene],
-        (hsp.DatEne[ki][6] << 8) + hsp.EneY[ene],
-        hsp.PlyShtX[j] - 1280,
-        hsp.PlyShtY[j] - 2560,
-        hsp.PlyShtX[j] + 1280,
-        hsp.PlyShtY[j] + 2560,
-      ];
-      hsp.stg_clash();
-      if (hsp.r == 1) {
-        hsp.Score += 10;
-        hsp.PlyShtFlg[j] = 0;
-        hsp.EneShield[ene]--;
-        let x = hsp.rnd(2560); x -= 1280;
-        let y = hsp.rnd(2560); y -= 1280;
-        hsp.prm = [1, hsp.PlyShtX[j] + x, hsp.PlyShtY[j] + y, 0];
-        hsp.AprEff();
-        if (hsp.EneShield[ene] == 0) {
-          hsp.EneFlg[ene] = 0;
-          for (let k = 0; k < 5; k++) {
-            let x = hsp.rnd(hsp.DatEne[ki][1] << 8); x -= hsp.DatEne[ki][1] << 7;
-            let y = hsp.rnd(hsp.DatEne[ki][2] << 8); y -= hsp.DatEne[ki][2] << 7;
-            hsp.prm = [0, hsp.EneX[ene] + x, hsp.EneY[ene] + y, -k * 3];
-            hsp.AprEff();
-          }
-          break;
-        }
-      }
-    }
-
-    if (hsp.PlyHitCnt != 0) {
-      continue;
-    }
-
-    hsp.prm = [
-      (hsp.DatEne[ki][3] << 8) + hsp.EneX[ene],
-      (hsp.DatEne[ki][4] << 8) + hsp.EneY[ene],
-      (hsp.DatEne[ki][5] << 8) + hsp.EneX[ene],
-      (hsp.DatEne[ki][6] << 8) + hsp.EneY[ene],
-      hsp.PlyX - 1280,
-      hsp.PlyY - 1280,
-      hsp.PlyX + 1280,
-      hsp.PlyY + 1280,
-    ];
-    hsp.stg_clash();
-    if (hsp.r == 1) {
-      hsp.EneFlg[ene] = 0;
-      for (let j = 0; j < 2; j++) {
-        let x = hsp.rnd(2560); x -= 1280;
-        let y = hsp.rnd(2560); y -= 1280;
-        hsp.prm = [1, hsp.EneX[ene] + x, hsp.EneY[ene] + y, -j * 3];
-        hsp.AprEff();
-      }
-      for (let j = 0; j < 3; j++) {
-        let x = hsp.rnd(hsp.DatEne[ki][1] << 8); x -= hsp.DatEne[ki][1] << 7;
-        let y = hsp.rnd(hsp.DatEne[ki][2] << 8); y -= hsp.DatEne[ki][2] << 7;
-        hsp.prm = [0, hsp.EneX[ene] + x, hsp.EneY[ene] + y, -j * 3];
-        hsp.AprEff();
-      }
-      hsp.PlyHitCnt = 50;
-      hsp.PlyShield--;
-      if (hsp.PlyShield == 0) {
-        hsp.PlyFlg = 0;
-        for (let j = 0; j < 5; j++) {
-          let x = hsp.rnd(40); x -= 20;
-          let y = hsp.rnd(40); y -= 20;
-          hsp.prm = [0, hsp.PlyX + x, hsp.PlyY + y, -j * 3];
-          hsp.AprEff();
-        }
-      }
-    }
+    this.frame++;
   }
-};
+}
 
-;//////////敵描画//////////
-hsp.DrwEne = () => {
-  for (let i = 0; i < hsp.MaxEne; i++) {
-    if (hsp.EneFlg[i] == 0) {
-      continue;
-    }
-    const ki = hsp.EneKi[i];
-    hsp.pos((hsp.EneX[i] >> 8) - Math.floor(hsp.DatEne[ki][1] / 2), (hsp.EneY[i] >> 8) - Math.floor(hsp.DatEne[ki][2] / 2));
-    hsp.gcopy(4, hsp.EneCx[i], hsp.DatEne[ki][7], hsp.DatEne[ki][1], hsp.DatEne[ki][2]);
+// ki=9: 左右に揺れながら下降、回転弾を撃つ中ボス級
+export class Enemy9 extends Enemy {
+  static DATA = { shield: 40, sx: 120, sy: 120, tex: TEX.ENEMY9, texCy: 0 };
+  static HIT = { x1: -50, y1: -50, x2: 50, y2: 50 };
+
+  // moveDir: 左右移動方向（1 or -1）, bulletAngle: 回転弾の放射角度
+  init() {
+    this.moveDir = 1;
+    this.bulletAngle = 0;
   }
-};
+
+  update() {
+    if (ctx.isPaused()) return;
+    if (this.frame % 100 === 0) {
+      this.moveDir = -this.moveDir;
+    }
+    this.pos.x += this.moveDir * 1;
+    this.pos.y -= 1;
+    if (this.frame > 100 && this.frame < 592 && this.frame % 8 === 0) {
+      const baseAngle = this.bulletAngle * A256;
+      spawnEnemyShot(1, this.pos.x, this.pos.y + 20, baseAngle);
+      spawnEnemyShot(1, this.pos.x, this.pos.y + 20, baseAngle + DIR_DOWN);
+      spawnEnemyShot(1, this.pos.x, this.pos.y + 20, baseAngle + Math.PI);
+      spawnEnemyShot(1, this.pos.x, this.pos.y + 20, baseAngle + DIR_UP);
+      this.bulletAngle -= 4;
+    }
+    this.animX = (Math.floor(this.frame / 4) % 8) * 120;
+    if (this.pos.y < -BOUNDS.ENEMY_FAR) {
+      this.destroy();
+    }
+    this.frame++;
+  }
+}
+
+// CLASS_MAP 構築
+Enemy.CLASS_MAP = [
+  Enemy0, Enemy1, Enemy2, Enemy3, Enemy4,
+  Enemy5, Enemy6, Enemy7, Enemy8, Enemy9,
+];

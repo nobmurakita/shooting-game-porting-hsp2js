@@ -1,187 +1,203 @@
-hsp.MaxBossPrt = 3;
+import { GameObject, ctx, TEX, A256, DIR_DOWN, STA_PLAY, STA_CLEAR, BOSS_STATE_NONE, BOSS_STATE_BATTLE, BOSS_STATE_DESTROY, rnd, calcDir, gameTile } from './game.js';
+import { player, bossParts, setBoss } from './registry.js';
+import { spawnEnemyShot } from './enesht.js';
+import { spawnEffect, spawnExplosion } from './effect.js';
 
-;//////////ボスパーツ初期化//////////
-hsp.IniDatBossPrt = () => {
-  hsp.buffer(5, 1000, 1000);
-  if (hsp.Stage == 1) {
-    hsp.picload('img/boss00.png', 0, 0);
-    hsp.picload('img/boss01.png', 0, 75);
+//////////ボスクラス//////////
+export class Boss extends GameObject {
+  static MAX_PARTS = 3;
 
-    hsp.DatBossPrt = [
-      // Shield, x, y, sx, sy, HitX1, HitY1, HitX2, HitY2, Cy
-      [500, 0, -7, 70, 75, -25, -30, 25, 6, 0],
-      [200, -40, 0, 20, 112, -10, -56, 10, 56, 75],
-      [200, 40, 0, 20, 112, -10, -56, 10, 56, 75],
-    ];
-  }
-};
-
-;//////////ボス初期化//////////
-hsp.IniBoss = () => {
-  if (hsp.Stage == 1) {
-    hsp.BossFlg = 0;
-    hsp.BossShield = 500;
-    hsp.BossX = 150 << 8;
-    hsp.BossY = -100 << 8;
-    hsp.BossFrm = 0;
-
-    hsp.BossPrtFlg = hsp.dim(hsp.MaxBossPrt);
-    hsp.BossPrtShield = hsp.dim(hsp.MaxBossPrt);
-    hsp.BossPrtCx = hsp.dim(hsp.MaxBossPrt);
-    hsp.BossLckOn = hsp.dim(hsp.MaxBossPrt);
-
-    for (let i = 0; i < hsp.MaxBossPrt; i++) {
-      hsp.BossPrtFlg[i] = 1;
-      hsp.BossPrtShield[i] = hsp.DatBossPrt[i][0];
-    }
-
-    hsp.BossAprFrm = 2450;
-  }
-};
-
-;//////////ボス移動//////////
-hsp.MovBoss = () => {
-  if (hsp.BossFlg == 2) {
-    for (let i = 0; i < hsp.MaxBossPrt; i++) {
-      hsp.BossPrtCx[i] = hsp.DatBossPrt[i][3];
-    }
-    hsp.BossFrm++;
-    if (hsp.BossFrm % 3 == 0) {
-      let x = hsp.rnd(50) << 8; x -= 50 << 7;
-      let y = hsp.rnd(50) << 8; y -= 50 << 7;
-      hsp.prm = [0, hsp.BossX + x, hsp.BossY + y, 0];
-      hsp.AprEff();
-    }
-    let x = hsp.rnd(1024); x -= 512;
-    let y = hsp.rnd(256); y -= 128;
-    hsp.BossX += x;
-    hsp.BossY += y + 256;
-    if (hsp.BossFrm == 50) {
-      for (let i = 0; i < 3; i++) {
-        let a = i + 1 * 25;
-        let t = -i * 2;
-        for (let j = 0; j < 16; j++) {
-          hsp.r = i * 16 & 255;
-          hsp.prm = [0, a * hsp.cos[hsp.r] + hsp.BossX, a * hsp.sin[hsp.r] + hsp.BossY, t];
-          hsp.AprEff();
-        }
-      }
-    }
-    if (hsp.BossFrm == 60) {
-      hsp.BossFlg = 0;
-      hsp.GameSta = hsp.STA_CLEAR;
+  constructor() {
+    super(vec2(0, 500), 5);  // renderOrder=5（敵=0の上、PlayerShot=10の下）
+    setBoss(this);
+    this.flg = BOSS_STATE_NONE;
+    this.shield = 500;
+    this.appearFrame = 4900;
+    this.destroyFrame = 0;  // 破壊演出開始時のframe（経過フレーム算出用）
+    this.parts = [new BossPart0(), new BossPart1(), new BossPart2()];
+    for (const prt of this.parts) {
+      this.addChild(prt, vec2(prt.constructor.DATA.x, prt.constructor.DATA.y));
     }
   }
 
-  if (hsp.BossFlg != 1) {
-    return;
-  }
+  // ボス移動（旧MovBoss）
+  update() {
+    if (ctx.gameSta !== STA_PLAY) return;
 
-  if (hsp.Stage == 1) {
-    if (hsp.BossFrm < 200) {
-      hsp.BossY += 256;
-    } else {
-      let a = Math.floor((hsp.BossFrm - 200) / 128) % 4;
+    // 破壊演出（flg==2）
+    if (this.flg === BOSS_STATE_DESTROY) {
+      this.frame++; // 破壊演出は旧コードでfrm先行インクリメントのため先に実行
+      this.updateDestroy();
+      return;
+    }
 
-      if (a == 0 || a == 3) {
-        hsp.BossX -= 256;
+    if (this.flg !== BOSS_STATE_BATTLE) return;
+
+    // ステージ1のボスAI
+    if (ctx.stage === 1) {
+      if (this.frame < 400) {
+        this.updateApproach();
       } else {
-        hsp.BossX += 256;
+        this.updateBattle();
       }
+    }
 
-      hsp.r = hsp.BossFrm & 255;
-      hsp.BossY += hsp.sin[hsp.r];
+    this.frame++;
+  }
 
-      if ((hsp.BossFrm - 200) % 128 < 32 && (hsp.BossFrm - 200) % 8 == 0) {
-        if (hsp.BossPrtFlg[1] == 1) {
-          hsp.prm = [2, (-40 << 8) + hsp.BossX, hsp.BossY, hsp.r];
-          hsp.AprEneSht();
-        }
-        if (hsp.BossPrtFlg[2] == 1) {
-          hsp.prm = [2, (40 << 8) + hsp.BossX, hsp.BossY, hsp.r];
-          hsp.AprEneSht();
-        }
-      }
-      if ((hsp.BossFrm - 200) % 128 < 32 && (hsp.BossFrm - 200) % 4 == 0) {
-        if (hsp.BossFlg == 1) {
-          hsp.prm = [hsp.BossX, hsp.BossY, hsp.PlyX, hsp.PlyY];
-          hsp.stg_dir();
-          hsp.prm = [1, hsp.BossX, hsp.BossY - 5120, hsp.r];
-          hsp.AprEneSht();
-        }
-      }
-      if (hsp.BossFrm - 200 % 32 == 31) {
-        if (hsp.BossFlg == 1) {
-          hsp.prm = [0, (-5 << 8) + hsp.BossX, (25 << 8) + hsp.BossY, 64];
-          hsp.AprEneSht();
-          hsp.prm = [0, (5 << 8) + hsp.BossX, (25 << 8) + hsp.BossY, 64];
-          hsp.AprEneSht();
+  // 破壊演出（爆発・揺れ・クリア遷移）
+  updateDestroy() {
+    const elapsed = this.frame - this.destroyFrame;
+    for (let i = 0; i < Boss.MAX_PARTS; i++) {
+      this.parts[i].animX = this.parts[i].constructor.DATA.sx;
+    }
+    if (elapsed % 6 === 0) {
+      let x = rnd(100) - 50;
+      let y = rnd(100) - 50;
+      spawnEffect(0, this.pos.x + x, this.pos.y + y, 0);
+    }
+    const x = rnd(1024) / 256 - 2;
+    const y = rnd(256) / 256 - 0.5;
+    this.pos.x += x;
+    this.pos.y -= (y + 1);
+    if (elapsed === 100) {
+      for (let i = 0; i < 3; i++) {
+        const a = (i + 1) * 50;
+        const t = -i * 2;
+        for (let j = 0; j < 16; j++) {
+          const r = j * Math.PI / 8;
+          spawnEffect(0, a * Math.cos(r) + this.pos.x, a * Math.sin(r) + this.pos.y, t);
         }
       }
     }
-    hsp.BossFrm++;
+    if (elapsed === 120) {
+      ctx.gameSta = STA_CLEAR;
+      this.destroy();
+    }
   }
 
-  for (let i = 0; i < hsp.MaxBossPrt; i++) {
-    const prt = i;
-    if (hsp.BossPrtFlg[prt] == 0) {
-      continue;
-    }
-    for (let j = 0; j < hsp.MaxPlySht; j++) {
-      const sht = j;
-      if (hsp.PlyShtFlg[sht] == 0) {
-        continue;
-      }
-      hsp.prm = [
-        hsp.BossX + (hsp.DatBossPrt[prt][1] << 8) + (hsp.DatBossPrt[prt][5] << 8),
-        hsp.BossY + (hsp.DatBossPrt[prt][2] << 8) + (hsp.DatBossPrt[prt][6] << 8),
-        hsp.BossX + (hsp.DatBossPrt[prt][1] << 8) + (hsp.DatBossPrt[prt][7] << 8),
-        hsp.BossY + (hsp.DatBossPrt[prt][2] << 8) + (hsp.DatBossPrt[prt][8] << 8),
-        hsp.PlyShtX[sht] - 1280,
-        hsp.PlyShtY[sht] - 2560,
-        hsp.PlyShtX[sht] + 1280,
-        hsp.PlyShtY[sht] + 2560,
-      ];
-      hsp.stg_clash();
-      if (hsp.r == 1) {
-        hsp.Score += 10;
-        hsp.PlyShtFlg[sht] = 0;
-        hsp.BossShield--;
-        hsp.BossPrtShield[prt]--;
-        let x = hsp.rnd(2560); x -= 1280;
-        let y = hsp.rnd(2560); y -= 1280;
-        hsp.prm = [1, hsp.PlyShtX[j] + x, hsp.PlyShtY[j] + y, 0];
-        hsp.AprEff();
-        if (hsp.BossShield == 0) {
-          hsp.BossFlg = 2;
-          hsp.BossFrm = 0;
-        }
-        if (hsp.BossPrtShield[prt] == 0) {
-          hsp.BossPrtFlg[prt] = 0;
-          hsp.BossPrtCx[prt] = hsp.DatBossPrt[prt][3];
-          for (let k = 0; k < 5; k++) {
-            let x = hsp.rnd(hsp.DatBossPrt[prt][3]) << 8; x -= hsp.DatBossPrt[prt][3] << 7;
-            let y = hsp.rnd(hsp.DatBossPrt[prt][4]) << 8; y -= hsp.DatBossPrt[prt][4] << 7;
-            hsp.prm = [0, (hsp.DatBossPrt[prt][1] << 8) + hsp.BossX + x, (hsp.DatBossPrt[prt][2] << 8) + hsp.BossY + y, -k * 3];
-            hsp.AprEff();
-          }
-          break;
-        }
-      }
-    }
+  // 初期降下
+  updateApproach() {
+    this.pos.y -= 1;
   }
-};
 
-;//////////ボス描画//////////
-hsp.DrwBoss = () => {
-  if (hsp.BossFlg == 0) {
-    return;
-  }
-  if (hsp.Stage == 1) {
-    for (let i = 0; i < hsp.MaxBossPrt; i++) {
-      const prt = i;
-      hsp.pos((hsp.BossX >> 8) + hsp.DatBossPrt[prt][1] - Math.floor(hsp.DatBossPrt[prt][3] / 2), (hsp.BossY >> 8) + hsp.DatBossPrt[prt][2] - Math.floor(hsp.DatBossPrt[prt][4] / 2));
-      hsp.gcopy(5, hsp.BossPrtCx[prt], hsp.DatBossPrt[prt][9], hsp.DatBossPrt[prt][3], hsp.DatBossPrt[prt][4]);
+  // 移動パターン＆攻撃パターン
+  updateBattle() {
+    const a = Math.floor((this.frame - 400) / 256) % 4;
+
+    if (a === 0 || a === 3) {
+      this.pos.x -= 1;
+    } else {
+      this.pos.x += 1;
+    }
+
+    const r = this.frame * 0.5 * A256;
+    this.pos.y -= Math.sin(r) * 1;
+
+    // 誘導弾発射（パーツ1,2）
+    if ((this.frame - 400) % 256 < 64 && (this.frame - 400) % 16 === 0) {
+      if (this.parts[1].alive) {
+        spawnEnemyShot(2, -80 + this.pos.x, this.pos.y, r);
+      }
+      if (this.parts[2].alive) {
+        spawnEnemyShot(2, 80 + this.pos.x, this.pos.y, r);
+      }
+    }
+    // 照準弾発射
+    if ((this.frame - 400) % 256 < 64 && (this.frame - 400) % 8 === 0) {
+      const dir = calcDir(this.pos, player.pos);
+      spawnEnemyShot(1, this.pos.x, this.pos.y + 40, dir);
+    }
+    // 通常弾発射
+    if ((this.frame - 400) % 64 === 63) {
+      spawnEnemyShot(0, -10 + this.pos.x, this.pos.y - 50, DIR_DOWN);
+      spawnEnemyShot(0, 10 + this.pos.x, this.pos.y - 50, DIR_DOWN);
     }
   }
-};
+
+  destroy() {
+    setBoss(null);
+    super.destroy();
+  }
+
+  // パーツは子EngineObjectとして自動描画
+}
+
+//////////ボスパーツクラス//////////
+export class BossPart extends GameObject {
+  constructor() {
+    super(vec2(), 5);  // renderOrder=5、位置はBossの子として自動設定
+    bossParts.add(this);
+    this.shield = this.constructor.DATA.shield;
+    this.animX = 0;
+    this.lockOnCount = 0;
+  }
+
+  render() {
+    if (!this.parent || this.parent.flg === BOSS_STATE_NONE) return;
+    const d = this.constructor.DATA;
+    const ti = gameTile(this.animX, d.texCy, d.sx, d.sy, d.tex);
+    drawTile(this.pos, ti.drawSize, ti);
+  }
+
+  destroy() {
+    bossParts.delete(this);
+    super.destroy();
+  }
+
+  // プレイヤーショットによる被弾。パーツ破壊時trueを返す
+  onHitByShot() {
+    const boss = this.parent;
+    boss.shield--;
+    this.shield--;
+    if (boss.shield <= 0) {
+      boss.flg = BOSS_STATE_DESTROY;
+      boss.destroyFrame = boss.frame;
+    }
+    if (this.shield <= 0) {
+      this.alive = false;
+      const d = this.constructor.DATA;
+      this.animX = d.sx;
+      spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 5);
+      return true;
+    }
+    return false;
+  }
+
+  // レーザーによる被弾
+  onHitByLaser() {
+    const boss = this.parent;
+    boss.shield -= 5;
+    this.shield -= 5;
+    this.lockOnCount--;
+    if (boss.shield <= 0) {
+      boss.shield = 0;
+      boss.flg = BOSS_STATE_DESTROY;
+      boss.destroyFrame = boss.frame;
+    }
+    if (this.shield <= 0) {
+      this.alive = false;
+      const d = this.constructor.DATA;
+      this.animX = d.sx;
+      spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 3);
+    }
+  }
+}
+
+// パーツ0: 本体
+export class BossPart0 extends BossPart {
+  static DATA = { shield: 500, x: 0, y: 14, sx: 140, sy: 150, tex: TEX.BOSS0, texCy: 0 };
+  static HIT = { x1: -50, y1: -12, x2: 50, y2: 60 };
+}
+
+// パーツ1: 左翼
+export class BossPart1 extends BossPart {
+  static DATA = { shield: 200, x: -80, y: 0, sx: 40, sy: 224, tex: TEX.BOSS1, texCy: 0 };
+  static HIT = { x1: -20, y1: -112, x2: 20, y2: 112 };
+}
+
+// パーツ2: 右翼
+export class BossPart2 extends BossPart {
+  static DATA = { shield: 200, x: 80, y: 0, sx: 40, sy: 224, tex: TEX.BOSS1, texCy: 0 };
+  static HIT = { x1: -20, y1: -112, x2: 20, y2: 112 };
+}

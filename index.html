@@ -1,5 +1,8 @@
-<html>
+<!DOCTYPE html>
+<html lang="ja">
   <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
       body {
         margin: 0;
@@ -49,18 +52,10 @@
       });
       document.getElementById('help-close').addEventListener('click', () => {
         document.getElementById('help-dialog').close();
-      })
+      });
     </script>
 
-    <script src="js/hsp.js"></script>
-    <script src="js/stg.js"></script>
-    <script src="js/common.js"></script>
-    <script src="js/effect.js"></script>
-    <script src="js/player.js"></script>
-    <script src="js/enemy.js"></script>
-    <script src="js/enesht.js"></script>
-    <script src="js/boss.js"></script>
-    <script src="js/stage1.js"></script>
-    <script src="js/start.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/littlejsengine@1.18.0/dist/littlejs.js"></script>
+    <script type="module" src="js/init.js"></script>
   </body>
 </html>
