@@ -1,80 +1,89 @@
+import { ctx, STA_OPENING, STA_TITLE, STA_INIT, STA_PLAY, STA_CLEAR, STA_ENDING, STA_PAUSE, MAX_STAGE, BOSS_STATE_NONE, BOSS_STATE_BATTLE, KEY_LASER, KEY_SHOT, KEY_SHIFT, KEY_ESC } from './game.js';
+import { player, boss } from './registry.js';
+import { Player } from './player.js';
+import { Boss } from './boss.js';
+import { Enemy } from './enemy.js';
+import { updateBackground } from './background.js';
+
 //////////状態ハンドラ//////////
 
-game.updateOpeningState = () => {
-  game.ctx.stage = 0;
-  game.ctx.score = 0;
-  game.ctx.gameSta = game.STA_TITLE;
+const updateOpeningState = () => {
+  ctx.stage = 0;
+  ctx.score = 0;
+  ctx.gameSta = STA_TITLE;
 };
 
-game.updateTitleState = () => {
-  if (game.keyWasPressed(game.KEY_LASER) || game.keyWasPressed(game.KEY_SHOT) || game.keyWasPressed(game.KEY_SHIFT)) {
+const updateTitleState = () => {
+  if (keyWasPressed(KEY_LASER) || keyWasPressed(KEY_SHOT) || keyWasPressed(KEY_SHIFT)) {
     // キーボード操作時のAudioContext起動（LittleJSはmouse/touchのみ対応のため）
     if (audioContext && audioContext.state !== 'running') audioContext.resume();
-    game.ctx.gameSta = game.STA_INIT;
+    ctx.gameSta = STA_INIT;
   }
 };
 
-game.updateInitState = () => {
-  game.ctx.stage++;
-  if (game.ctx.stage <= game.MAX_STAGE) {
-    game.ctx.initStage(game.ctx.stage);
-    game.ctx.gameSta = game.STA_PLAY;
+const updateInitState = () => {
+  ctx.stage++;
+  if (ctx.stage <= MAX_STAGE) {
+    ctx.initStage(ctx.stage);
+    new Player();
+    new Boss();
+    ctx.gameSta = STA_PLAY;
   } else {
-    game.ctx.gameSta = game.STA_ENDING;
+    ctx.gameSta = STA_ENDING;
   }
 };
 
-game.updatePlayState = () => {
+const updatePlayState = () => {
   // TODO: プレイヤー死亡時のゲームオーバー処理（現状はalive=falseのまま継続）
-  if (game.keyWasPressed(game.KEY_ESC)) {
-    game.ctx.goToOpening();
+  if (keyWasPressed(KEY_ESC)) {
+    ctx.goToOpening();
   } else {
     // ボス出現判定（Enemy.appear()の外で常に判定）
-    if (game.Boss.instance.flg === game.Boss.STATE_NONE && game.Boss.instance.appearFrame === game.ctx.frame) {
-      game.Boss.instance.flg = game.Boss.STATE_BATTLE;
+    if (boss.flg === BOSS_STATE_NONE && boss.appearFrame === ctx.frame) {
+      boss.flg = BOSS_STATE_BATTLE;
     }
     // 敵出現（ボス未登場時のみ）
-    if (game.Boss.instance.flg === game.Boss.STATE_NONE) {
-      game.Enemy.appear();
+    if (boss.flg === BOSS_STATE_NONE) {
+      Enemy.appear();
     }
-    game.updateBackground();
-    game.ctx.frame++;
-    if (game.keyWasPressed(game.KEY_SHIFT)) {
-      game.ctx.gameSta = game.STA_PAUSE;
+    updateBackground();
+    ctx.frame++;
+    if (keyWasPressed(KEY_SHIFT)) {
+      ctx.gameSta = STA_PAUSE;
     }
   }
 };
 
-game.updateClearState = () => {
-  if (game.keyWasPressed(game.KEY_ESC)) {
-    game.ctx.goToOpening();
+const updateClearState = () => {
+  if (keyWasPressed(KEY_ESC)) {
+    ctx.goToOpening();
   }
-  if (game.Player.instance.pos.y < 340) {
-    game.Player.instance.pos.y += 7;
+  if (player.pos.y < 340) {
+    player.pos.y += 7;
   } else {
-    game.ctx.gameSta = game.STA_INIT;
+    ctx.gameSta = STA_INIT;
   }
-  game.updateBackground();
+  updateBackground();
 };
 
-game.updateEndingState = () => {
-  game.ctx.goToOpening();
+const updateEndingState = () => {
+  ctx.goToOpening();
 };
 
-game.updatePauseState = () => {
-  if (game.keyWasPressed(game.KEY_ESC)) {
-    game.ctx.goToOpening();
-  } else if (game.keyWasPressed(game.KEY_SHIFT)) {
-    game.ctx.gameSta = game.STA_PLAY;
+const updatePauseState = () => {
+  if (keyWasPressed(KEY_ESC)) {
+    ctx.goToOpening();
+  } else if (keyWasPressed(KEY_SHIFT)) {
+    ctx.gameSta = STA_PLAY;
   }
 };
 
-game.stateHandlers = {
-  [game.STA_OPENING]: game.updateOpeningState,
-  [game.STA_TITLE]:   game.updateTitleState,
-  [game.STA_INIT]:    game.updateInitState,
-  [game.STA_PLAY]:    game.updatePlayState,
-  [game.STA_CLEAR]:   game.updateClearState,
-  [game.STA_ENDING]:  game.updateEndingState,
-  [game.STA_PAUSE]:   game.updatePauseState,
+export const stateHandlers = {
+  [STA_OPENING]: updateOpeningState,
+  [STA_TITLE]:   updateTitleState,
+  [STA_INIT]:    updateInitState,
+  [STA_PLAY]:    updatePlayState,
+  [STA_CLEAR]:   updateClearState,
+  [STA_ENDING]:  updateEndingState,
+  [STA_PAUSE]:   updatePauseState,
 };

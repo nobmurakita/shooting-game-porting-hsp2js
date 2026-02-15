@@ -1,10 +1,9 @@
+import { GameObject, ctx, SCREEN_W, SCREEN_H, BOUNDS, DIR_UP, BOSS_STATE_BATTLE, LASER_STATE_DYING, LASER_STATE_TRACKING, LASER_STATE_NO_TARGET, isOutOfBounds, calcDir, laserCtx2d, laserBatchCtx2d, laserCanvas } from './game.js';
+import { player, boss, bossParts, enemies, lasers } from './registry.js';
+import { spawnHitSparks } from './effect.js';
+
 //////////レーザークラス//////////
-game.Laser = class extends game.GameObject {
-  static all = new Set();
-  // レーザー状態
-  static STATE_DYING     = 0;  // 消滅中
-  static STATE_TRACKING  = 1;  // 追跡中
-  static STATE_NO_TARGET = 2;  // ターゲット未設定
+export class Laser extends GameObject {
   static DRAW = {
     segments: 14,
     baseR: 50, baseG: 255, baseB: 160,
@@ -14,26 +13,26 @@ game.Laser = class extends game.GameObject {
 
   constructor(px, py, vx, vy, trg) {
     super(vec2(px, py), 50); // renderOrder=50（最前面）
-    game.Laser.all.add(this);
-    game.Laser.SOUND.play();
+    lasers.add(this);
+    Laser.SOUND.play();
     this.trg = trg;
-    this.sta = trg ? game.Laser.STATE_TRACKING : game.Laser.STATE_NO_TARGET;
+    this.sta = trg ? LASER_STATE_TRACKING : LASER_STATE_NO_TARGET;
     this.trail = Array.from({length: 15}, () => vec2(px, py));
     this.vx = vx;
     this.vy = vy;
-    this.dir = game.DIR_UP;
+    this.dir = DIR_UP;
   }
 
   update() {
-    if (game.ctx.isPaused()) return;
+    if (ctx.isPaused()) return;
     this.updateMovement();
     this.updateTargeting();
     this.updateDirection();
 
     // ターゲットなし状態で画面外に出たら消滅開始
-    if (this.sta === game.Laser.STATE_NO_TARGET) {
-      if (game.isOutOfBounds(this.pos.x, this.pos.y, game.BOUNDS.LASER)) {
-        this.sta = game.Laser.STATE_DYING;
+    if (this.sta === LASER_STATE_NO_TARGET) {
+      if (isOutOfBounds(this.pos.x, this.pos.y, BOUNDS.LASER)) {
+        this.sta = LASER_STATE_DYING;
       }
     }
     this.frame++;
@@ -48,7 +47,7 @@ game.Laser = class extends game.GameObject {
       t[j].y = t[j - 1].y;
     }
 
-    if (this.sta !== game.Laser.STATE_DYING) {
+    if (this.sta !== LASER_STATE_DYING) {
       // HSP版1フレーム(加速→移動→減衰)を半ステップ分割:
       // 偶数フレーム: 加速→半移動、奇数フレーム: 半移動→減衰
       const dir = this.dir;
@@ -83,20 +82,19 @@ game.Laser = class extends game.GameObject {
 
   // ターゲット喪失検知 + 再検索
   updateTargeting() {
-    const ctx = game.ctx;
-    if (this.sta === game.Laser.STATE_TRACKING && (this.trg === null || !this.trg.alive)) {
+    if (this.sta === LASER_STATE_TRACKING && (this.trg === null || !this.trg.alive)) {
       // ターゲット喪失時にlckOnをデクリメント（発射時の++と対応）
       if (this.trg !== null && this.trg.lockOnCount > 0) {
         this.trg.lockOnCount--;
       }
-      this.sta = game.Laser.STATE_NO_TARGET;
+      this.sta = LASER_STATE_NO_TARGET;
     }
-    if (this.sta === game.Laser.STATE_NO_TARGET) {
-      const isBoss = game.Boss.instance.flg === game.Boss.STATE_BATTLE;
-      const candidates = isBoss ? game.BossPart.all : game.Enemy.all;
-      const newTrg = game.Player.instance.searchTarget(candidates, !isBoss);
+    if (this.sta === LASER_STATE_NO_TARGET) {
+      const isBoss = boss.flg === BOSS_STATE_BATTLE;
+      const candidates = isBoss ? bossParts : enemies;
+      const newTrg = player.searchTarget(candidates, !isBoss);
       if (newTrg !== null) {
-        this.sta = game.Laser.STATE_TRACKING;
+        this.sta = LASER_STATE_TRACKING;
         this.trg = newTrg;
         newTrg.lockOnCount++;
       }
@@ -105,9 +103,9 @@ game.Laser = class extends game.GameObject {
 
   // ターゲットへの方向を更新（2フレームに1回）
   updateDirection() {
-    if (this.sta !== game.Laser.STATE_TRACKING) return;
+    if (this.sta !== LASER_STATE_TRACKING) return;
     if (this.frame % 2 === 0) {
-      this.dir = game.calcDir(this.pos, this.trg.pos);
+      this.dir = calcDir(this.pos, this.trg.pos);
     }
   }
 
@@ -115,12 +113,12 @@ game.Laser = class extends game.GameObject {
   // 個別CanvasにはSource-overで描画してround capの継ぎ目を正しく処理し、
   // バッチCanvasへはlighter合成で蓄積する。GPU転写はgameRenderPostで一括実行。
   render() {
-    const c2d = game.laserCtx2d;
-    const W = game.SCREEN_W;
-    const H = game.SCREEN_H;
+    const c2d = laserCtx2d;
+    const W = SCREEN_W;
+    const H = SCREEN_H;
     const halfW = W / 2;
     const halfH = H / 2;
-    const d = game.Laser.DRAW;
+    const d = Laser.DRAW;
     const t = this.trail;
 
     // 個別キャンバスにsource-overで描画（round capで継ぎ目なし）
@@ -135,11 +133,11 @@ game.Laser = class extends game.GameObject {
     }
 
     // バッチキャンバスに加算合成で蓄積
-    game.laserBatchCtx2d.drawImage(game.laserCanvas, 0, 0);
+    laserBatchCtx2d.drawImage(laserCanvas, 0, 0);
   }
 
   destroy() {
-    game.Laser.all.delete(this);
+    lasers.delete(this);
     super.destroy();
   }
 
@@ -150,8 +148,8 @@ game.Laser = class extends game.GameObject {
 
   // ターゲットに命中
   onHit() {
-    game.ctx.score += 100;
-    game.spawnHitSparks(this.pos.x, this.pos.y, 2);
-    this.sta = game.Laser.STATE_DYING;
+    ctx.score += 100;
+    spawnHitSparks(this.pos.x, this.pos.y, 2);
+    this.sta = LASER_STATE_DYING;
   }
-};
+}

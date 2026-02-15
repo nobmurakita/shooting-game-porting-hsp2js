@@ -1,5 +1,8 @@
+import { LASER_STATE_TRACKING } from './game.js';
+import { player, enemies, bossParts, playerShots, lasers, enemyShots, enemyShots2 } from './registry.js';
+
 //////////衝突判定システム//////////
-game.CollisionSystem = {
+export const CollisionSystem = {
   // AABB衝突判定（stg_clash）
   checkAABB(a, b) {
     const [x1, y1, x2, y2] = a.hitBox();
@@ -28,23 +31,23 @@ game.CollisionSystem = {
 
   // 全衝突判定を一括実行（プレイヤー攻撃→敵攻撃の順で判定）
   checkAllCollisions() {
-    const ply = game.Player.instance;
+    const ply = player;
 
     // プレイヤー攻撃（先に敵を撃破することで被弾を回避できる）
-    for (const lsr of game.Laser.all) {
-      if (lsr.sta !== game.Laser.STATE_TRACKING || !lsr.trg.alive) continue;
+    for (const lsr of lasers) {
+      if (lsr.sta !== LASER_STATE_TRACKING || !lsr.trg.alive) continue;
       if (this.checkAABB(lsr, lsr.trg)) {
         lsr.onHit();
         lsr.trg.onHitByLaser();
       }
     }
-    this._checkShotsVsTargets(game.PlayerShot.all, game.EnemyShot2.all);
-    this._checkShotsVsTargets(game.PlayerShot.all, game.Enemy.all);
-    this._checkShotsVsTargets(game.PlayerShot.all, game.BossPart.all);
+    this._checkShotsVsTargets(playerShots, enemyShots2);
+    this._checkShotsVsTargets(playerShots, enemies);
+    this._checkShotsVsTargets(playerShots, bossParts);
 
     // 敵攻撃
     if (ply.alive && ply.hitCnt === 0) {
-      for (const e of game.Enemy.all) {
+      for (const e of enemies) {
         if (this.checkAABB(e, ply)) {
           e.onHitByPlayer();
           ply.onHit();
@@ -52,7 +55,7 @@ game.CollisionSystem = {
         }
       }
       if (ply.alive && ply.hitCnt === 0) {
-        for (const bp of game.BossPart.all) {
+        for (const bp of bossParts) {
           if (!bp.alive) continue;
           if (this.checkAABB(bp, ply)) {
             ply.onHit();
@@ -61,7 +64,7 @@ game.CollisionSystem = {
         }
       }
       if (ply.alive && ply.hitCnt === 0) {
-        for (const es of game.EnemyShot.all) {
+        for (const es of enemyShots) {
           if (this.checkAABB(es, ply)) {
             es.onHit();
             ply.onHit();

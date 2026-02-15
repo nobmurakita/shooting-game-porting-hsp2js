@@ -1,7 +1,11 @@
+import { GameObject, ctx, TEX, BOUNDS, STA_PLAY, BOSS_STATE_BATTLE, KEY_LEFT, KEY_UP, KEY_RIGHT, KEY_DOWN, KEY_LASER, KEY_SHOT, gameTile } from './game.js';
+import { boss, bossParts, enemies, playerShots, setPlayer } from './registry.js';
+import { Laser } from './laser.js';
+import { spawnExplosion, spawnHitSparks } from './effect.js';
+
 //////////プレーヤークラス//////////
-game.Player = class extends game.GameObject {
-  static instance = null;
-  static DATA = { sx: 80, sy: 80, baseX: 240, normalY: 0, hitY: 80, tex: game.TEX.PLAYER };
+export class Player extends GameObject {
+  static DATA = { sx: 80, sy: 80, baseX: 240, normalY: 0, hitY: 80, tex: TEX.PLAYER };
   static HIT = { x1: -10, y1: -10, x2: 10, y2: 10 };
   static SOUND_DESTROY = new Sound([1,,150,.05,.3,.4,4,2,-5,,,,,1,20,.1,,.6,.1]);
   // ショット発射位置テーブル（ラジアン、旧DatShtDir後半6要素）
@@ -11,7 +15,7 @@ game.Player = class extends game.GameObject {
 
   constructor() {
     super(vec2(0, -220), 20); // renderOrder=20
-    game.Player.instance = this;
+    setPlayer(this);
     this.init();
   }
 
@@ -33,8 +37,7 @@ game.Player = class extends game.GameObject {
 
   // プレーヤー移動（旧MovPly）
   update() {
-    const ctx = game.ctx;
-    if (ctx.gameSta !== game.STA_PLAY) return;
+    if (ctx.gameSta !== STA_PLAY) return;
 
     if (!this.alive) {
       this.laserPower = 0;
@@ -53,8 +56,8 @@ game.Player = class extends game.GameObject {
 
   // 入力→移動→傾き→境界制限
   updateMovement() {
-    const dx = game.keyIsDown(game.KEY_RIGHT) - game.keyIsDown(game.KEY_LEFT);
-    const dy = game.keyIsDown(game.KEY_UP) - game.keyIsDown(game.KEY_DOWN);
+    const dx = keyIsDown(KEY_RIGHT) - keyIsDown(KEY_LEFT);
+    const dy = keyIsDown(KEY_UP) - keyIsDown(KEY_DOWN);
 
     if (dx || dy) {
       const r = Math.atan2(dy, dx);
@@ -73,10 +76,10 @@ game.Player = class extends game.GameObject {
     }
 
     // はみ出し制限
-    if (this.pos.x < -game.BOUNDS.PLAYER) { this.pos.x = -game.BOUNDS.PLAYER; }
-    if (this.pos.y < -game.BOUNDS.PLAYER) { this.pos.y = -game.BOUNDS.PLAYER; }
-    if (this.pos.x > game.BOUNDS.PLAYER) { this.pos.x = game.BOUNDS.PLAYER; }
-    if (this.pos.y > game.BOUNDS.PLAYER) { this.pos.y = game.BOUNDS.PLAYER; }
+    if (this.pos.x < -BOUNDS.PLAYER) { this.pos.x = -BOUNDS.PLAYER; }
+    if (this.pos.y < -BOUNDS.PLAYER) { this.pos.y = -BOUNDS.PLAYER; }
+    if (this.pos.x > BOUNDS.PLAYER) { this.pos.x = BOUNDS.PLAYER; }
+    if (this.pos.y > BOUNDS.PLAYER) { this.pos.y = BOUNDS.PLAYER; }
   }
 
   // ショット発射カウンタ＆生成
@@ -84,13 +87,13 @@ game.Player = class extends game.GameObject {
     if (this.shotCooldown !== 0) {
       this.shotCooldown--;
     } else {
-      if (game.keyIsDown(game.KEY_SHOT)) {
+      if (keyIsDown(KEY_SHOT)) {
         this.shotCooldown = 6;
         for (let i = 0; i < this.shotLevel * 2; i++) {
-          const posRad = game.Player.SHT_POS[i];
+          const posRad = Player.SHT_POS[i];
           const x = Math.cos(posRad) * 40 + this.pos.x;
           const y = Math.sin(posRad) * 40 + this.pos.y;
-          new game.PlayerShot(x, y);
+          new PlayerShot(x, y);
         }
       }
     }
@@ -99,23 +102,23 @@ game.Player = class extends game.GameObject {
   // レーザーチャージ＆発射
   updateLaser() {
     if (this.laserCharge) {
-      if (game.keyIsDown(game.KEY_LASER)) {
+      if (keyIsDown(KEY_LASER)) {
         if (this.laserPower >= 40) {
-          const count = Math.min(Math.floor(this.laserPower / 40), game.Player.LSR_DIR.length);
-          const isBoss = game.Boss.instance.flg === game.Boss.STATE_BATTLE;
-          const candidates = isBoss ? game.BossPart.all : game.Enemy.all;
+          const count = Math.min(Math.floor(this.laserPower / 40), Player.LSR_DIR.length);
+          const isBoss = boss.flg === BOSS_STATE_BATTLE;
+          const candidates = isBoss ? bossParts : enemies;
           for (let i = 0; i < count; i++) {
             const trg = this.searchTarget(candidates, !isBoss);
             if (trg !== null) { trg.lockOnCount++; }
-            const rad = game.Player.LSR_DIR[i];
+            const rad = Player.LSR_DIR[i];
             const vx = Math.cos(rad) * 16;
             const vy = Math.sin(rad) * 16;
-            new game.Laser(this.pos.x, this.pos.y + 40, vx, vy, trg);
+            new Laser(this.pos.x, this.pos.y + 40, vx, vy, trg);
           }
           this.laserPower = 0;
         }
       } else {
-        this.laserPower += (game.keyIsDown(game.KEY_SHOT) ? 0.5 : 1.5);
+        this.laserPower += (keyIsDown(KEY_SHOT) ? 0.5 : 1.5);
         if (this.laserPower > 320) {
           this.laserPower = 320;
         }
@@ -168,15 +171,15 @@ game.Player = class extends game.GameObject {
   // プレーヤー描画（旧DrwPly）
   render() {
     if (!this.alive) return;
-    const d = game.Player.DATA;
+    const d = Player.DATA;
     const frameX = Math.floor(this.tilt / 2) * d.sx + d.baseX;
     const frameY = (Math.floor(this.hitCnt / 6) % 2 === 0) ? d.normalY : d.hitY;
-    const ti = game.tile(frameX, frameY, d.sx, d.sy, d.tex);
+    const ti = gameTile(frameX, frameY, d.sx, d.sy, d.tex);
     drawTile(this.pos, ti.drawSize, ti);
   }
 
   destroy() {
-    game.Player.instance = null;
+    setPlayer(null);
     super.destroy();
   }
 
@@ -186,31 +189,30 @@ game.Player = class extends game.GameObject {
     this.shield--;
     if (this.shield <= 0) {
       this.alive = false;
-      const d = game.Player.DATA;
-      game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 5);
-      game.Player.SOUND_DESTROY.play();
+      const d = Player.DATA;
+      spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 5);
+      Player.SOUND_DESTROY.play();
     } else {
-      game.spawnHitSparks(this.pos.x, this.pos.y);
+      spawnHitSparks(this.pos.x, this.pos.y);
     }
   }
 
-};
+}
 
 //////////プレーヤーショットクラス//////////
-game.PlayerShot = class extends game.GameObject {
-  static all = new Set();
-  static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: game.TEX.PLAYER };
+export class PlayerShot extends GameObject {
+  static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: TEX.PLAYER };
   static HIT = { x1: -10, y1: -20, x2: 10, y2: 20 };
   static SOUND = new Sound([.5,,900,.01,.02,.08,2,1.5,-40,,400,.02]);
 
   constructor(x, y) {
     super(vec2(x, y), 10);  // renderOrder=10
-    game.PlayerShot.all.add(this);
-    game.PlayerShot.SOUND.play();
+    playerShots.add(this);
+    PlayerShot.SOUND.play();
   }
 
   update() {
-    if (game.ctx.isPaused()) return;
+    if (ctx.isPaused()) return;
     this.pos.y += 16;
     if (this.pos.y > 340) {
       this.destroy();
@@ -219,20 +221,20 @@ game.PlayerShot = class extends game.GameObject {
   }
 
   render() {
-    const d = game.PlayerShot.DATA;
-    const ti = game.tile(d.cx, d.cy, d.sx, d.sy, d.tex);
+    const d = PlayerShot.DATA;
+    const ti = gameTile(d.cx, d.cy, d.sx, d.sy, d.tex);
     drawTile(this.pos, ti.drawSize, ti);
   }
 
   destroy() {
-    game.PlayerShot.all.delete(this);
+    playerShots.delete(this);
     super.destroy();
   }
 
   // ターゲットに命中
   onHit() {
-    game.ctx.score += 10;
-    game.spawnHitSparks(this.pos.x, this.pos.y);
+    ctx.score += 10;
+    spawnHitSparks(this.pos.x, this.pos.y);
     this.destroy();
   }
-};
+}

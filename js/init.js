@@ -1,86 +1,78 @@
+import { ctx, SCREEN_W, SCREEN_H, TEX, STA_TITLE, STA_PLAY, STA_PAUSE, initRuntime, gameTile, gameColor, drawUI, laserBatchCtx2d, laserBatchTexInfo, laserBatchTile } from './game.js';
+import { player, lasers } from './registry.js';
+import { initBackground, drawBackground } from './background.js';
+import { stateHandlers } from './state.js';
+import { CollisionSystem } from './collision.js';
+import { UI_SPRITES, drawStatusUI } from './ui.js';
+import './stage1.js';
+
 //////////ゲーム初期化//////////
-game.gameInit = () => {
-  setCanvasFixedSize(vec2(game.SCREEN_W, game.SCREEN_H));
+function gameInit() {
+  setCanvasFixedSize(vec2(SCREEN_W, SCREEN_H));
   setCanvasPixelated(true);
   setCameraScale(1);
   setCameraPos(vec2(0, 0));
   setDebugKey('');
   setDebugWatermark(false);
 
-  // レーザー用オフスクリーンCanvas + TextureInfo
-  game.laserCanvas = document.createElement('canvas');
-  game.laserCanvas.width = game.SCREEN_W;
-  game.laserCanvas.height = game.SCREEN_H;
-  game.laserCtx2d = game.laserCanvas.getContext('2d');
-  game.laserCtx2d.lineCap = 'round';
-  game.laserCtx2d.lineWidth = 6;
-  // レーザーバッチ用キャンバス（全レーザーをlighter合成で蓄積し、1回のGPU転写で描画）
-  game.laserBatchCanvas = document.createElement('canvas');
-  game.laserBatchCanvas.width = game.SCREEN_W;
-  game.laserBatchCanvas.height = game.SCREEN_H;
-  game.laserBatchCtx2d = game.laserBatchCanvas.getContext('2d');
-  game.laserBatchCtx2d.globalCompositeOperation = 'lighter';
-  game.laserBatchTexInfo = new TextureInfo(game.laserBatchCanvas);
-  game.laserBatchTile = tile(vec2(), vec2(game.SCREEN_W, game.SCREEN_H), game.laserBatchTexInfo);
-
-  game.ctx = new game.GameContext();
-  game.initBackground();
-};
+  initRuntime();
+  initBackground();
+}
 
 //////////ゲーム更新//////////
-game.gameUpdate = () => {
-  const handler = game.stateHandlers[game.ctx.gameSta];
+function gameUpdate() {
+  const handler = stateHandlers[ctx.gameSta];
   if (handler) handler();
-  game.ctx.hiScore = Math.max(game.ctx.score, game.ctx.hiScore);
-};
+  ctx.hiScore = Math.max(ctx.score, ctx.hiScore);
+}
 
 //////////ゲーム更新後処理（レーザー充填・衝突判定）//////////
-game.gameUpdatePost = () => {
+function gameUpdatePost() {
   // レーザー充填判定（Player.update後に実行する必要がある）
-  if (game.ctx.isPlaying() && !game.ctx.isPaused()) {
-    if (game.Laser.all.size > 0) {
-      game.Player.instance.laserCharge = false;
-    } else if (game.Player.instance.laserPower <= 0) {
-      game.Player.instance.laserCharge = true;
+  if (ctx.isPlaying() && !ctx.isPaused()) {
+    if (lasers.size > 0) {
+      player.laserCharge = false;
+    } else if (player.laserPower <= 0) {
+      player.laserCharge = true;
     }
   }
-  if (game.ctx.gameSta === game.STA_PLAY) {
-    game.CollisionSystem.checkAllCollisions();
+  if (ctx.gameSta === STA_PLAY) {
+    CollisionSystem.checkAllCollisions();
   }
-};
+}
 
 //////////ゲーム描画//////////
-game.gameRender = () => {
-  if (game.ctx.gameSta === game.STA_TITLE) {
-    const ti = game.tile(0, 0, 600, 600, game.TEX.TITLE);
+function gameRender() {
+  if (ctx.gameSta === STA_TITLE) {
+    const ti = gameTile(0, 0, 600, 600, TEX.TITLE);
     drawTile(vec2(0, 0), ti.drawSize, ti);
-  } else if (game.ctx.isPlaying()) {
+  } else if (ctx.isPlaying()) {
     // レーザーバッチキャンバスをクリア（EngineObject描画前に必要）
-    game.laserBatchCtx2d.clearRect(0, 0, game.SCREEN_W, game.SCREEN_H);
-    game.drawBackground();
+    laserBatchCtx2d.clearRect(0, 0, SCREEN_W, SCREEN_H);
+    drawBackground();
   }
-};
+}
 
-game.gameRenderPost = () => {
-  if (game.ctx.isPlaying()) {
+function gameRenderPost() {
+  if (ctx.isPlaying()) {
     // レーザーバッチ転写（1回のテクスチャアップロードで全レーザーを描画）
-    if (game.Laser.all.size > 0) {
-      game.laserBatchTexInfo.createWebGLTexture();
+    if (lasers.size > 0) {
+      laserBatchTexInfo.createWebGLTexture();
       setBlendMode(true);
-      drawTile(vec2(0, 0), vec2(game.SCREEN_W, game.SCREEN_H), game.laserBatchTile, game.color(1, 1, 1, 1));
+      drawTile(vec2(0, 0), vec2(SCREEN_W, SCREEN_H), laserBatchTile, gameColor(1, 1, 1, 1));
       glFlush();
       setBlendMode();
     }
-    game.drawStatusUI();
-    if (game.ctx.gameSta === game.STA_PAUSE) {
-      const p = game.UI_SPRITES.pauseLabel;
-      game.drawUI(0, 0, game.tile(p.cx, p.cy, p.sx, p.sy, game.TEX.UI));
+    drawStatusUI();
+    if (ctx.gameSta === STA_PAUSE) {
+      const p = UI_SPRITES.pauseLabel;
+      drawUI(0, 0, gameTile(p.cx, p.cy, p.sx, p.sy, TEX.UI));
     }
   }
-};
+}
 
 //////////画像ソース（テクスチャインデックス順）//////////
-game.imageSources = [
+const imageSources = [
   'img/player.png',  'img/effect.png',  'img/enesht.png', 'img/etc.png',
   'img/enemy00.png', 'img/enemy01.png', 'img/enemy02.png','img/enemy03.png',
   'img/enemy04.png', 'img/enemy05.png', 'img/enemy06.png','img/enemy07.png',
@@ -90,6 +82,6 @@ game.imageSources = [
 
 //////////エンジン起動//////////
 engineInit(
-  game.gameInit, game.gameUpdate, game.gameUpdatePost,
-  game.gameRender, game.gameRenderPost, game.imageSources
+  gameInit, gameUpdate, gameUpdatePost,
+  gameRender, gameRenderPost, imageSources
 );

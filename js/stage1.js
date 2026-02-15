@@ -1,6 +1,6 @@
-game.Stages ||= {};
+import { Stages } from './game.js';
 
-game.Stages[1] = [
+Stages[1] = [
   // [Frm, ki, Mv, X, Y],  ※X,Y値は中心原点座標系（画面中心が0,0）
   [120, 3, 0, -100, 350],
   [120, 3, 0, 100, 350],
