@@ -8,6 +8,8 @@ game.updateOpeningState = () => {
 
 game.updateTitleState = () => {
   if (game.keyWasPressed(game.KEY_LASER) || game.keyWasPressed(game.KEY_SHOT) || game.keyWasPressed(game.KEY_SHIFT)) {
+    // キーボード操作時のAudioContext起動（LittleJSはmouse/touchのみ対応のため）
+    if (audioContext && audioContext.state !== 'running') audioContext.resume();
     game.ctx.gameSta = game.STA_INIT;
   }
 };

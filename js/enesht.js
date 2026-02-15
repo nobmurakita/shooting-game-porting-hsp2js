@@ -73,6 +73,7 @@ game.EnemyShot1 = class extends game.EnemyShot {
 
 // ki=2: 誘導弾（追尾）
 game.EnemyShot2 = class extends game.EnemyShot {
+  // プレイヤーショットで撃墜可能な誘導弾のみを管理（EnemyShot.allとは別に衝突判定で使用）
   static all = new Set();
   static DATA = { sx: 40, sy: 40, tex: game.TEX.ENESHT, texCy: 40 };
   static HIT = { x1: -10, y1: -10, x2: 10, y2: 10 };

@@ -26,6 +26,12 @@ game.Effect = class extends game.GameObject {
 // ki=0: 爆発（大）
 game.Effect0 = class extends game.Effect {
   static DATA = { sx: 80, sy: 80, tex: game.TEX.EFFECT, texCy: 0 };
+  static SOUND = new Sound([.5,,200,.02,.15,.25,4,2.5,,,,,,,20,.1,,.5,.05]);
+
+  constructor(x, y, startFrame) {
+    super(x, y, startFrame);
+    game.Effect0.SOUND.play();
+  }
 
   update() {
     if (game.ctx.isPaused()) return;
@@ -44,6 +50,12 @@ game.Effect0 = class extends game.Effect {
 // ki=1: 火花
 game.Effect1 = class extends game.Effect {
   static DATA = { sx: 20, sy: 20, tex: game.TEX.EFFECT, texCy: 80 };
+  static SOUND = new Sound([.5,,800,.01,.01,.04,4,1.5,-30,,,,,,5]);
+
+  constructor(x, y, startFrame) {
+    super(x, y, startFrame);
+    game.Effect1.SOUND.play();
+  }
 
   update() {
     if (game.ctx.isPaused()) return;

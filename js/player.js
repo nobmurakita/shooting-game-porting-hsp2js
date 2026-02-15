@@ -3,6 +3,7 @@ game.Player = class extends game.GameObject {
   static instance = null;
   static DATA = { sx: 80, sy: 80, baseX: 240, normalY: 0, hitY: 80, tex: game.TEX.PLAYER };
   static HIT = { x1: -10, y1: -10, x2: 10, y2: 10 };
+  static SOUND_DESTROY = new Sound([1,,150,.05,.3,.4,4,2,-5,,,,,1,20,.1,,.6,.1]);
   // ショット発射位置テーブル（ラジアン、旧DatShtDir後半6要素）
   static SHT_POS = [184, 200, 174, 210, 166, 218].map(a => -a * Math.PI / 128);
   // レーザー発射方向テーブル（ラジアン、旧DatLsrDir）
@@ -187,6 +188,7 @@ game.Player = class extends game.GameObject {
       this.alive = false;
       const d = game.Player.DATA;
       game.spawnExplosion(this.pos.x, this.pos.y, d.sx, d.sy, 5);
+      game.Player.SOUND_DESTROY.play();
     } else {
       game.spawnHitSparks(this.pos.x, this.pos.y);
     }
@@ -199,10 +201,12 @@ game.PlayerShot = class extends game.GameObject {
   static all = new Set();
   static DATA = { sx: 20, sy: 40, cx: 560, cy: 0, tex: game.TEX.PLAYER };
   static HIT = { x1: -10, y1: -20, x2: 10, y2: 20 };
+  static SOUND = new Sound([.5,,900,.01,.02,.08,2,1.5,-40,,400,.02]);
 
   constructor(x, y) {
     super(vec2(x, y), 10);  // renderOrder=10
     game.PlayerShot.all.add(this);
+    game.PlayerShot.SOUND.play();
   }
 
   update() {

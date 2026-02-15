@@ -10,10 +10,12 @@ game.Laser = class extends game.GameObject {
     baseR: 50, baseG: 255, baseB: 160,
     fadeG: 10, fadeB: 10,
   };
+  static SOUND = new Sound([.5,,202,,.29,.16,,3.5,-48,44,,,,,16,,,.52,.08]);
 
   constructor(px, py, vx, vy, trg) {
     super(vec2(px, py), 50); // renderOrder=50（最前面）
     game.Laser.all.add(this);
+    game.Laser.SOUND.play();
     this.trg = trg;
     this.sta = trg ? game.Laser.STATE_TRACKING : game.Laser.STATE_NO_TARGET;
     this.trail = Array.from({length: 15}, () => vec2(px, py));
@@ -141,6 +143,7 @@ game.Laser = class extends game.GameObject {
     super.destroy();
   }
 
+  // レーザーは先頭1点のみで当たり判定（ターゲットのAABB内にあるかで判定）
   hitBox() {
     return [this.pos.x, this.pos.y, this.pos.x, this.pos.y];
   }
